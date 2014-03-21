@@ -1,0 +1,21 @@
+{
+  "name": "pushStateTree",
+  "version": "0.1.0",
+  "authors": [
+    "Gabriel Reitz Giannattasio <gartz@l6.com.br>"
+  ],
+  "description": "A simple evented framework to work with browser history and pushState.",
+  "main": "src/pushStateTree.js",
+  "keywords": [
+    "history",
+    "pushState"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests"
+  ]
+}
