@@ -3,9 +3,10 @@
   
   var isIE = (function(){
     var trident = window.navigator.userAgent.indexOf('Trident');
-
     return trident >= 0;
   }());
+  
+  // Shim, to work with older browsers
   
   (function () {
     if (!Array.prototype.compare) {
@@ -72,6 +73,8 @@
     }
   })();
   
+  // Helpers
+  
   function wrapProperty(scope, prop, target) {
     Object.defineProperty(scope, prop, {
       get: function () {
@@ -82,6 +85,7 @@
     });
   }
 
+  //TODO: the container reference must be configurable to work with web components
   var frag = document.createDocumentFragment();
   
   function PushStateTree() {
@@ -241,6 +245,12 @@
       }.bind(this, method);
     }
     
+    var readdOnhashchange = false;
+    function avoidTriggering() {
+      // Avoid triggering hashchange event
+      root.removeEventListener('hashchange', onhashchange);
+      readdOnhashchange = true;
+    }
     var lastTitle = null;
     if (!this.pushState) {
       this.pushState = function(state, title, url) {
@@ -248,25 +258,32 @@
         if (lastTitle !== null) {
             document.title = lastTitle;
         }
-        //TODO: Don't trigger!!!
+        avoidTriggering();
         
+        // Replace hash url
         root.location.hash = url;
         document.title = t;
         lastTitle = title;
+        
+        return this;
       };
     }
 
+    
     if (!this.replaceState) {
       this.replaceState = function(state, title, url) {
         var t = document.title;
         if (lastTitle !== null) {
             document.title = lastTitle;
         }
-        //TODO: Don't trigger!!!
+        avoidTriggering();
         
+        // Replace the url
         root.location.replace(url);
         document.title = t;
         lastTitle = title;
+        
+        return this;
       };
     }
     
@@ -297,15 +314,17 @@
       oldURI = this.uri;
       oldState = this.state;
     }.bind(this));
-
-    root.addEventListener('hashchange', function (event) {
+    
+    var onhashchange = function (event) {
       // Don't dispatch, because already have dispatched in popstate event
       if (oldURI === this.uri) return;
       this.rulesDispatcher();
 
       oldURI = this.uri;
       oldState = this.state;
-    }.bind(this));
+    }.bind(this)
+
+    root.addEventListener('hashchange', onhashchange);
     
     // Uglify propourses
     var dispatchHashChange = function () {
@@ -328,7 +347,14 @@
         root.setInterval(function () {
           if (this.uri !== oldURI) {
             dispatchHashChange();
+            return;
           }
+          if (readdOnhashchange) {
+            readdOnhashchange = false;
+            oldURI = this.uri;
+            root.addEventListener('hashchange', onhashchange);
+          }
+          
         }.bind(this), 50);
       }
     }.bind(this));

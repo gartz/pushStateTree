@@ -53,63 +53,63 @@
       
       
       pushStateTree.querySelector('#any').addEventListener('enter', function (event) {
-        log('any:enter');
+        log('any:enter > ' + pushStateTree.uri);
       });
       pushStateTree.querySelector('#any').addEventListener('change', function (event) {
-        log('any:change');
+        log('any:change > ' + pushStateTree.uri);
       });
       pushStateTree.querySelector('#any').addEventListener('leave', function (event) {
-        log('any:leave');
+        log('any:leave > ' + pushStateTree.uri);
       });
       
       pushStateTree.querySelector('#one').addEventListener('enter', function (event) {
-        log('one:enter');
+        log('one:enter > ' + pushStateTree.uri);
       });
       pushStateTree.querySelector('#one').addEventListener('change', function (event) {
-        log('one:change');
+        log('one:change > ' + pushStateTree.uri);
       });
       pushStateTree.querySelector('#one').addEventListener('leave', function (event) {
-        log('one:leave');
+        log('one:leave > ' + pushStateTree.uri);
       });
       
       pushStateTree.querySelector('#child').addEventListener('enter', function (event) {
-        log('child:enter');
+        log('child:enter > ' + pushStateTree.uri);
       });
       pushStateTree.querySelector('#child').addEventListener('change', function (event) {
-        log('child:change');
+        log('child:change > ' + pushStateTree.uri);
       });
       pushStateTree.querySelector('#child').addEventListener('leave', function (event) {
-        log('child:leave');
+        log('child:leave > ' + pushStateTree.uri);
       });
       
       pushStateTree.querySelector('#nestedChild').addEventListener('enter', function (event) {
-        log('nestedChild:enter');
+        log('nestedChild:enter > ' + pushStateTree.uri);
       });
       pushStateTree.querySelector('#nestedChild').addEventListener('change', function (event) {
-        log('nestedChild:change');
+        log('nestedChild:change > ' + pushStateTree.uri);
       });
       pushStateTree.querySelector('#nestedChild').addEventListener('leave', function (event) {
-        log('nestedChild:leave');
+        log('nestedChild:leave > ' + pushStateTree.uri);
       });
     </script>
     <div>
       <p>
-        <a onclick="pushStateTree.pushState({state:'push'}, '', '#' + (Math.random() + '').slice(2))">Change the URL and add to history</a>
+        <a onclick="pushStateTree.pushState({state:'push'}, '', '' + (Math.random() + '').slice(2))">Change the URL and add to history</a>
       </p>
       <p>
-        <a onclick="pushStateTree.pushState({state:'push&dispatch'}, '', '#' + (Math.random() + '').slice(2)).dispatch()">Change the URL and add to history and trigger</a>
+        <a onclick="pushStateTree.pushState({state:'push&dispatch'}, '', '' + (Math.random() + '').slice(2)).dispatch()">Change the URL and add to history and trigger</a>
       </p>
       <p>
-        <a onclick="pushStateTree.replaceState({state:'replace'}, '', '#' + (Math.random() + '').slice(2))">Change the URL by replace</a>
+        <a onclick="pushStateTree.replaceState({state:'replace'}, '', '' + (Math.random() + '').slice(2))">Change the URL by replace</a>
       </p>
       <p>
-        <a onclick="pushStateTree.replaceState({state:'replace&dipatch'}, '', '#' + (Math.random() + '').slice(2)).dispatch()">Change the URL by replace and trigger</a>
+        <a onclick="pushStateTree.replaceState({state:'replace&dipatch'}, '', '' + (Math.random() + '').slice(2)).dispatch()">Change the URL by replace and trigger</a>
       </p>
       <p>
         <a href="#doSomething">Default hash link</a>
       </p>
       <p>
-        <a onclick="pushStateTree.pushState(null, '', '#child/' + (Math.random() + '').slice(2)).dispatch()">Hash to child</a>
+        <a onclick="pushStateTree.pushState(null, '', 'child/' + (Math.random() + '').slice(2)).dispatch()">Hash to child</a>
       </p>
     </div>
     <div style="border:1px solid blue; margin-left: 20px;" id="log">
