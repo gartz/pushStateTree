@@ -52,6 +52,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('assemble');
+  grunt.loadNpmTasks("grunt-modernizr");
 
   // Tests to be run.
   grunt.registerTask('test', ['nodeunit']);

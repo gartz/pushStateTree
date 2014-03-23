@@ -1,6 +1,12 @@
 (function (root) {
   'use strict';
   
+  var isIE = (function(){
+    var trident = window.navigator.userAgent.indexOf('Trident');
+
+    return trident >= 0;
+  }());
+  
   (function () {
     if (!Array.prototype.compare) {
       // Credits: http://stackoverflow.com/questions/7837456/comparing-two-arrays-in-javascript
@@ -34,29 +40,35 @@
   (function () {
     // Opera and IE doesn't implement location.origin
     if (!root.location.origin) {
-      Object.defineProperty(root.location, 'origin', {
-        get: function () {
-          return root.location.protocol + '://' + root.location.host;
-        }
-      });
+      root.location.origin = root.location.protocol + '://' + root.location.host;
     }
   })();
   
   (function () {
-    function CustomEvent ( event, params ) {
-      params = params || { bubbles: false, cancelable: false, detail: undefined };
-      var evt = document.createEvent( 'CustomEvent' );
-      evt.initCustomEvent( event, params.bubbles, params.cancelable, params.detail );
+    function CustomEvent(event, params) {
+      params = params || { 
+        bubbles: false, 
+        cancelable: false, 
+        detail: undefined
+      };
+      var evt = document.createEvent('CustomEvent');
+      evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
       return evt;
-     }
+    }
   
-    CustomEvent.prototype = window.Event.prototype;
+    CustomEvent.prototype = root.Event.prototype;
   
-    root.CustomEvent = root.CustomEvent || CustomEvent;
+    if (!root.CustomEvent || !!isIE) {
+      root.CustomEvent = CustomEvent;
+    }
     
     // Opera before 15 has HashChangeEvent but throw a DOM Implement error
-    if (!HashChangeEvent || root.opera && root.opera.version() < 15) {
+    if (!root.HashChangeEvent || (root.opera && root.opera.version() < 15) || !!isIE) {
       root.HashChangeEvent = root.CustomEvent;
+    }
+    
+    if (!!isIE) {
+      root.Event = root.CustomEvent;
     }
   })();
   
@@ -64,7 +76,9 @@
     Object.defineProperty(scope, prop, {
       get: function () {
         return target;
-      }
+      },
+      set: function () {},
+      enumerable: true
     });
   }
 
@@ -150,12 +164,17 @@
 
           delete event.target;
           delete event.srcElement;
-          Object.defineProperty(event, 'target', {
-            value: params.target || ruleElement
-          });
-          Object.defineProperty(event, 'srcElement', {
-            value: params.target || ruleElement
-          });
+          try {
+            Object.defineProperty(event, 'target', {
+              value: params.target || ruleElement
+            });
+            Object.defineProperty(event, 'srcElement', {
+              value: params.srcElement || ruleElement
+            });
+          } catch (e) {
+            event.target = params.target || ruleElement;
+            event.srcElement = params.srcElement || ruleElement;
+          }
           return event;
         }
         
@@ -222,6 +241,35 @@
       }.bind(this, method);
     }
     
+    var lastTitle = null;
+    if (!this.pushState) {
+      this.pushState = function(state, title, url) {
+        var t = document.title;
+        if (lastTitle !== null) {
+            document.title = lastTitle;
+        }
+        //TODO: Don't trigger!!!
+        
+        root.location.hash = url;
+        document.title = t;
+        lastTitle = title;
+      };
+    }
+
+    if (!this.replaceState) {
+      this.replaceState = function(state, title, url) {
+        var t = document.title;
+        if (lastTitle !== null) {
+            document.title = lastTitle;
+        }
+        //TODO: Don't trigger!!!
+        
+        root.location.replace(url);
+        document.title = t;
+        lastTitle = title;
+      };
+    }
+    
     this.dispatch = function () {
       // Trigger the actual browser location
       
@@ -259,18 +307,32 @@
       oldState = this.state;
     }.bind(this));
     
+    // Uglify propourses
+    var dispatchHashChange = function () {
+      root.dispatchEvent(new root.HashChangeEvent('hashchange'));
+    }
+    
     // Modern browsers
     document.addEventListener('DOMContentLoaded', function () {
-      root.dispatchEvent(new HashChangeEvent('hashchange'));
+      dispatchHashChange();
     });
     // Some IE browsers
     root.addEventListener('readystatechange', function () {
-      root.dispatchEvent(new HashChangeEvent('hashchange'));
+      dispatchHashChange();
     });
     // Almost all browsers
     root.addEventListener('load', function () {
-      root.dispatchEvent(new HashChangeEvent('hashchange'));
-    });
+      dispatchHashChange();
+
+      if (isIE) {
+        root.setInterval(function () {
+          if (this.uri !== oldURI) {
+            dispatchHashChange();
+          }
+        }.bind(this), 50);
+      }
+    }.bind(this));
+    
   }
   
   PushStateTree.prototype = frag;
