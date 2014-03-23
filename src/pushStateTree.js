@@ -84,6 +84,11 @@
       enumerable: true
     });
   }
+  
+  function isExternal(url) {
+    // Check if a URL is external
+    return (/^[a-z0-9]+:\/\//i).test(url);
+  }
 
   //TODO: the container reference must be configurable to work with web components
   var frag = document.createDocumentFragment();
@@ -110,7 +115,8 @@
       Object.defineProperty(this, 'uri', {
         get: function () {
           return location.href.slice(location.origin.length);
-        }
+        },
+        configurable: true
       });
     }
     
@@ -301,6 +307,9 @@
         avoidTriggering();
         
         // Replace the url
+        if (!isExternal(url) && url[0] !== '#') {
+          url = '#' + url;
+        }
         root.location.replace(url);
         document.title = t;
         lastTitle = title;
@@ -331,7 +340,8 @@
           uri = location.href.slice(1);
         }
         return uri;
-      }
+      },
+      configurable: true
     });
     
     root.addEventListener('popstate', function (event) {
