@@ -2,11 +2,12 @@
 
 > A browser history micro-framework that works with events, navigation of single page app easier than ever.
 
+### [Demo page](http://gartz.github.io/pushStateTree/)
+
 ## Quick start
 
 The following quick start options are available:
 
-* Install with [Bower](http://bower.io): `bower install pushStateTree`.
 * Clone the repo: `git clone https://github.com/gartz/pushStateTree.git`.
 * [Download the latest release](https://github.com/gartz/pushStateTree/archive/master.zip).
 
