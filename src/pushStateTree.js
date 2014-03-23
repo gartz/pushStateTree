@@ -88,9 +88,31 @@
   //TODO: the container reference must be configurable to work with web components
   var frag = document.createDocumentFragment();
   
-  function PushStateTree() {
+  function PushStateTree(options) {
     var isProto = PushStateTree.prototype === frag;
     var method;
+    options = options || {};
+    
+    if (!root.history || !root.history.pushState) {
+      Object.defineProperty(this, 'usePushState', {
+        get: function () {
+          return false;
+        }
+      });
+    } else {
+      this.usePushState = options.pushState !== false;
+    }
+    
+    
+    // if usePushState is disbaled (by old browsers or passing options) then
+    // it wont remove the hash from URL
+    if (!this.usePushState) {
+      Object.defineProperty(this, 'uri', {
+        get: function () {
+          return location.href.slice(location.origin.length);
+        }
+      });
+    }
     
     // After this only prototype
     if (!isProto) return;
@@ -304,7 +326,11 @@
     
     Object.defineProperty(this, 'uri', {
       get: function () {
-        return location.href.slice(location.origin.length);
+        var uri = location.href.slice(location.origin.length);
+        if (uri[0] === '#') {
+          uri = location.href.slice(1);
+        }
+        return uri;
       }
     });
     
