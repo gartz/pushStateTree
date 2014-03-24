@@ -158,11 +158,13 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - Use DOM methods to find and change Rules elements
  - It will use native browser features if it can
 
+## TODO:
+ - Fix the uri to don't display the first character as /
+
 ## Goals
 
  - Add support to IE8
  - Add common used regular expression shortcuts generator, like `something/:option1/:option2`
- - Add support to baseURL, so when you use `/` it won't go to website root, but for your baseURL
  - Add full compatibility with Web Components
  - Optimize some tree matching operations
  - Remove the Array.prototype.compare dependence
