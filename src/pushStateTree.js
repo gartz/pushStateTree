@@ -265,6 +265,7 @@
     for (method in root.history) 
     if (typeof root.history[method] === 'function') {
       (function () {
+        var scopeMethod = method;
         this[method] = function () {
           // Wrap method
           
@@ -272,7 +273,7 @@
           var args = Array.prototype.slice.call(arguments);
           
           // if has a basePath translate the not relative paths to use the basePath
-          if (method === 'pushState' || method === 'replaceState') {
+          if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
             if (!this.usePushState && !isExternal(args[2]) && args[2][0] !== '#') {
               if (isRelative(args[2])) {
                 args[2] = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + args[2];
@@ -285,7 +286,7 @@
             }
           }
   
-          root.history[method].apply(root.history, args);
+          root.history[scopeMethod].apply(root.history, args);
           
           // Chainnable
           return this;
