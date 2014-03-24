@@ -319,6 +319,10 @@
           url = url.slice(1);
         }
         
+        if (isRelative(url)) {
+          url = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + url;
+        }
+        
         root.location.hash = url;
         
         document.title = t;
@@ -341,6 +345,11 @@
         if (!isExternal(url) && url[0] !== '#') {
           url = '#' + url;
         }
+        
+        if (isRelative(url)) {
+          url = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + url;
+        }
+        
         root.location.replace(url);
         document.title = t;
         lastTitle = title;
