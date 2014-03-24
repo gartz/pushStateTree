@@ -90,6 +90,14 @@
     return (/^[a-z0-9]+:\/\//i).test(url);
   }
 
+  function isRelative(url) {
+    // Check if a URL is relative path
+    if (url[0] === '#') {
+      url = url.slice(1);
+    }
+    return url[0] !== '/';
+  }
+
   //TODO: the container reference must be configurable to work with web components
   var frag = document.createDocumentFragment();
   
@@ -105,9 +113,8 @@
         }
       });
     } else {
-      this.usePushState = options.pushState !== false;
+      this.usePushState = options.usePushState !== false;
     }
-    
     
     // if usePushState is disbaled (by old browsers or passing options) then
     // it wont remove the hash from URL
@@ -119,6 +126,8 @@
         configurable: true
       });
     }
+    
+    this.basePath = options.basePath || '';
     
     // After this only prototype
     if (!isProto) return;
@@ -261,16 +270,30 @@
     // Wrap history methods
     for (method in root.history) 
     if (typeof root.history[method] === 'function') {
-      this[method] = function (method) {
-        // Wrap method
-        
-        // remove the method from arguments
-        var args = Array.prototype.slice.call(arguments, 1);
-        root.history[method].apply(root.history, args);
-        
-        // Chainnable
-        return this;
-      }.bind(this, method);
+      (function () {
+        this[method] = function () {
+          // Wrap method
+          
+          // remove the method from arguments
+          var args = Array.prototype.slice.call(arguments);
+          
+          // if has a basePath translate the not relative paths to use the basePath
+          if (method === 'pushState' || method === 'replaceState') {
+            if (!this.usePushState && !isExternal(args[2]) && args[2][0] !== '#') {
+              args[2] = '#' + args[2];
+            } else if (!isExternal(args[2])) {
+              if (this.basePath && !isRelative(args[2]) && args[2][0] !== '#') {
+                args[2] = this.basePath + args[2];
+              }
+            }
+          }
+  
+          root.history[method].apply(root.history, args);
+          
+          // Chainnable
+          return this;
+        };
+      }.bind(this))();
     }
     
     var readdOnhashchange = false;
@@ -289,7 +312,18 @@
         avoidTriggering();
         
         // Replace hash url
+        if (isExternal(url)) {
+          // this will redirect the browser, so doesn't matters the rest...
+          root.location.href = url;
+        }
+        
+        // Remove the has if is it present
+        if (url[0] === '#') {
+          url = url.slice(1);
+        }
+        
         root.location.hash = url;
+        
         document.title = t;
         lastTitle = title;
         
@@ -335,6 +369,19 @@
     
     Object.defineProperty(this, 'uri', {
       get: function () {
+        if (!this.usePushState) {
+          var pos = location.href.indexOf('#');
+          if (pos !== -1) {
+            uri = location.href.slice(pos);
+            
+            // Remove the base path from URI
+            if (uri.indexOf(this.basePath) === 0) {
+              uri = uri.slice(this.basePath.length);
+            }
+
+            return uri;
+          }
+        }
         var uri = location.href.slice(location.origin.length);
         if (uri[0] === '#') {
           uri = location.href.slice(1);
