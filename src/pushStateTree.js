@@ -107,7 +107,11 @@
     options = options || {};
     
     if (!root.history || !root.history.pushState) {
-      this.usePushState = false;
+      Object.defineProperty(this, 'usePushState', {
+        get: function () {
+          return false;
+        }
+      });
     } else {
       this.usePushState = options.usePushState !== false;
     }
