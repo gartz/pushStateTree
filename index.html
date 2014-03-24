@@ -22,6 +22,29 @@
     <script src="src/pushStateTree.js"></script>
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
 
+    <div>
+      <p>
+        <a onclick="pushStateTree.pushState({state:'push'}, '', '' + (Math.random() + '').slice(2))">Change the URL and add to history</a>
+      </p>
+      <p>
+        <a onclick="pushStateTree.pushState({state:'push&dispatch'}, '', '' + (Math.random() + '').slice(2)).dispatch()">Change the URL and add to history and trigger</a>
+      </p>
+      <p>
+        <a onclick="pushStateTree.replaceState({state:'replace'}, '', '' + (Math.random() + '').slice(2))">Change the URL by replace</a>
+      </p>
+      <p>
+        <a onclick="pushStateTree.replaceState({state:'replace&dipatch'}, '', '/' + (Math.random() + '').slice(2)).dispatch()">Change the URL by replace and trigger</a>
+      </p>
+      <p>
+        <a href="#doSomething">Default hash link</a>
+      </p>
+      <p>
+        <a onclick="pushStateTree.pushState(null, '', '/child/' + (Math.random() + '').slice(2)).dispatch()">Hash to child</a>
+      </p>
+    </div>
+    <div style="border:1px solid blue; margin-left: 20px;" id="log">
+      <p>Log:</p>
+    </div>
     <script>
       // Init the framework
       var pushStateTree = new PushStateTree({
@@ -96,28 +119,5 @@
         log('nestedChild:leave > ' + pushStateTree.uri);
       });
     </script>
-    <div>
-      <p>
-        <a onclick="pushStateTree.pushState({state:'push'}, '', '' + (Math.random() + '').slice(2))">Change the URL and add to history</a>
-      </p>
-      <p>
-        <a onclick="pushStateTree.pushState({state:'push&dispatch'}, '', '' + (Math.random() + '').slice(2)).dispatch()">Change the URL and add to history and trigger</a>
-      </p>
-      <p>
-        <a onclick="pushStateTree.replaceState({state:'replace'}, '', '' + (Math.random() + '').slice(2))">Change the URL by replace</a>
-      </p>
-      <p>
-        <a onclick="pushStateTree.replaceState({state:'replace&dipatch'}, '', '/' + (Math.random() + '').slice(2)).dispatch()">Change the URL by replace and trigger</a>
-      </p>
-      <p>
-        <a href="#doSomething">Default hash link</a>
-      </p>
-      <p>
-        <a onclick="pushStateTree.pushState(null, '', '/child/' + (Math.random() + '').slice(2)).dispatch()">Hash to child</a>
-      </p>
-    </div>
-    <div style="border:1px solid blue; margin-left: 20px;" id="log">
-      <p>Log:</p>
-    </div>
   </body>
 </html>
