@@ -107,11 +107,7 @@
     options = options || {};
     
     if (!root.history || !root.history.pushState) {
-      Object.defineProperty(this, 'usePushState', {
-        get: function () {
-          return false;
-        }
-      });
+      this.usePushState = false;
     } else {
       this.usePushState = options.usePushState !== false;
     }
