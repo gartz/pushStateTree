@@ -1,6 +1,6 @@
 {
   "name": "pushStateTree",
-  "main": "Gruntfile.js",
+  "main": "src/pushStateTree.js",
   "dependencies": {
   }
 }
