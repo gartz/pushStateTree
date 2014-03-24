@@ -376,16 +376,19 @@
     
     Object.defineProperty(this, 'uri', {
       get: function () {
-        
+        var uri;
         var hashPos = location.href.indexOf('#');
         if (hashPos !== -1) {
-          return location.href.slice(hashPos + 1);
+          uri = location.href.slice(hashPos + 1);
+          uri = uri.replace(/^[#]+/, '');
+        } else {
+          uri = location.href.slice(location.origin.length);
+          if (uri.indexOf(this.basePath) === 0) {
+            uri = uri.slice(this.basePath.length);
+          }
         }
+        uri = uri.replace(/^[\/]+/, '');
 
-        var uri = location.href.slice(location.origin.length);
-        if (uri.indexOf(this.basePath) === 0) {
-          uri = uri.slice(this.basePath.length);
-        }
         return uri;
       },
       configurable: true

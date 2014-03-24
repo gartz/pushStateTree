@@ -158,9 +158,6 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - Use DOM methods to find and change Rules elements
  - It will use native browser features if it can
 
-## TODO:
- - Fix the uri to don't display the first character as /
-
 ## Goals
 
  - Add support to IE8
