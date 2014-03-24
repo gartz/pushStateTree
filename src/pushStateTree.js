@@ -383,7 +383,7 @@
 
         var uri = location.href.slice(location.origin.length);
         if (uri.indexOf(this.basePath) === 0) {
-          uri = location.href.slice(this.basePath.length);
+          uri = uri.slice(this.basePath.length);
         }
         return uri;
       },
