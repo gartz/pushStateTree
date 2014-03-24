@@ -116,24 +116,18 @@
       this.usePushState = options.usePushState !== false;
     }
     
-    // if usePushState is disbaled (by old browsers or passing options) then
-    // it wont remove the hash from URL
-    if (!this.usePushState) {
-      Object.defineProperty(this, 'uri', {
-        get: function () {
-          return location.href.slice(location.origin.length);
-        },
-        configurable: true
-      });
+    var proto = PushStateTree.prototype;
+    if (typeof proto.basePath === 'string') {
+      proto.basePath = options.basePath || proto.basePath;
     }
-    
-    this.basePath = options.basePath || '';
     
     // After this only prototype
     if (!isProto) return;
     
     var oldState = null;
     var oldURI = '';
+    
+    this.basePath = '';
       
     this.createRule = function (options) {
       // Create a pushstreamtree-rule element from a literal object
@@ -280,6 +274,9 @@
           // if has a basePath translate the not relative paths to use the basePath
           if (method === 'pushState' || method === 'replaceState') {
             if (!this.usePushState && !isExternal(args[2]) && args[2][0] !== '#') {
+              if (isRelative(args[2])) {
+                args[2] = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + args[2];
+              }
               args[2] = '#' + args[2];
             } else if (!isExternal(args[2])) {
               if (this.basePath && !isRelative(args[2]) && args[2][0] !== '#') {
@@ -369,22 +366,15 @@
     
     Object.defineProperty(this, 'uri', {
       get: function () {
-        if (!this.usePushState) {
-          var pos = location.href.indexOf('#');
-          if (pos !== -1) {
-            uri = location.href.slice(pos);
-            
-            // Remove the base path from URI
-            if (uri.indexOf(this.basePath) === 0) {
-              uri = uri.slice(this.basePath.length);
-            }
-
-            return uri;
-          }
+        
+        var hashPos = location.href.indexOf('#');
+        if (hashPos !== -1) {
+          return location.href.slice(hashPos + 1);
         }
+
         var uri = location.href.slice(location.origin.length);
-        if (uri[0] === '#') {
-          uri = location.href.slice(1);
+        if (uri.indexOf(this.basePath) === 0) {
+          uri = location.href.slice(this.basePath.length);
         }
         return uri;
       },
