@@ -138,8 +138,31 @@
         rule[prop] = options[prop];
       }
       
-      rule.match = null;
-      rule.oldMatch = null;
+      // Match is always a array, so you can test for match[n] anytime
+      var match = [];
+      Object.defineProperty(rule, 'match', {
+        get: function () {
+          return match;
+        },
+        set: function (val) {
+          match = val instanceof Array ? val : [];
+        },
+        enumerable: true
+      });
+      
+      var oldMatch = [];
+      Object.defineProperty(rule, 'oldMatch', {
+        get: function () {
+          return oldMatch;
+        },
+        set: function (val) {
+          oldMatch = val instanceof Array ? val : [];
+        },
+        enumerable: true
+      });
+      
+      rule.match = [];
+      rule.oldMatch = [];
       
       return rule;
     };
@@ -182,20 +205,21 @@
             useOldURI = ruleElement.parentElement.oldMatch[ruleElement.parentGroup];
         }
         
-        var match = useURI.match(ruleElement.rule);
-        ruleElement.match = match;
-        var oldMatch = useOldURI.match(ruleElement.rule);
-        ruleElement.oldMatch = oldMatch;
+        ruleElement.match = useURI.match(ruleElement.rule);
+        ruleElement.oldMatch = useOldURI.match(ruleElement.rule);
+        var match = ruleElement.match;
+        var oldMatch = ruleElement.oldMatch;
         var children = Array.prototype.slice.call(ruleElement.children);
         
         function PushStateTreeEvent(name, params) {
           
           params = params || {};
           params.detail = params.detail || {};
-          params.detail.match = match;
-          params.detail.oldMatch = oldMatch;
+          params.detail.match = match || [];
+          params.detail.oldMatch = oldMatch || [];
+          params.cancelable = true;
 
-          var event = new CustomEvent(name, params);
+          var event = new root.CustomEvent(name, params);
 
           delete event.target;
           delete event.srcElement;
@@ -214,25 +238,33 @@
         }
         
         // Not match or leave?
-        if (match === null) {
-          if (oldMatch === null) {
+        if (match.length === 0) {
+          if (oldMatch.length === 0) {
             // just not match...
             return;
           }
-          
           children.forEach(recursiveDispatcher.bind(this));
           
           // dispatch leave event
           ruleElement.dispatchEvent(new PushStateTreeEvent('leave'));
+          
+          // dispatch the any event
+          ruleElement.dispatchEvent(new PushStateTreeEvent('update', {
+            detail: {type: 'leave'}
+          }));
           return;
         }
         
-        // dispatch the update event
-        ruleElement.dispatchEvent(new PushStateTreeEvent('update'));
+        // dispatch the match event
+        ruleElement.dispatchEvent(new PushStateTreeEvent('match'));
         
-        if (oldMatch === null) {
+        if (oldMatch.length === 0) {
           // dispatch the enter event
           ruleElement.dispatchEvent(new PushStateTreeEvent('enter'));
+          
+          ruleElement.dispatchEvent(new PushStateTreeEvent('update', {
+            detail: {type: 'enter'}
+          }));
           
           children.forEach(recursiveDispatcher.bind(this));
           return;
@@ -241,7 +273,12 @@
         // if has something changed, dispatch the change event
         if (!match.compare(oldMatch)) {
           ruleElement.dispatchEvent(new PushStateTreeEvent('change'));
+          
+          ruleElement.dispatchEvent(new PushStateTreeEvent('update', {
+            detail: {type: 'change'}
+          }));
         }
+        
         
         children.forEach(recursiveDispatcher.bind(this));
       }

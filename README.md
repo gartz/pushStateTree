@@ -100,10 +100,6 @@ Using `querySelector`:
   pushStateTree.querySelector('pushstatetree-rule > pushstatetree-rule'); // find by tag
 ```
 
-You also can use `querySelectorAll` or any of that stuff. If you are programming with jQuery, you can use it to find, example:
-
-    $(pushStateTree).find('myQuery').get(0); // you are accessing the first matched element
-
 ### Rules events
 
 You also can add and remove events from this element, the events list are:
@@ -111,7 +107,10 @@ You also can add and remove events from this element, the events list are:
  - **enter** dispatched when rule match from a url that doesn't match that rule.
  - **leave** dispatched when the rule was matching and the new url doesn't match anymore. (it will dispatch for every childrens)
  - **change** dispatched when a change ocours, that's means the URI isn't the same, but still matching with this rule.
- - **update** dispatched everytime the events `popstate` or `hashchange` are triggered and match with the rule, doesn't matters if is the same url.
+ - **update** dispatched when any event is dispatched, will expose the type of the event dispatched in `event.detail.type`.
+ - **match** dispatched everytime the events `popstate` or `hashchange` are triggered and match with the rule, doesn't matters if is the same url as before.
+
+Importante note: *match* will not dispatch when *leave*, because it doesn't match.
 
 ## PushStateTree
 
@@ -161,6 +160,7 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 ## Goals
 
  - Add support to IE8
+ - Add support for jQuery element search
  - Add common used regular expression shortcuts generator, like `something/:option1/:option2`
  - Add full compatibility with Web Components
  - Optimize some tree matching operations
