@@ -227,6 +227,9 @@
           return;
         }
         
+        // dispatch the update event
+        ruleElement.dispatchEvent(new PushStateTreeEvent('update'));
+        
         if (oldMatch === null) {
           // dispatch the enter event
           ruleElement.dispatchEvent(new PushStateTreeEvent('enter'));
@@ -234,9 +237,6 @@
           children.forEach(recursiveDispatcher.bind(this));
           return;
         }
-        
-        // dispatch the update event
-        ruleElement.dispatchEvent(new PushStateTreeEvent('update'));
         
         // if has something changed, dispatch the change event
         if (!match.compare(oldMatch)) {

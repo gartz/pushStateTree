@@ -1,7 +1,7 @@
 {
   "name": "pushStateTree",
   "description": "A browser history micro-framework that works with events, navigation of single page app easier than ever.",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "homepage": "https://github.com/gartz/pushStateTree/",
   "author": {
     "name": "Gabriel Reitz Giannattasio",
