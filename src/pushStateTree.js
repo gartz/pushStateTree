@@ -7,37 +7,6 @@
   }());
   
   // Shim, to work with older browsers
-  
-  (function () {
-    if (!Array.prototype.compare) {
-      // Credits: http://stackoverflow.com/questions/7837456/comparing-two-arrays-in-javascript
-      // attach the .compare method to Array's prototype to call it on any array
-      Array.prototype.compare = function (array) {
-        // if the other array is a falsy value, return
-        if (!array)
-          return false;
-    
-        // compare lengths - can save a lot of time
-        if (this.length != array.length)
-          return false;
-    
-        for (var i = 0, l=this.length; i < l; i++) {
-          // Check if we have nested arrays
-          if (this[i] instanceof Array && array[i] instanceof Array) {
-            // recurse into the nested arrays
-            if (!this[i].compare(array[i]))
-              return false;
-          }
-          else if (this[i] != array[i]) {
-            // Warning - two different object instances will never be equal: {x:20} != {x:20}
-            return false;
-          }
-        }
-        return true;
-      };
-    }
-  })();
-  
   (function () {
     // Opera and IE doesn't implement location.origin
     if (!root.location.origin) {
@@ -195,14 +164,18 @@
         
         var useURI = this.uri;
         var useOldURI = oldURI;
+        var parentElement;
+        
         if (typeof ruleElement.parentGroup === 'number') {
           useURI = '';
-          if (ruleElement.parentElement.match)
-            useURI = ruleElement.parentElement.match[ruleElement.parentGroup];
+          parentElement = ruleElement.parentElement;
+          
+          if (parentElement.match.length > ruleElement.parentGroup)
+            useURI = parentElement.match[ruleElement.parentGroup];
           
           useOldURI = '';
-          if (ruleElement.parentElement.oldMatch)
-            useOldURI = ruleElement.parentElement.oldMatch[ruleElement.parentGroup];
+          if (parentElement.oldMatch.length > ruleElement.parentGroup)
+            useOldURI = parentElement.oldMatch[ruleElement.parentGroup];
         }
         
         ruleElement.match = useURI.match(ruleElement.rule);
@@ -271,7 +244,7 @@
         }
         
         // if has something changed, dispatch the change event
-        if (!match.compare(oldMatch)) {
+        if (match[0] !== oldMatch[0]) {
           ruleElement.dispatchEvent(new PushStateTreeEvent('change'));
           
           ruleElement.dispatchEvent(new PushStateTreeEvent('update', {

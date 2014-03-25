@@ -164,7 +164,6 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - Add common used regular expression shortcuts generator, like `something/:option1/:option2`
  - Add full compatibility with Web Components
  - Optimize some tree matching operations
- - Remove the Array.prototype.compare dependence
 
 ## Contributing
 
