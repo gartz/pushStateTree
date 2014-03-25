@@ -171,11 +171,11 @@
           parentElement = ruleElement.parentElement;
           
           if (parentElement.match.length > ruleElement.parentGroup)
-            useURI = parentElement.match[ruleElement.parentGroup];
+            useURI = parentElement.match[ruleElement.parentGroup] || '';
           
           useOldURI = '';
           if (parentElement.oldMatch.length > ruleElement.parentGroup)
-            useOldURI = parentElement.oldMatch[ruleElement.parentGroup];
+            useOldURI = parentElement.oldMatch[ruleElement.parentGroup] || '';
         }
         
         ruleElement.match = useURI.match(ruleElement.rule);
