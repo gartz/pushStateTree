@@ -193,23 +193,6 @@
           params.cancelable = true;
 
           var event = new root.CustomEvent(name, params);
-
-          // Safari throw exception here...
-          try {
-            delete event.target;
-            delete event.srcElement;
-          } catch(e) {}
-          try {
-            Object.defineProperty(event, 'target', {
-              value: params.target || ruleElement
-            });
-            Object.defineProperty(event, 'srcElement', {
-              value: params.srcElement || ruleElement
-            });
-          } catch (e) {
-            event.target = params.target || ruleElement;
-            event.srcElement = params.srcElement || ruleElement;
-          }
           return event;
         }
         
