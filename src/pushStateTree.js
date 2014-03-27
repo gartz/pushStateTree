@@ -249,7 +249,7 @@
     // Wrap frag methods
     for (method in frag) 
     if (!this.hasOwnProperty(method)) {
-      if (typeof frag[method] === 'function') {
+      if (typeof frag[method] === 'function' && frag[method].bind) {
         this[method] = frag[method].bind(frag);
       } else {
         wrapProperty(this, method, frag[method]);
@@ -357,8 +357,14 @@
     
     this.dispatch = function () {
       // Trigger the actual browser location
+      var event;
+      try {
+        event = new Event('popstate');
+      } catch (e) {
+        event = new CustomEvent('popstate');
+      }
       
-      root.dispatchEvent(new Event('popstate'));
+      root.dispatchEvent(event);
       return this;
     };
     
@@ -410,7 +416,13 @@
     
     // Uglify propourses
     var dispatchHashChange = function () {
-      root.dispatchEvent(new root.HashChangeEvent('hashchange'));
+      var event;
+      try {
+        event = new root.HashChangeEvent('hashchange');
+      } catch(e) {
+        event = new root.CustomEvent('hashchange');
+      }
+      root.dispatchEvent(event);
     }
     
     // Modern browsers
