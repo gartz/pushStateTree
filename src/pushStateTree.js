@@ -107,7 +107,7 @@
 
       var fn = handler;
       
-      if (!('on' + type in this)) {
+      if (!('on' + type in this) || type === 'hashchange') {
         this.__elemetIEid = this.__elemetIEid || '__ie__' + Math.random();
         var customEventId = type + this.__elemetIEid;
         document.documentElement[customEventId];
@@ -126,7 +126,8 @@
         });
         
         document.documentElement.attachEvent('onpropertychange', propHandler);
-        return;
+        
+        if (type !== 'hashchange') return;
       }
   
       var bindedFn = fn.bind(this);
@@ -164,9 +165,9 @@
       
       if (!bindedFn) return;
       
-      if (!('on' + type in this)) {
+      if (!('on' + type in this) || type === 'hashchange') {
         document.documentElement.detachEvent('onpropertychange', bindedFn);
-        return;
+        if (type !== 'hashchange') return;
       }
 
       this.detachEvent('on' + type, bindedFn);
@@ -185,7 +186,7 @@
       evt.type = type;
       evt.detail = obj.detail;
 
-      if (!('on' + type in root)) {
+      if (!('on' + type in root) || type === 'hashchange') {
         evt.name = type;
         evt.customEvent = true;
       }
@@ -193,12 +194,7 @@
       return evt;
     };
     
-    CustomEvent = function (type, obj) {
-      var evt = new Event(type, obj);
-      evt.name = type;
-      evt.customEvent = true;
-      return evt;
-    };
+    CustomEvent = Event;
     
     HashChangeEvent = CustomEvent;
     
