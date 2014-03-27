@@ -194,8 +194,11 @@
 
           var event = new root.CustomEvent(name, params);
 
-          delete event.target;
-          delete event.srcElement;
+          // Safari throw exception here...
+          try {
+            delete event.target;
+            delete event.srcElement;
+          } catch(e) {}
           try {
             Object.defineProperty(event, 'target', {
               value: params.target || ruleElement
