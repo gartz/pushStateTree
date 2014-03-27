@@ -100,6 +100,10 @@ Using `querySelector`:
   pushStateTree.querySelector('pushstatetree-rule > pushstatetree-rule'); // find by tag
 ```
 
+You also can use `querySelectorAll` or any of that stuff. If you are programming with jQuery, you can use it to find, example:
+
+    $(pushStateTree).find('myQuery').get(0); // you are accessing the first matched element
+
 ### Rules events
 
 You also can add and remove events from this element, the events list are:
@@ -158,9 +162,7 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - It will use native browser features if it can
 
 ## Goals
-
- - Add support to IE8
- - Add support for jQuery element search
+ - Add full support to IE8
  - Add common used regular expression shortcuts generator, like `something/:option1/:option2`
  - Add full compatibility with Web Components
  - Optimize some tree matching operations

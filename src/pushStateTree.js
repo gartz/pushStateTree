@@ -10,11 +10,44 @@
   (function () {
     // Opera and IE doesn't implement location.origin
     if (!root.location.origin) {
-      root.location.origin = root.location.protocol + '://' + root.location.host;
+      root.location.origin = root.location.protocol + '//' + root.location.host;
     }
   })();
   
   (function () {
+    if (Function.prototype.bind) return;
+    
+    Function.prototype.bind = function (oThis) {
+      if (typeof this !== "function") {
+        // closest thing possible to the ECMAScript 5 internal IsCallable function
+        throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+      }
+      
+      var aArgs = Array.prototype.slice.call(arguments, 1), 
+          fToBind = this, 
+          fNOP = function () {},
+          fBound = function () {
+            return fToBind.apply(this instanceof fNOP && oThis
+                    ? this
+                    : oThis,
+                    aArgs.concat(Array.prototype.slice.call(arguments)));
+          };
+      
+      fNOP.prototype = this.prototype;
+      fBound.prototype = new fNOP();
+      
+      return fBound;
+    };
+  })();
+  
+  // IE9 shims
+  
+  var HashChangeEvent = root.HashChangeEvent;
+  var Event = root.Event;
+  
+  (function () {
+    if (!Element.prototype.addEventListener) return;
+    
     function CustomEvent(event, params) {
       params = params || { 
         bubbles: false, 
@@ -25,20 +58,229 @@
       evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
       return evt;
     }
-  
-    CustomEvent.prototype = root.Event.prototype;
-  
+
+    CustomEvent.prototype = Event.prototype;
+
     if (!root.CustomEvent || !!isIE) {
       root.CustomEvent = CustomEvent;
     }
-    
+
     // Opera before 15 has HashChangeEvent but throw a DOM Implement error
-    if (!root.HashChangeEvent || (root.opera && root.opera.version() < 15) || !!isIE) {
-      root.HashChangeEvent = root.CustomEvent;
+    if (!HashChangeEvent || (root.opera && root.opera.version() < 15) || !!isIE) {
+      HashChangeEvent = root.CustomEvent;
     }
-    
+
     if (!!isIE) {
-      root.Event = root.CustomEvent;
+      Event = CustomEvent;
+    }
+
+    // fix for Safari
+    try {
+      new HashChangeEvent('hashchange');
+    } catch(e) {
+      HashChangeEvent = CustomEvent;
+    }
+
+    try {
+      new Event('popstate');
+    } catch (e) {
+      Event = CustomEvent;
+    }
+  })();
+  
+  // IE 8 shims
+  (function () {
+    if (Element.prototype.addEventListener || !Object.defineProperty) return;
+    
+     // create an MS event object and get prototype
+    var proto = document.createEventObject().constructor.prototype;
+    
+    Object.defineProperty(proto, 'target', {
+      get: function() { return this.srcElement; }
+    });
+    
+    // IE8 addEventLister shim
+    var addEventListenerFunc = function(type, handler) {
+      if (!this.__bindedFunctions) {
+        this.__bindedFunctions = [];
+      }
+
+      var fn = handler;
+      
+      if (!('on' + type in this)) {
+        this.__elemetIEid = this.__elemetIEid || '__ie__' + Math.random();
+        var customEventId = type + this.__elemetIEid;
+        document.documentElement[customEventId];
+        var element = this;
+        
+        var propHandler = function (event) {
+          // if the property changed is the custom jqmReady property
+          if (event.propertyName === customEventId) {
+            fn.call(element, document.documentElement[customEventId]);
+          }
+        };
+        
+        this.__bindedFunctions.push({
+          original: fn,
+          binded: propHandler
+        });
+        
+        document.documentElement.attachEvent('onpropertychange', propHandler);
+        return;
+      }
+  
+      var bindedFn = fn.bind(this);
+  
+      this.__bindedFunctions.push({
+        original: fn,
+        binded: bindedFn
+      });
+
+      this.attachEvent('on' + type, bindedFn);
+    };
+    
+    // setup the DOM and window objects
+    HTMLDocument.prototype.addEventListener = addEventListenerFunc;
+    Element.prototype.addEventListener = addEventListenerFunc;
+    window.addEventListener = addEventListenerFunc;
+    
+    // IE8 removeEventLister shim
+    var removeEventListenerFunc = function(type, handler) {
+      if (!this.__bindedFunctions) {
+        this.__bindedFunctions = [];
+      }
+
+      var fn = handler;
+      
+      var bindedFn;
+      
+      for (var i = 0; i < this.__bindedFunctions.length; i++) {
+        if (this.__bindedFunctions[i].original === fn) {
+          bindedFn = this.__bindedFunctions[i].binded;
+          this.__bindedFunctions = this.__bindedFunctions.splice(i, 1);
+          i = this.__bindedFunctions.length;
+        }
+      }
+      
+      if (!bindedFn) return;
+      
+      if (!('on' + type in this)) {
+        document.documentElement.detachEvent('onpropertychange', bindedFn);
+        return;
+      }
+
+      this.detachEvent('on' + type, bindedFn);
+    };
+    
+    // setup the DOM and window objects
+    HTMLDocument.prototype.removeEventListener = removeEventListenerFunc;
+    Element.prototype.removeEventListener = removeEventListenerFunc;
+    window.removeEventListener = removeEventListenerFunc;
+
+    Event = function (type, obj) {
+      
+      var evt = document.createEventObject();
+      
+      obj = obj || {};
+      evt.type = type;
+      evt.detail = obj.detail;
+
+      if (!('on' + type in root)) {
+        evt.name = type;
+        evt.customEvent = true;
+      }
+
+      return evt;
+    };
+    
+    CustomEvent = function (type, obj) {
+      var evt = new Event(type, obj);
+      evt.name = type;
+      evt.customEvent = true;
+      return evt;
+    };
+    
+    HashChangeEvent = CustomEvent;
+    
+    var dispatchEventFunc = function (e) {
+      if (!e.customEvent) {
+        this.fireEvent(e.type, e);
+        return;
+      }
+      // no event registred
+      if (!this.__elemetIEid) {
+        return;
+      }
+      var customEventId = e.name + this.__elemetIEid;
+      document.documentElement[customEventId] = e;
+    };
+    
+    // setup the Element dispatchEvent used to trigger events on the board
+    HTMLDocument.prototype.dispatchEvent = dispatchEventFunc;
+    Element.prototype.dispatchEvent = dispatchEventFunc;
+    window.dispatchEvent = dispatchEventFunc;
+  })();
+  
+  (function () {
+    // modern browser support forEach, probably will be IE8
+    var modernBrowser = 'forEach' in Array.prototype;
+
+    // IE8 pollyfills:
+    // IE8 slice doesn't work with NodeList
+    if (!modernBrowser) {
+      var builtinSlice = Array.prototype.slice;
+      Array.prototype.slice = function(action, that) {
+        'use strict';
+        var arr = [];
+        for (var i = 0, n = this.length; i < n; i++)
+          if (i in this)
+            arr.push(this[i]);
+                
+        return builtinSlice.apply(arr, arguments);
+      };
+    }
+    if (!('forEach' in Array.prototype)) {
+      Array.prototype.forEach = function(action, that) {
+        'use strict';
+        for (var i = 0, n = this.length; i < n; i++)
+          if (i in this)
+            action.call(that, this[i], i);
+      };
+    }
+    if (typeof String.prototype.trim !== 'function') {
+      String.prototype.trim = function() {
+        return this.replace(/^\s+|\s+$/g, ''); 
+      };
+    }
+    if (!Array.prototype.filter) {
+      Array.prototype.filter = function(fun /*, thisArg */) {
+        'use strict';
+        
+        if (this === void 0 || this === null)
+          throw new TypeError();
+        
+        var t = Object(this);
+        var len = t.length >>> 0;
+        if (typeof fun != 'function')
+          throw new TypeError();
+        
+        var res = [];
+        var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
+        for (var i = 0; i < len; i++) {
+          if (i in t) {
+            var val = t[i];
+            
+            // NOTE: Technically this should Object.defineProperty at
+            //       the next index, as push can be affected by
+            //       properties on Object.prototype and Array.prototype.
+            //       But that method's new, and collisions should be
+            //       rare, so use the more-compatible alternative.
+            if (fun.call(thisArg, val, i, t)) res.push(val);
+          }
+        }
+
+        return res;
+      };
     }
   })();
   
@@ -50,7 +292,6 @@
         return target;
       },
       set: function () {},
-      enumerable: true
     });
   }
   
@@ -68,37 +309,146 @@
   }
 
   //TODO: the container reference must be configurable to work with web components
-  var frag = document.createDocumentFragment();
+  var rootElement = document.createElement('pushstatetree-route');
+  var ready = false;
   
   function PushStateTree(options) {
-    var isProto = PushStateTree.prototype === frag;
     var method;
     options = options || {};
     
-    if (!root.history || !root.history.pushState) {
-      Object.defineProperty(this, 'usePushState', {
+    if (ready) {
+      // Setup options
+      for (var prop in options) if (options.hasOwnProperty(prop)) {
+        rootElement[prop] = options[prop];
+      }
+      
+      return rootElement;
+    }
+    ready = true;
+    
+    if (!PushStateTree.prototype.hasPushState) {
+      Object.defineProperty(rootElement, 'usePushState', {
         get: function () {
           return false;
-        }
+        },
       });
     } else {
-      this.usePushState = options.usePushState !== false;
+      Object.defineProperty(rootElement, 'usePushState', {
+        get: function () {
+          return PushStateTree.prototype.usePushState;
+        },
+        set: function (val) {
+          PushStateTree.prototype.usePushState = val !== false;
+        },
+      });
+      PushStateTree.prototype.usePushState = options.usePushState !== false;
     }
     
-    var proto = PushStateTree.prototype;
-    if (typeof proto.basePath === 'string') {
-      proto.basePath = options.basePath || proto.basePath;
+    rootElement.basePath = options.basePath || rootElement.basePath || '';
+    
+    for (var prop in PushStateTree.prototype)
+    if (PushStateTree.prototype.hasOwnProperty(prop)) {
+      (function (prop) {
+        if (typeof PushStateTree.prototype[prop] === 'function') {
+          // function wrapper
+            rootElement[prop] = function () {
+              return PushStateTree.prototype[prop].apply(this, arguments);
+            }
+        } else {
+          if (typeof rootElement[prop] !== 'undefined') return;
+          // property wrapper
+          Object.defineProperty(rootElement, prop, {
+            get: function () {
+              return PushStateTree.prototype[prop];
+            },
+            set: function (val) {
+              PushStateTree.prototype[prop] = val;
+            },
+          });
+        }
+      })(prop)
     }
     
-    // After this only prototype
-    if (!isProto) return;
+    wrapProperty(rootElement, 'length', root.history.length);
     
-    var oldState = null;
-    var oldURI = '';
+    Object.defineProperty(rootElement, 'state', {
+      get: function () {
+        return root.history.state;
+      }
+    });
     
-    this.basePath = '';
-      
-    this.createRule = function (options) {
+    Object.defineProperty(rootElement, 'uri', {
+      get: function () {
+        var uri;
+        var hashPos = location.href.indexOf('#');
+        if (hashPos !== -1) {
+          uri = location.href.slice(hashPos + 1);
+          uri = uri.replace(/^[#]+/, '');
+        } else {
+          uri = location.href.slice(location.origin.length);
+          if (uri.indexOf(this.basePath) === 0) {
+            uri = uri.slice(this.basePath.length);
+          }
+        }
+        uri = uri.replace(/^[\/]+/, '');
+
+        return uri;
+      },
+      configurable: true
+    });
+    
+    root.addEventListener('popstate', function (event) {
+      rootElement.rulesDispatcher();
+
+      oldURI = rootElement.uri;
+      oldState = rootElement.state;
+    }.bind(rootElement));
+
+    root.addEventListener('hashchange', onhashchange);
+    
+    // Uglify propourses
+    var dispatchHashChange = function () {
+      var event;
+      event = new HashChangeEvent('hashchange');
+      root.dispatchEvent(event);
+    };
+    
+    // Modern browsers
+    document.addEventListener('DOMContentLoaded', function () {
+      dispatchHashChange();
+    });
+    // Some IE browsers
+    root.addEventListener('readystatechange', function () {
+      dispatchHashChange();
+    });
+    // Almost all browsers
+    root.addEventListener('load', function () {
+      dispatchHashChange();
+
+      if (isIE) {
+        root.setInterval(function () {
+          if (rootElement.uri !== oldURI) {
+            dispatchHashChange();
+            return;
+          }
+          if (readdOnhashchange) {
+            readdOnhashchange = false;
+            oldURI = rootElement.uri;
+            root.addEventListener('hashchange', onhashchange);
+          }
+          
+        }.bind(rootElement), 50);
+      }
+    }.bind(rootElement));
+    
+    return new PushStateTree(options);
+  }
+
+  var oldState = null;
+  var oldURI = '';
+  
+  PushStateTree.prototype = {
+    createRule: function (options) {
       // Create a pushstreamtree-rule element from a literal object
       
       var rule = document.createElement('pushstatetree-rule');
@@ -116,7 +466,6 @@
         set: function (val) {
           match = val instanceof Array ? val : [];
         },
-        enumerable: true
       });
       
       var oldMatch = [];
@@ -127,22 +476,21 @@
         set: function (val) {
           oldMatch = val instanceof Array ? val : [];
         },
-        enumerable: true
       });
       
       rule.match = [];
       rule.oldMatch = [];
       
       return rule;
-    };
+    },
     
-    this.add = function (options) {
+    add: function (options) {
       // Transform any literal object in a pushstatetree-rule and append it
       
       this.appendChild(this.createRule(options));
-    };
+    },
     
-    this.remove = function (queryOrElement) {
+    remove: function (queryOrElement) {
       // Remove a pushstateree-rule, pass a element or it query
       
       var element = queryOrElement;
@@ -154,9 +502,20 @@
         element.parentElement.removeChild(element);
         return element;
       }
-    };
+    },
     
-    this.rulesDispatcher = function () {
+    dispatch: function () {
+      // Trigger the actual browser location
+      var event;
+      
+      // Workaround for Safari, that has Event but doesn't allow to use it.
+        event = new Event('popstate');
+      
+      root.dispatchEvent(event);
+      return this;
+    },
+    
+    rulesDispatcher: function () {
       // Will dispatch the right events in each rule
       
       function recursiveDispatcher(ruleElement) {
@@ -244,220 +603,121 @@
       
       Array.prototype.slice.call(this.children || this.childNodes)
         .forEach(recursiveDispatcher.bind(this));
-    };
-    
-    // Wrap frag methods
-    for (method in frag) 
-    if (!this.hasOwnProperty(method)) {
-      if (typeof frag[method] === 'function' && frag[method].bind) {
-        this[method] = frag[method].bind(frag);
-      } else {
-        wrapProperty(this, method, frag[method]);
-      }
-        
     }
-    
-    // Wrap history methods
-    for (method in root.history) 
-    if (typeof root.history[method] === 'function') {
-      (function () {
-        var scopeMethod = method;
-        this[method] = function () {
-          // Wrap method
-          
-          // remove the method from arguments
-          var args = Array.prototype.slice.call(arguments);
-          
-          // if has a basePath translate the not relative paths to use the basePath
-          if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
-            if (!this.usePushState && !isExternal(args[2]) && args[2][0] !== '#') {
-              if (isRelative(args[2])) {
-                args[2] = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + args[2];
-              }
-              args[2] = '#' + args[2];
-            } else if (!isExternal(args[2])) {
-              if (this.basePath && !isRelative(args[2]) && args[2][0] !== '#') {
-                args[2] = this.basePath + args[2];
-              }
+  };
+  
+  // Wrap history methods
+  for (var method in root.history) 
+  if (typeof root.history[method] === 'function') {
+    (function () {
+      var scopeMethod = method;
+      this[method] = function () {
+        // Wrap method
+        
+        // remove the method from arguments
+        var args = Array.prototype.slice.call(arguments);
+        
+        // if has a basePath translate the not relative paths to use the basePath
+        if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
+          if (!this.usePushState && !isExternal(args[2]) && args[2][0] !== '#') {
+            if (isRelative(args[2])) {
+              args[2] = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + args[2];
+            }
+            args[2] = '#' + args[2];
+          } else if (!isExternal(args[2])) {
+            if (this.basePath && !isRelative(args[2]) && args[2][0] !== '#') {
+              args[2] = this.basePath + args[2];
             }
           }
-  
-          root.history[scopeMethod].apply(root.history, args);
-          
-          // Chainnable
-          return this;
-        };
-      }.bind(this))();
-    }
-    
-    var readdOnhashchange = false;
-    function avoidTriggering() {
-      // Avoid triggering hashchange event
-      root.removeEventListener('hashchange', onhashchange);
-      readdOnhashchange = true;
-    }
-    var lastTitle = null;
-    if (!this.pushState) {
-      this.pushState = function(state, title, url) {
-        var t = document.title;
-        if (lastTitle !== null) {
-            document.title = lastTitle;
         }
-        avoidTriggering();
+
+        root.history[scopeMethod].apply(root.history, args);
         
-        // Replace hash url
-        if (isExternal(url)) {
-          // this will redirect the browser, so doesn't matters the rest...
-          root.location.href = url;
-        }
-        
-        // Remove the has if is it present
-        if (url[0] === '#') {
-          url = url.slice(1);
-        }
-        
-        if (isRelative(url)) {
-          url = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + url;
-        }
-        
-        root.location.hash = url;
-        
-        document.title = t;
-        lastTitle = title;
-        
+        // Chainnable
         return this;
       };
-    }
-
-    
-    if (!this.replaceState) {
-      this.replaceState = function(state, title, url) {
-        var t = document.title;
-        if (lastTitle !== null) {
-            document.title = lastTitle;
-        }
-        avoidTriggering();
-        
-        // Replace the url
-        if (!isExternal(url) && url[0] !== '#') {
-          url = '#' + url;
-        }
-        
-        if (isRelative(url)) {
-          url = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + url;
-        }
-        
-        root.location.replace(url);
-        document.title = t;
-        lastTitle = title;
-        
-        return this;
-      };
-    }
-    
-    this.dispatch = function () {
-      // Trigger the actual browser location
-      var event;
-      try {
-        event = new Event('popstate');
-      } catch (e) {
-        event = new CustomEvent('popstate');
-      }
-      
-      root.dispatchEvent(event);
-      return this;
-    };
-    
-    wrapProperty(this, 'length', root.history.length);
-    
-    Object.defineProperty(this, 'state', {
-      get: function () {
-        return root.history.state;
-      }
-    });
-    
-    Object.defineProperty(this, 'uri', {
-      get: function () {
-        var uri;
-        var hashPos = location.href.indexOf('#');
-        if (hashPos !== -1) {
-          uri = location.href.slice(hashPos + 1);
-          uri = uri.replace(/^[#]+/, '');
-        } else {
-          uri = location.href.slice(location.origin.length);
-          if (uri.indexOf(this.basePath) === 0) {
-            uri = uri.slice(this.basePath.length);
-          }
-        }
-        uri = uri.replace(/^[\/]+/, '');
-
-        return uri;
-      },
-      configurable: true
-    });
-    
-    root.addEventListener('popstate', function (event) {
-      this.rulesDispatcher();
-
-      oldURI = this.uri;
-      oldState = this.state;
-    }.bind(this));
-    
-    var onhashchange = function (event) {
-      // Don't dispatch, because already have dispatched in popstate event
-      if (oldURI === this.uri) return;
-      this.rulesDispatcher();
-
-      oldURI = this.uri;
-      oldState = this.state;
-    }.bind(this)
-
-    root.addEventListener('hashchange', onhashchange);
-    
-    // Uglify propourses
-    var dispatchHashChange = function () {
-      var event;
-      try {
-        event = new root.HashChangeEvent('hashchange');
-      } catch(e) {
-        event = new root.CustomEvent('hashchange');
-      }
-      root.dispatchEvent(event);
-    }
-    
-    // Modern browsers
-    document.addEventListener('DOMContentLoaded', function () {
-      dispatchHashChange();
-    });
-    // Some IE browsers
-    root.addEventListener('readystatechange', function () {
-      dispatchHashChange();
-    });
-    // Almost all browsers
-    root.addEventListener('load', function () {
-      dispatchHashChange();
-
-      if (isIE) {
-        root.setInterval(function () {
-          if (this.uri !== oldURI) {
-            dispatchHashChange();
-            return;
-          }
-          if (readdOnhashchange) {
-            readdOnhashchange = false;
-            oldURI = this.uri;
-            root.addEventListener('hashchange', onhashchange);
-          }
-          
-        }.bind(this), 50);
-      }
-    }.bind(this));
-    
+    }.bind(PushStateTree.prototype))();
   }
   
-  PushStateTree.prototype = frag;
+  var onhashchange = function (event) {
+    // Don't dispatch, because already have dispatched in popstate event
+    if (oldURI === rootElement.uri) return;
+    rootElement.rulesDispatcher();
+
+    oldURI = rootElement.uri;
+    oldState = rootElement.state;
+  }.bind(rootElement);
   
-  PushStateTree.prototype = new PushStateTree();
+  var readdOnhashchange = false;
+  function avoidTriggering() {
+    // Avoid triggering hashchange event
+    root.removeEventListener('hashchange', onhashchange);
+    readdOnhashchange = true;
+  }
+  
+  PushStateTree.prototype.hasPushState = root.history && !!root.history.pushState;
+  if (!PushStateTree.prototype.hasPushState) {
+    PushStateTree.prototype.usePushState = false;
+  }
+  
+  var lastTitle = null;
+  
+  if (!PushStateTree.prototype.pushState) {
+    PushStateTree.prototype.pushState = function(state, title, url) {
+      var t = document.title || '';
+      if (lastTitle !== null) {
+          document.title = lastTitle;
+      }
+      avoidTriggering();
+      
+      // Replace hash url
+      if (isExternal(url)) {
+        // this will redirect the browser, so doesn't matters the rest...
+        root.location.href = url;
+      }
+      
+      // Remove the has if is it present
+      if (url[0] === '#') {
+        url = url.slice(1);
+      }
+      
+      if (isRelative(url)) {
+        url = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + url;
+      }
+      
+      root.location.hash = url;
+      
+      document.title = t;
+      lastTitle = title;
+      
+      return this;
+    };
+  }
+  
+  if (!PushStateTree.prototype.replaceState) {
+    PushStateTree.prototype.replaceState = function(state, title, url) {
+      var t = document.title || '';
+      if (lastTitle !== null) {
+          document.title = lastTitle;
+      }
+      avoidTriggering();
+      
+      // Replace the url
+      if (!isExternal(url) && url[0] !== '#') {
+        url = '#' + url;
+      }
+      
+      if (isRelative(url)) {
+        url = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + url;
+      }
+      
+      root.location.replace(url);
+      document.title = t;
+      lastTitle = title;
+      
+      return this;
+    };
+  }
   
   root.PushStateTree = PushStateTree;
 })(this);
