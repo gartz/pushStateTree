@@ -166,6 +166,11 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - Add full compatibility with Web Components
  - Optimize some tree matching operations
 
+## Helper Tools
+
+ - **[RegExr](http://regexr.com/)** is a tool that help you creating regular expressions and testing it.
+ - **[RegExper](http://www.regexper.com/)** is a tool that explain how your regular expression works.
+
 ## Contributing
 
 Please read through the [contributing guidelines](CONTRIBUTING.md). In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [grunt](http://gruntjs.com/).
