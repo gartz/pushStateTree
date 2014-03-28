@@ -155,6 +155,22 @@
       
       var bindedFn;
       
+      if (!('on' + type in this) || type === 'hashchange') {
+        for (var i = 0; i < this.__bindedFunctions.length; i++) {
+          if (this.__bindedFunctions[i].original === fn) {
+            bindedFn = this.__bindedFunctions[i].binded;
+            this.__bindedFunctions = this.__bindedFunctions.splice(i, 1);
+            i = this.__bindedFunctions.length;
+          }
+        }
+        
+        if (bindedFn) {
+          document.documentElement.detachEvent('onpropertychange', bindedFn);
+        }
+        
+        if (type !== 'hashchange') return;
+      }
+      
       for (var i = 0; i < this.__bindedFunctions.length; i++) {
         if (this.__bindedFunctions[i].original === fn) {
           bindedFn = this.__bindedFunctions[i].binded;
@@ -162,13 +178,7 @@
           i = this.__bindedFunctions.length;
         }
       }
-      
       if (!bindedFn) return;
-      
-      if (!('on' + type in this) || type === 'hashchange') {
-        document.documentElement.detachEvent('onpropertychange', bindedFn);
-        if (type !== 'hashchange') return;
-      }
 
       this.detachEvent('on' + type, bindedFn);
     };
@@ -636,6 +646,9 @@
   }
   
   var onhashchange = function (event) {
+    // Workaround IE8
+    if (readdOnhashchange) return;
+    
     // Don't dispatch, because already have dispatched in popstate event
     if (oldURI === rootElement.uri) return;
     rootElement.rulesDispatcher();
@@ -699,13 +712,21 @@
       avoidTriggering();
       
       // Replace the url
-      if (!isExternal(url) && url[0] !== '#') {
-        url = '#' + url;
+      if (isExternal(url)) {
+        throw new Error('Invalid url replace.');
+      }
+      
+      if (url[0] === '#') {
+        url = url.slice(1);
       }
       
       if (isRelative(url)) {
-        url = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + url;
+        var relativePos = root.location.hash.lastIndexOf('/') + 1;
+        url = root.location.hash.slice(1, relativePos) + url;
       }
+      
+      // Always use hash navigation
+      url = '#' + url;
       
       root.location.replace(url);
       document.title = t;
