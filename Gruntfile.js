@@ -11,7 +11,6 @@ module.exports = function(grunt) {
 
   // Project configuration.
   grunt.initConfig({
-    site: grunt.file.readYAML('_config.yml'),
 
     jshint: {
       options: {

@@ -160,8 +160,10 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - Work with all modern browsers and some old ones (IE7 or older aren't supported)
  - Use DOM methods to find and change Rules elements
  - It will use native browser features if it can
+ - Min file has only 8kb with shim
 
 ## Goals
+ - Move the browsers shim to another repo
  - Add common used regular expression shortcuts generator, like `something/:option1/:option2`
  - Add full compatibility with Web Components
  - Optimize some tree matching operations
