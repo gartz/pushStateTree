@@ -267,7 +267,7 @@
         
         var t = Object(this);
         var len = t.length >>> 0;
-        if (typeof fun != 'function')
+        if (typeof fun !== 'function')
           throw new TypeError();
         
         var res = [];
@@ -290,8 +290,19 @@
     }
   })();
   
-  // Helpers
+  // Constants for uglifiers
   
+  var USE_PUSH_STATE = 'usePushState';
+  var HASHCHANGE = 'hashchange';
+  var POPSTATE = 'popstate';
+  var LEAVE = 'leave';
+  var UPDATE = 'update';
+  var ENTER = 'enter';
+  var CHANGE = 'change';
+  var MATCH = 'match';
+  var OLD_MATCH = 'oldMatch';
+  
+  // Helpers
   function wrapProperty(scope, prop, target) {
     Object.defineProperty(scope, prop, {
       get: function () {
@@ -333,21 +344,17 @@
     ready = true;
     
     if (!PushStateTree.prototype.hasPushState) {
-      Object.defineProperty(rootElement, 'usePushState', {
-        get: function () {
-          return false;
-        },
-      });
+      wrapProperty(rootElement, USE_PUSH_STATE, false);
     } else {
-      Object.defineProperty(rootElement, 'usePushState', {
+      Object.defineProperty(rootElement, USE_PUSH_STATE, {
         get: function () {
-          return PushStateTree.prototype.usePushState;
+          return PushStateTree.prototype[USE_PUSH_STATE];
         },
         set: function (val) {
-          PushStateTree.prototype.usePushState = val !== false;
+          PushStateTree.prototype[USE_PUSH_STATE] = val !== false;
         },
       });
-      PushStateTree.prototype.usePushState = options.usePushState !== false;
+      PushStateTree.prototype[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
     }
     
     rootElement.basePath = options.basePath || rootElement.basePath || '';
@@ -359,7 +366,7 @@
           // function wrapper
             rootElement[prop] = function () {
               return PushStateTree.prototype[prop].apply(this, arguments);
-            }
+            };
         } else {
           if (typeof rootElement[prop] !== 'undefined') return;
           // property wrapper
@@ -372,16 +379,11 @@
             },
           });
         }
-      })(prop)
+      })(prop);
     }
     
     wrapProperty(rootElement, 'length', root.history.length);
-    
-    Object.defineProperty(rootElement, 'state', {
-      get: function () {
-        return root.history.state;
-      }
-    });
+    wrapProperty(rootElement, 'state', root.history.state);
     
     Object.defineProperty(rootElement, 'uri', {
       get: function () {
@@ -403,19 +405,19 @@
       configurable: true
     });
     
-    root.addEventListener('popstate', function (event) {
+    root.addEventListener(POPSTATE, function (event) {
       rootElement.rulesDispatcher();
 
       oldURI = rootElement.uri;
       oldState = rootElement.state;
     }.bind(rootElement));
 
-    root.addEventListener('hashchange', onhashchange);
+    root.addEventListener(HASHCHANGE, onhashchange);
     
     // Uglify propourses
     var dispatchHashChange = function () {
       var event;
-      event = new HashChangeEvent('hashchange');
+      event = new HashChangeEvent(HASHCHANGE);
       root.dispatchEvent(event);
     };
     
@@ -440,7 +442,7 @@
           if (readdOnhashchange) {
             readdOnhashchange = false;
             oldURI = rootElement.uri;
-            root.addEventListener('hashchange', onhashchange);
+            root.addEventListener(HASHCHANGE, onhashchange);
           }
           
         }.bind(rootElement), 50);
@@ -465,7 +467,7 @@
       
       // Match is always a array, so you can test for match[n] anytime
       var match = [];
-      Object.defineProperty(rule, 'match', {
+      Object.defineProperty(rule, MATCH, {
         get: function () {
           return match;
         },
@@ -475,7 +477,7 @@
       });
       
       var oldMatch = [];
-      Object.defineProperty(rule, 'oldMatch', {
+      Object.defineProperty(rule, OLD_MATCH, {
         get: function () {
           return oldMatch;
         },
@@ -484,8 +486,8 @@
         },
       });
       
-      rule.match = [];
-      rule.oldMatch = [];
+      rule[MATCH] = [];
+      rule[OLD_MATCH] = [];
       
       return rule;
     },
@@ -515,7 +517,7 @@
       var event;
       
       // Workaround for Safari, that has Event but doesn't allow to use it.
-        event = new Event('popstate');
+        event = new Event(POPSTATE);
       
       root.dispatchEvent(event);
       return this;
@@ -535,26 +537,26 @@
           useURI = '';
           parentElement = ruleElement.parentElement;
           
-          if (parentElement.match.length > ruleElement.parentGroup)
-            useURI = parentElement.match[ruleElement.parentGroup] || '';
+          if (parentElement[MATCH].length > ruleElement.parentGroup)
+            useURI = parentElement[MATCH][ruleElement.parentGroup] || '';
           
           useOldURI = '';
-          if (parentElement.oldMatch.length > ruleElement.parentGroup)
-            useOldURI = parentElement.oldMatch[ruleElement.parentGroup] || '';
+          if (parentElement[OLD_MATCH].length > ruleElement.parentGroup)
+            useOldURI = parentElement[OLD_MATCH][ruleElement.parentGroup] || '';
         }
         
-        ruleElement.match = useURI.match(ruleElement.rule);
-        ruleElement.oldMatch = useOldURI.match(ruleElement.rule);
-        var match = ruleElement.match;
-        var oldMatch = ruleElement.oldMatch;
+        ruleElement[MATCH] = useURI[MATCH](ruleElement.rule);
+        ruleElement[OLD_MATCH] = useOldURI[MATCH](ruleElement.rule);
+        var match = ruleElement[MATCH];
+        var oldMatch = ruleElement[OLD_MATCH];
         var children = Array.prototype.slice.call(ruleElement.children);
         
         function PushStateTreeEvent(name, params) {
           
           params = params || {};
           params.detail = params.detail || {};
-          params.detail.match = match || [];
-          params.detail.oldMatch = oldMatch || [];
+          params.detail[MATCH] = match || [];
+          params.detail[OLD_MATCH] = oldMatch || [];
           params.cancelable = true;
 
           var event = new root.CustomEvent(name, params);
@@ -570,24 +572,24 @@
           children.forEach(recursiveDispatcher.bind(this));
           
           // dispatch leave event
-          ruleElement.dispatchEvent(new PushStateTreeEvent('leave'));
+          ruleElement.dispatchEvent(new PushStateTreeEvent(LEAVE));
           
           // dispatch the any event
-          ruleElement.dispatchEvent(new PushStateTreeEvent('update', {
-            detail: {type: 'leave'}
+          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
+            detail: {type: LEAVE}
           }));
           return;
         }
         
         // dispatch the match event
-        ruleElement.dispatchEvent(new PushStateTreeEvent('match'));
+        ruleElement.dispatchEvent(new PushStateTreeEvent(MATCH));
         
         if (oldMatch.length === 0) {
           // dispatch the enter event
-          ruleElement.dispatchEvent(new PushStateTreeEvent('enter'));
+          ruleElement.dispatchEvent(new PushStateTreeEvent(ENTER));
           
-          ruleElement.dispatchEvent(new PushStateTreeEvent('update', {
-            detail: {type: 'enter'}
+          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
+            detail: {type: ENTER}
           }));
           
           children.forEach(recursiveDispatcher.bind(this));
@@ -596,10 +598,10 @@
         
         // if has something changed, dispatch the change event
         if (match[0] !== oldMatch[0]) {
-          ruleElement.dispatchEvent(new PushStateTreeEvent('change'));
+          ruleElement.dispatchEvent(new PushStateTreeEvent(CHANGE));
           
-          ruleElement.dispatchEvent(new PushStateTreeEvent('update', {
-            detail: {type: 'change'}
+          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
+            detail: {type: CHANGE}
           }));
         }
         
@@ -625,7 +627,7 @@
         
         // if has a basePath translate the not relative paths to use the basePath
         if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
-          if (!this.usePushState && !isExternal(args[2]) && args[2][0] !== '#') {
+          if (!this[USE_PUSH_STATE] && !isExternal(args[2]) && args[2][0] !== '#') {
             if (isRelative(args[2])) {
               args[2] = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + args[2];
             }
@@ -660,13 +662,13 @@
   var readdOnhashchange = false;
   function avoidTriggering() {
     // Avoid triggering hashchange event
-    root.removeEventListener('hashchange', onhashchange);
+    root.removeEventListener(HASHCHANGE, onhashchange);
     readdOnhashchange = true;
   }
   
   PushStateTree.prototype.hasPushState = root.history && !!root.history.pushState;
   if (!PushStateTree.prototype.hasPushState) {
-    PushStateTree.prototype.usePushState = false;
+    PushStateTree.prototype[USE_PUSH_STATE] = false;
   }
   
   var lastTitle = null;

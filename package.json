@@ -1,10 +1,10 @@
 {
   "name": "pushStateTree",
   "description": "A browser history micro-framework that works with events, navigation of single page app easier than ever.",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "homepage": "https://github.com/gartz/pushStateTree/",
   "author": {
-    "name": "Gabriel Reitz Giannattasio",
+    "name": "Gabriel Reitz Giannattasio <gabriel@gartz.com.br>",
     "url": "https://gartz.com.br"
   },
   "repository": {
@@ -17,7 +17,7 @@
   "licenses": [
     {
       "type": "MIT",
-      "url": "https://github.com/gartz/pushStateTree//blob/master/LICENSE-MIT"
+      "url": "https://github.com/gartz/pushStateTree/blob/master/LICENSE-MIT"
     }
   ],
   "main": "Grunt.js",
@@ -34,6 +34,7 @@
     "grunt-contrib-nodeunit": "~0.2.0",
     "grunt-contrib-watch": "~0.6.1",
     "grunt": "~0.4.4",
+    "grunt-contrib-uglify": "~0.4.0"
   },
   "keywords": [
     "assemble"

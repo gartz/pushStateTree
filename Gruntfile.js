@@ -17,7 +17,22 @@ module.exports = function(grunt) {
       options: {
         jshintrc: '.jshintrc'
       },
-      all: ['Gruntfile.js', 'lib/*.js', 'test/*.js']
+      all: ['Gruntfile.js', 'src/*.js', 'test/*.js']
+    },
+    
+    uglify: {
+      my_target: {
+        options: {
+          sourceMap: true,
+          sourceMapName: 'pushStateTree.map',
+          compress: {
+            drop_console: true
+          }
+        },
+        files: {
+          'pushStateTree.min.js': ['src/pushStateTree.js']
+        }
+      }
     },
 
     assemble: {
@@ -51,6 +66,7 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-jshint');
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-contrib-watch');
+  grunt.loadNpmTasks('grunt-contrib-uglify');
   grunt.loadNpmTasks('assemble');
   grunt.loadNpmTasks("grunt-modernizr");
 
