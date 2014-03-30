@@ -16,7 +16,7 @@ module.exports = function(grunt) {
       options: {
         jshintrc: '.jshintrc'
       },
-      all: ['Gruntfile.js', 'src/*.js', 'test/*.js']
+      all: ['Gruntfile.js', 'pushStateTree.js', 'test/*.js']
     },
     
     uglify: {
@@ -29,16 +29,8 @@ module.exports = function(grunt) {
           }
         },
         files: {
-          'pushStateTree.min.js': ['src/pushStateTree.js']
+          'pushStateTree.min.js': ['pushStateTree.js']
         }
-      }
-    },
-
-    assemble: {
-      options: {flatten: true},
-      docs: {
-        src: ['docs/index.hbs'],
-        dest: '<%= site.destination %>/',
       }
     },
 
@@ -56,6 +48,10 @@ module.exports = function(grunt) {
       jshint: {
         files: ['<%= jshint.all %>'],
         tasks: ['jshint:lint']
+      },
+      uglify: {
+        files: ['<%= jshint.all %>'],
+        tasks: ['uglify']
       }
     }
   });
@@ -66,12 +62,11 @@ module.exports = function(grunt) {
   grunt.loadNpmTasks('grunt-contrib-nodeunit');
   grunt.loadNpmTasks('grunt-contrib-watch');
   grunt.loadNpmTasks('grunt-contrib-uglify');
-  grunt.loadNpmTasks('assemble');
   grunt.loadNpmTasks("grunt-modernizr");
 
   // Tests to be run.
   grunt.registerTask('test', ['nodeunit']);
 
   // Default to tasks to run with the "grunt" command.
-  grunt.registerTask('default', ['clean', 'jshint', 'test', 'assemble']);
+  grunt.registerTask('default', ['jshint', 'test', 'uglify']);
 };
