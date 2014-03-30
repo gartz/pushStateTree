@@ -453,7 +453,7 @@
   }
 
   var oldState = null;
-  var oldURI = '';
+  var oldURI = null;
   
   PushStateTree.prototype = {
     createRule: function (options) {
@@ -546,7 +546,11 @@
         }
         
         ruleElement[MATCH] = useURI[MATCH](ruleElement.rule);
-        ruleElement[OLD_MATCH] = useOldURI[MATCH](ruleElement.rule);
+        if (typeof useOldURI === 'string') {
+          ruleElement[OLD_MATCH] = useOldURI[MATCH](ruleElement.rule);
+        } else {
+          ruleElement[OLD_MATCH] = [];
+        }
         var match = ruleElement[MATCH];
         var oldMatch = ruleElement[OLD_MATCH];
         var children = Array.prototype.slice.call(ruleElement.children);

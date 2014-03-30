@@ -1,6 +1,6 @@
 {
   "name": "pushStateTree",
-  "main": "pushStateTree.min.js",
+  "main": "pushStateTree.js",
   "dependencies": {
   }
 }
