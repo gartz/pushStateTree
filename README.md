@@ -155,6 +155,7 @@ Or you can just change the browser URL, it will dispatch the events.
 You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
 ## Features
+
  - It's easy to use and very flexible
  - You can extend it and change how it works if you want
  - Work with all modern browsers and some old ones (IE7 or older aren't supported)
@@ -163,10 +164,17 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - Min file has only 8kb with shim
 
 ## Goals
+
+ - Add preventDefault in match and update, to don't dispatch enter, change and leave events.
+ - Add stopPropagation to don't dispatch children events
  - Move the browsers shim to another repo
  - Add common used regular expression shortcuts generator, like `something/:option1/:option2`
  - Add full compatibility with Web Components
  - Optimize some tree matching operations
+
+## Todo
+
+ - update event must dispatch before enter, change or leave
 
 ## Helper Tools
 
