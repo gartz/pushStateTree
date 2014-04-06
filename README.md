@@ -174,6 +174,10 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
 ## Todo
 
+ - Create a event execution queue before dispatching events, to create a dispatch order:
+  - Dispatch all leaves
+  - Dispatch all enters
+  - Dispatch all changes
  - update event must dispatch before enter, change or leave
 
 ## Helper Tools

@@ -525,11 +525,12 @@
     
     rulesDispatcher: function () {
       // Will dispatch the right events in each rule
+      /*jshint validthis:true */
       
-      function recursiveDispatcher(ruleElement) {
+      function recursiveDispatcher(uri, oldURI, ruleElement) {
         if (!ruleElement.rule) return;
         
-        var useURI = this.uri;
+        var useURI = uri;
         var useOldURI = oldURI;
         var parentElement;
         
@@ -573,7 +574,7 @@
             // just not match...
             return;
           }
-          children.forEach(recursiveDispatcher.bind(this));
+          children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
           
           // dispatch leave event
           ruleElement.dispatchEvent(new PushStateTreeEvent(LEAVE));
@@ -596,7 +597,7 @@
             detail: {type: ENTER}
           }));
           
-          children.forEach(recursiveDispatcher.bind(this));
+          children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
           return;
         }
         
@@ -609,12 +610,11 @@
           }));
         }
         
-        
-        children.forEach(recursiveDispatcher.bind(this));
+        children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
       }
       
       Array.prototype.slice.call(this.children || this.childNodes)
-        .forEach(recursiveDispatcher.bind(this));
+        .forEach(recursiveDispatcher.bind(this, this.uri, oldURI));
     }
   };
   
