@@ -1,7 +1,7 @@
 {
   "name": "pushStateTree",
   "description": "A browser history micro-framework that works with events, navigation of single page app easier than ever.",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "homepage": "https://github.com/gartz/pushStateTree/",
   "author": {
     "name": "Gabriel Reitz Giannattasio <gabriel@gartz.com.br>",
@@ -25,16 +25,18 @@
     "node": ">= 0.10.0"
   },
   "scripts": {
+    "start": "node ./server.js",
     "test": "grunt test"
   },
   "devDependencies": {
     "assemble": "~0.4.37",
+    "grunt": "~0.4.4",
     "grunt-contrib-clean": "~0.5.0",
     "grunt-contrib-jshint": "~0.6.0",
     "grunt-contrib-nodeunit": "~0.2.0",
+    "grunt-contrib-uglify": "~0.4.0",
     "grunt-contrib-watch": "~0.6.1",
-    "grunt": "~0.4.4",
-    "grunt-contrib-uglify": "~0.4.0"
+    "node-static": "^0.7.4"
   },
   "keywords": [
     "assemble"
