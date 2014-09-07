@@ -154,6 +154,13 @@ Or you can just change the browser URL, it will dispatch the events.
 
 You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
+## Development
+
+ - Clone the project `git clone https://github.com/cloudhead/node-static.git`
+ - Use npm to install dev dependencies `npm install --dev`
+ - Use npm to start a dev server `npm start`
+ - Open you browser in the URL: [http://localhost:3000/](http://localhost:3000/)
+
 ## Features
 
  - It's easy to use and very flexible
