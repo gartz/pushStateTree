@@ -46,12 +46,17 @@
       <p>Log:</p>
     </div>
     <script>
+      var basePath = '/pushStateTree';
+      if (location.hostname.indexOf('github') === -1){
+        basePath = '';
+      }
+
       // Init the framework
       var pushStateTree = new PushStateTree({
-        basePath: '/pushStateTree',
+        basePath: basePath,
         usePushState: true
       });
-      
+
       pushStateTree.add({
         // any change
         id: 'any',
@@ -71,7 +76,7 @@
         rule: /.+/,
         parentGroup: 1
       }));
-      
+
       function log(msg) {
         var element = document.createElement('p');
         element.innerHTML = msg;
