@@ -186,6 +186,8 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
   - Dispatch all enters
   - Dispatch all changes
  - update event must dispatch before enter, change or leave
+ - Add enter state when re-dispatch right after add the match rule to the checking
+ - Add reset state method for the rules
 
 ## Helper Tools
 

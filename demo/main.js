@@ -1,5 +1,29 @@
 var demoPath = basePath + 'demo/';
 
+//TODO: Optimize this function, not priority
+function navbarAdd(text, link, order){
+  // Create and add menu option in the right priority order
+
+  order = order || 1;
+  $navbarAnchor = $('<li><a></a></li>');
+  $navbarAnchor.find('a')
+    .data('order', order)
+    .attr('href', link)
+    .text(text);
+  $navbarMain = $('#navbarMain');
+  $anchors = $navbarMain.find('a[data-order]');
+  if ($anchors.length === 0){
+    $navbarMain.append($navbarAnchor);
+  } else {
+    $anchors.filter(function() {
+      return $(this).data('order') > order;
+    })
+    .first()
+    .closest('li')
+    .before($navbarAnchor);
+  }
+}
+
 // Load CSS
 $('<link>')
   .appendTo('head')
@@ -29,3 +53,6 @@ $(document).on('click', 'a[href]', function (e){
 $('body').append(pushStateTree);
 
 load(demoPath + 'about.js');
+load(demoPath + 'api.js');
+load(demoPath + 'servers.js');
+load(demoPath + 'examples.js');

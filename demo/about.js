@@ -1,10 +1,10 @@
 (function($, pushStateTree){
-  var aboutRule = pushStateTree.createRule({
+  var rule = pushStateTree.createRule({
     id: 'about',
     rule: /^$/
   });
 
-  $(pushStateTree).append(aboutRule);
+  $(pushStateTree).append(rule);
 
   var $about;
   
@@ -13,16 +13,14 @@
     $about = $(tmpl);
   });
 
-  $(aboutRule).on('enter', function(e){
+  $(rule).on('enter', function(e){
     ready.done(function (){
       $('body .container').append($about);
     });
   });
   
-  $(aboutRule).on('leave', function(e){
-    ready.done(function (){
-      $about.remove();
-    });
+  $(rule).on('leave', function(e){
+    $about.remove && $about.remove();
   });
 
   // This was loaded after, so the system needs to dispatch again
