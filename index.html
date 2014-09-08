@@ -3,126 +3,69 @@
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title></title>
+    <title>PushStateTree Demo</title>
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <!-- Place favicon.ico and apple-touch-icon(s) in the root directory -->
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+    <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js/bootstrap.min.js"></script>
+    
+    <script>
+    var basePath = '/pushStateTree';
+    if (location.hostname.indexOf('github') === -1){
+      basePath = '';
+    }
 
+    // Simple script loader based on promises
+    function load(src){
+      var defer = $.Deferred();
+      $('<script>')
+        .appendTo('head')
+        .attr('src', src)
+        .on('load', defer.resolve)
+        .on('error', defer.reject);
+      return defer.promise;
+    }
+    
+    $.when(load(basePath + 'pushStateTree.js'))
+      .then(load(basePath + 'demo/main.js'))
+      .done(function (){
+      //console.log('script loaded');
+    });
+    </script>
   </head>
   <body>
     <!--[if lt IE 9]>
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
-    <a href="https://github.com/gartz/pushStateTree"><img style="position: absolute; top: 0; right: 0; border: 0;" src="https://github-camo.global.ssl.fastly.net/a6677b08c955af8400f44c6298f40e7d19cc5b2d/68747470733a2f2f73332e616d617a6f6e6177732e636f6d2f6769746875622f726962626f6e732f666f726b6d655f72696768745f677261795f3664366436642e706e67" alt="Fork me on GitHub" data-canonical-src="https://s3.amazonaws.com/github/ribbons/forkme_right_gray_6d6d6d.png"></a>
+    
+    <div class="container">
 
-    <p>This is a demo page to test the events in the PushStateTree.</p>
-    <p>Enable your debug console to see the events log</p>
+      <!-- Static navbar -->
+      <div class="navbar navbar-default" role="navigation">
+        <div class="container-fluid">
+          <div class="navbar-header">
+            <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target=".navbar-collapse">
+              <span class="sr-only">Toggle navigation</span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+              <span class="icon-bar"></span>
+            </button>
+            <a class="navbar-brand" href="/">PushStateTree</a>
+          </div>
+          <div class="navbar-collapse collapse">
+            <ul class="nav navbar-nav">
+              <li><a href="/api">API</a></li>
+              <li><a href="/examples">Examples</a></li>
+              <li><a href="/servers">Servers</a></li>
+            </ul>
+          </div><!--/.nav-collapse -->
+        </div><!--/.container-fluid -->
+      </div>
+      <a href="https://github.com/gartz/pushStateTree" class="ribbon bg-green">Fork me on GitHub</a>
 
-    <script src="pushStateTree.js"></script>
-    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
-
-    <div>
-      <p>
-        <a onclick="pushStateTree.pushState({state:'push'}, '', '' + (Math.random() + '').slice(2))">Change the URL and add to history</a>
-      </p>
-      <p>
-        <a onclick="pushStateTree.pushState({state:'push&dispatch'}, '', '' + (Math.random() + '').slice(2)).dispatch()">Change the URL and add to history and trigger</a>
-      </p>
-      <p>
-        <a onclick="pushStateTree.replaceState({state:'replace'}, '', '' + (Math.random() + '').slice(2))">Change the URL by replace</a>
-      </p>
-      <p>
-        <a onclick="pushStateTree.replaceState({state:'replace&dipatch'}, '', '/' + (Math.random() + '').slice(2)).dispatch()">Change the URL by replace and trigger</a>
-      </p>
-      <p>
-        <a href="#doSomething">Default hash link</a>
-      </p>
-      <p>
-        <a onclick="pushStateTree.pushState(null, '', '/child/' + (Math.random() + '').slice(2)).dispatch()">Hash to child</a>
-      </p>
     </div>
-    <div style="border:1px solid blue; margin-left: 20px;" id="log">
-      <p>Log:</p>
-    </div>
-    <script>
-      var basePath = '/pushStateTree';
-      if (location.hostname.indexOf('github') === -1){
-        basePath = '';
-      }
-
-      // Init the framework
-      var pushStateTree = new PushStateTree({
-        basePath: basePath,
-        usePushState: true
-      });
-
-      pushStateTree.add({
-        // any change
-        id: 'any',
-        rule: /.*/
-      });
-      pushStateTree.add({
-        id: 'one',
-        rule: /.+1.+/
-      });
-      pushStateTree.appendChild(pushStateTree.createRule({
-        // any change
-        id: 'child',
-        rule: /child\/(.+)/
-      }));
-      pushStateTree.querySelector('#child').appendChild(pushStateTree.createRule({
-        id: 'nestedChild',
-        rule: /.+/,
-        parentGroup: 1
-      }));
-
-      function log(msg) {
-        var element = document.createElement('p');
-        element.innerHTML = msg;
-        document.querySelector('#log').appendChild(element);
-      }
-      
-      
-      pushStateTree.querySelector('#any').addEventListener('enter', function (event) {
-        log('any:enter > ' + pushStateTree.uri);
-      });
-      pushStateTree.querySelector('#any').addEventListener('change', function (event) {
-        log('any:change > ' + pushStateTree.uri);
-      });
-      pushStateTree.querySelector('#any').addEventListener('leave', function (event) {
-        log('any:leave > ' + pushStateTree.uri);
-      });
-      
-      pushStateTree.querySelector('#one').addEventListener('enter', function (event) {
-        log('one:enter > ' + pushStateTree.uri);
-      });
-      pushStateTree.querySelector('#one').addEventListener('change', function (event) {
-        log('one:change > ' + pushStateTree.uri);
-      });
-      pushStateTree.querySelector('#one').addEventListener('leave', function (event) {
-        log('one:leave > ' + pushStateTree.uri);
-      });
-      
-      pushStateTree.querySelector('#child').addEventListener('enter', function (event) {
-        log('child:enter > ' + pushStateTree.uri);
-      });
-      pushStateTree.querySelector('#child').addEventListener('change', function (event) {
-        log('child:change > ' + pushStateTree.uri);
-      });
-      pushStateTree.querySelector('#child').addEventListener('leave', function (event) {
-        log('child:leave > ' + pushStateTree.uri);
-      });
-      
-      pushStateTree.querySelector('#nestedChild').addEventListener('enter', function (event) {
-        log('nestedChild:enter > ' + pushStateTree.uri);
-      });
-      pushStateTree.querySelector('#nestedChild').addEventListener('change', function (event) {
-        log('nestedChild:change > ' + pushStateTree.uri);
-      });
-      pushStateTree.querySelector('#nestedChild').addEventListener('leave', function (event) {
-        log('nestedChild:leave > ' + pushStateTree.uri);
-      });
-    </script>
   </body>
 </html>
