@@ -302,6 +302,10 @@
   var OLD_MATCH = 'oldMatch';
 
   // Helpers
+  function isInt(n) {
+    return !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
+  }
+  
   function wrapProperty(scope, prop, target) {
     Object.defineProperty(scope, prop, {
       get: function () {
@@ -463,9 +467,9 @@
       var cachedRule = //;
       Object.defineProperty(rule, 'rule', {
         get: function () {
-          var ruleAttr = rule.getAttribute('rule') || '';
-          if (cachedRule.toString() !== ruleAttr) {
-            cachedRule = new RegExp(ruleAttr);
+          var attr = rule.getAttribute('rule') || '';
+          if (cachedRule.toString() !== attr) {
+            cachedRule = new RegExp(attr);
           }
           return cachedRule;
         },
@@ -473,6 +477,25 @@
           rule.setAttribute('rule', val);
         },
       });
+      
+      // Bind rule propertie with element attribute
+      Object.defineProperty(rule, 'parentGroup', {
+        get: function () {
+          var attr = rule.getAttribute('parent-group');
+          if (attr && isInt(attr)) {
+            return + attr;
+          }
+          return null;
+        },
+        set: function (val) {
+          if (isInt(val)) {
+            rule.setAttribute('parent-group', val);
+          } else {
+            rule.removeAttribute('parent-group');
+          }
+        },
+      });
+        
       
       for (var prop in options)
       if (options.hasOwnProperty(prop)) {
