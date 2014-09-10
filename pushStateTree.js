@@ -469,7 +469,16 @@
         get: function () {
           var attr = rule.getAttribute('rule') || '';
           if (cachedRule.toString() !== attr) {
-            cachedRule = new RegExp(attr);
+            // Detect RegExp with flags
+            var flags = '';
+            if (attr[0] === '/') {
+              var lastSlash = attr.lastIndexOf('/');
+              if (lastSlash > 0) {
+                flags = attr.slice(lastSlash + 1);
+                attr = attr.slice(1, lastSlash);
+              }
+            }
+            cachedRule = new RegExp(attr, flags);
           }
           return cachedRule;
         },
