@@ -458,6 +458,22 @@
       // Create a pushstreamtree-rule element from a literal object
 
       var rule = document.createElement('pushstatetree-rule');
+      
+      // Bind rule propertie with element attribute
+      var cachedRule = //;
+      Object.defineProperty(rule, 'rule', {
+        get: function () {
+          var ruleAttr = rule.getAttribute('rule') || '';
+          if (cachedRule.toString() !== ruleAttr) {
+            cachedRule = new RegExp(ruleAttr);
+          }
+          return cachedRule;
+        },
+        set: function (val) {
+          rule.setAttribute('rule', val);
+        },
+      });
+      
       for (var prop in options)
       if (options.hasOwnProperty(prop)) {
         rule[prop] = options[prop];
