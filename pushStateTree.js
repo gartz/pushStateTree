@@ -567,12 +567,7 @@
 
     dispatch: function () {
       // Trigger the actual browser location
-      var event;
-
-      // Workaround for Safari, that has Event but doesn't allow to use it.
-        event = new Event(POPSTATE);
-
-      root.dispatchEvent(event);
+      root.dispatchEvent(new Event(POPSTATE));
       return this;
     },
 
