@@ -464,11 +464,17 @@
       var rule = document.createElement('pushstatetree-rule');
       
       // Bind rule propertie with element attribute
-      var cachedRule = //;
+      var cachedRule = {
+        regexp: new RegExp(),
+        attribute: ''
+      };
       Object.defineProperty(rule, 'rule', {
         get: function () {
           var attr = rule.getAttribute('rule') || '';
-          if (cachedRule.toString() !== attr) {
+          if (cachedRule.attribute !== attr) {
+            cachedRule.attribute = attr;
+            //TODO: reset the rule state, after current queue of events
+
             // Detect RegExp with flags
             var flags = '';
             if (attr[0] === '/') {
@@ -478,19 +484,18 @@
                 attr = attr.slice(1, lastSlash);
               }
             }
-            cachedRule = new RegExp(attr, flags);
+            cachedRule.regexp = new RegExp(attr, flags);
           }
-          return cachedRule;
+          return cachedRule.regexp ;
         },
-        set: function (val) {
-          rule.setAttribute('rule', val);
-        },
+        set: rule.setAttribute.bind(rule, 'rule'),
       });
       
       // Bind rule propertie with element attribute
       Object.defineProperty(rule, 'parentGroup', {
         get: function () {
           var attr = rule.getAttribute('parent-group');
+          //TODO: reset state when parent-group has changed or if the parent element has changed
           if (attr && isInt(attr)) {
             return + attr;
           }
@@ -534,6 +539,8 @@
 
       rule[MATCH] = [];
       rule[OLD_MATCH] = [];
+      
+      //TODO: Add reset method, should reset all the children when triggered
 
       return rule;
     },
