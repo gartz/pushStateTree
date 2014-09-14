@@ -36,7 +36,8 @@ var pushStateTree = new PushStateTree({
   // Disable the pushState support on github, because the
   // server don't support it, but enable in localhost or
   // other root server for this demo
-  usePushState: !basePath
+  usePushState: !basePath,
+  debug: true
 });
 
 // Delegate anchor clicks to use pushStateTree
