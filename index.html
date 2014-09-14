@@ -17,23 +17,61 @@
     if (location.hostname.indexOf('github') === -1){
       basePath = '';
     }
-
-    // Simple script loader based on promises
-    function load(src){
-      var defer = $.Deferred();
-      $('<script>')
-        .appendTo('head')
-        .attr('src', src)
-        .on('load', defer.resolve)
-        .on('error', defer.reject);
-      return defer.promise;
+    
+    // If no internet found (programming on travels...)
+    // Load resources from offline folder
+    if (typeof $ !== 'function' || !$.when){
+      
+      function loadOffline(src, callback) {
+        // Load a file and execute the callback, should be used to
+        // load files in the right order and then boot the system
+        
+        var type = src.substr(-3) === 'css' ? 'link' : 'script';
+        var element = document.createElement(type);
+        var path = location.origin + basePath + '/demo/offline/';
+        element.onload = callback;
+        if(type === 'link'){
+          element.setAttribute('rel', 'stylesheet');
+          element.setAttribute('href', path + src);
+        } else {
+          element.setAttribute('src', path + src);
+        }
+        // May not work on old browsers... But it should only be used on development
+        document.head.appendChild(element);
+      }
+      // Load offline jquery and bootstrap
+      loadOffline('jquery.1.11.min.js', function(){
+        loadOffline('bootstrap.min.css');
+        loadOffline('bootstrap.min.js');
+        boot();
+      });
+    } else {
+      boot();
     }
     
-    $.when(load(basePath + 'pushStateTree.js'))
-      .then(load(basePath + 'demo/main.js'))
-      .done(function (){
-      //console.log('script loaded');
-    });
+    function boot(){
+      // boot the demo page
+
+      function load(src){
+        // Simple script loader based on promises
+        
+        var defer = $.Deferred();
+        $('<script>')
+          .appendTo('head')
+          .attr('src', location.origin + src)
+          .on('load', defer.resolve)
+          .on('error', defer.reject);
+        return defer.promise;
+      }
+      // Export load as global
+      window.load = load;
+
+      $.when(load(basePath + '/pushStateTree.js'))
+        .then(load(basePath + '/demo/main.js'))
+        .done(function (){
+        //console.log('script loaded');
+      });
+    }
     </script>
   </head>
   <body>

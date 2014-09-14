@@ -1,7 +1,7 @@
 (function($, pushStateTree){
   var rule = pushStateTree.createRule({
     id: 'api',
-    rule: /^api($|\/$)/
+    rule: /^api($|\/(.*))/
   });
 
   $(pushStateTree).append(rule);
@@ -31,6 +31,31 @@
     // if can remove, remove it when leaving
     $about.remove && $about.remove();
   });
+  
+  var parentRule = pushStateTree.createRule({
+    id: 'events',
+    parentGroup: 2,
+    rule: /(.+)/
+  });
+  
+  $(parentRule).on('change', function(e){
+    debugger
+  });
+  
+  $(parentRule).on('enter', function(e){
+    // Lazy execute when template is ready
+    // if it already have been cached, will execute at same instant
+    ready.done(function (){
+      $('#eventsList').css('display', 'block');
+    });
+  });
+  
+  $(parentRule).on('leave', function(e){
+    $('#eventsList').css('display', 'none');
+  });
+  
+  $(rule).append(parentRule);
+  $(pushStateTree).append(rule);
 
   // This was loaded after, so the system needs to dispatch again
   pushStateTree.dispatch();

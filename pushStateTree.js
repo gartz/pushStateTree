@@ -1,6 +1,10 @@
 (function (root) {
   'use strict';
 
+  var document = root.document;
+  var window = root.window;
+  var location = root.location;
+
   var isIE = (function(){
     var trident = window.navigator.userAgent.indexOf('Trident');
     return trident >= 0;
@@ -15,7 +19,7 @@
   })();
 
   (function () {
-    if (Function.prototype.bind) return;
+    if (Function.prototype.bind) { return; }
 
     Function.prototype.bind = function (oThis) {
       if (typeof this !== "function") {
@@ -23,18 +27,19 @@
         throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
       }
 
-      var aArgs = Array.prototype.slice.call(arguments, 1), 
+      var aArgs = Array.prototype.slice.call(arguments, 1),
           fToBind = this, 
-          fNOP = function () {},
+          FNOP = function () {},
           fBound = function () {
-            return fToBind.apply(this instanceof fNOP && oThis
-                    ? this
-                    : oThis,
-                    aArgs.concat(Array.prototype.slice.call(arguments)));
+            var context = oThis;
+            if (this instanceof FNOP && oThis){
+                context = this;
+            }
+            return fToBind.apply(context, aArgs.concat(Array.prototype.slice.call(arguments)));
           };
 
-      fNOP.prototype = this.prototype;
-      fBound.prototype = new fNOP();
+      FNOP.prototype = this.prototype;
+      fBound.prototype = new FNOP();
 
       return fBound;
     };
@@ -45,7 +50,7 @@
   var Event = root.Event;
 
   (function () {
-    if (!Element.prototype.addEventListener) return;
+    if (!Element.prototype.addEventListener) { return; }
 
     function CustomEvent(event, params) {
       params = params || { 
@@ -89,7 +94,7 @@
 
   // IE 8 shims
   (function () {
-    if (Element.prototype.addEventListener || !Object.defineProperty) return;
+    if (Element.prototype.addEventListener || !Object.defineProperty) { return; }
 
      // create an MS event object and get prototype
     var proto = document.createEventObject().constructor.prototype;
@@ -109,6 +114,7 @@
       if (!('on' + type in this) || type === 'hashchange') {
         this.__elemetIEid = this.__elemetIEid || '__ie__' + Math.random();
         var customEventId = type + this.__elemetIEid;
+        //TODO: Bug???
         document.documentElement[customEventId];
         var element = this;
 
@@ -126,7 +132,7 @@
 
         document.documentElement.attachEvent('onpropertychange', propHandler);
 
-        if (type !== 'hashchange') return;
+        if (type !== 'hashchange') { return; }
       }
 
       var bindedFn = fn.bind(this);
@@ -167,7 +173,7 @@
           document.documentElement.detachEvent('onpropertychange', bindedFn);
         }
 
-        if (type !== 'hashchange') return;
+        if (type !== 'hashchange') { return; }
       }
 
       for (var i = 0; i < this.__bindedFunctions.length; i++) {
@@ -177,7 +183,7 @@
           i = this.__bindedFunctions.length;
         }
       }
-      if (!bindedFn) return;
+      if (!bindedFn) { return; }
 
       this.detachEvent('on' + type, bindedFn);
     };
@@ -235,21 +241,23 @@
     if (!modernBrowser) {
       var builtinSlice = Array.prototype.slice;
       Array.prototype.slice = function(action, that) {
-        'use strict';
         var arr = [];
-        for (var i = 0, n = this.length; i < n; i++)
-          if (i in this)
+        for (var i = 0, n = this.length; i < n; i++) {
+          if (i in this) {
             arr.push(this[i]);
+          }
+        }
 
         return builtinSlice.apply(arr, arguments);
       };
     }
     if (!('forEach' in Array.prototype)) {
       Array.prototype.forEach = function(action, that) {
-        'use strict';
-        for (var i = 0, n = this.length; i < n; i++)
-          if (i in this)
+        for (var i = 0, n = this.length; i < n; i++) {
+          if (i in this) {
             action.call(that, this[i], i);
+          }
+        }
       };
     }
     if (typeof String.prototype.trim !== 'function') {
@@ -259,15 +267,15 @@
     }
     if (!Array.prototype.filter) {
       Array.prototype.filter = function(fun /*, thisArg */) {
-        'use strict';
-
-        if (this === void 0 || this === null)
+        if (this === void 0 || this === null) {
           throw new TypeError();
+        }
 
         var t = Object(this);
         var len = t.length >>> 0;
-        if (typeof fun !== 'function')
+        if (typeof fun !== 'function') {
           throw new TypeError();
+        }
 
         var res = [];
         var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
@@ -280,7 +288,7 @@
             //       properties on Object.prototype and Array.prototype.
             //       But that method's new, and collisions should be
             //       rare, so use the more-compatible alternative.
-            if (fun.call(thisArg, val, i, t)) res.push(val);
+            if (fun.call(thisArg, val, i, t)) { res.push(val); }
           }
         }
 
@@ -305,7 +313,7 @@
   function isInt(n) {
     return !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
   }
-  
+
   function wrapProperty(scope, prop, target) {
     Object.defineProperty(scope, prop, {
       get: function () {
@@ -333,13 +341,14 @@
   var ready = false;
 
   function PushStateTree(options) {
-    var method;
     options = options || {};
 
     if (ready) {
       // Setup options
-      for (var prop in options) if (options.hasOwnProperty(prop)) {
-        rootElement[prop] = options[prop];
+      for (var prop in options) {
+        if (options.hasOwnProperty(prop)) {
+          rootElement[prop] = options[prop];
+        }
       }
 
       return rootElement;
@@ -362,6 +371,7 @@
 
     rootElement.basePath = options.basePath || rootElement.basePath || '';
 
+    //TODO: emcapsulate this
     for (var prop in PushStateTree.prototype)
     if (PushStateTree.prototype.hasOwnProperty(prop)) {
       (function (prop) {
@@ -408,7 +418,7 @@
       configurable: true
     });
 
-    root.addEventListener(POPSTATE, function (event) {
+    root.addEventListener(POPSTATE, function () {
       rootElement.rulesDispatcher();
 
       oldURI = rootElement.uri;
@@ -419,19 +429,13 @@
 
     // Uglify propourses
     var dispatchHashChange = function () {
-      var event;
-      event = new HashChangeEvent(HASHCHANGE);
-      root.dispatchEvent(event);
+      root.dispatchEvent(new HashChangeEvent(HASHCHANGE));
     };
 
     // Modern browsers
-    document.addEventListener('DOMContentLoaded', function () {
-      dispatchHashChange();
-    });
+    document.addEventListener('DOMContentLoaded', dispatchHashChange);
     // Some IE browsers
-    root.addEventListener('readystatechange', function () {
-      dispatchHashChange();
-    });
+    root.addEventListener('readystatechange', dispatchHashChange);
     // Almost all browsers
     root.addEventListener('load', function () {
       dispatchHashChange();
@@ -442,8 +446,8 @@
             dispatchHashChange();
             return;
           }
-          if (readdOnhashchange) {
-            readdOnhashchange = false;
+          if (readOnhashchange) {
+            readOnhashchange = false;
             oldURI = rootElement.uri;
             root.addEventListener(HASHCHANGE, onhashchange);
           }
@@ -456,6 +460,7 @@
 
   var oldState = null;
   var oldURI = null;
+  var eventsQueue = [];
 
   PushStateTree.prototype = {
     createRule: function (options) {
@@ -509,7 +514,6 @@
           }
         },
       });
-        
       
       for (var prop in options)
       if (options.hasOwnProperty(prop)) {
@@ -547,12 +551,14 @@
 
     add: function (options) {
       // Transform any literal object in a pushstatetree-rule and append it
+      //TODO: It should be moved to Utils, it's just a shortcut
 
       this.appendChild(this.createRule(options));
     },
 
     remove: function (queryOrElement) {
       // Remove a pushstateree-rule, pass a element or it query
+      //TODO: Should be moved to Utils, it's just a shortcut
 
       var element = queryOrElement;
       if (typeof queryOrElement === 'string') {
@@ -574,6 +580,22 @@
     rulesDispatcher: function () {
       // Will dispatch the right events in each rule
       /*jshint validthis:true */
+
+      // Cache the URI, in case of an event try to change it
+      var currentURI = this.uri;
+      var currentOldURI = oldURI;
+      
+      function runner(uri, oldURI) {
+        Array.prototype.slice.call(this.children || this.childNodes)
+          .forEach(recursiveDispatcher.bind(this, uri, oldURI));
+      }
+      
+      eventsQueue.push(runner.bind(this, currentURI, currentOldURI));
+      
+      if (eventsQueue.length !== 1) { return; }
+      
+      // Chain execute the evetsQueue
+      var next; while (next = eventsQueue.shift()) next();
 
       function recursiveDispatcher(uri, oldURI, ruleElement) {
         if (!ruleElement.rule) return;
@@ -660,9 +682,6 @@
 
         children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
       }
-
-      Array.prototype.slice.call(this.children || this.childNodes)
-        .forEach(recursiveDispatcher.bind(this, this.uri, oldURI));
     }
   };
 
@@ -699,9 +718,10 @@
     }.bind(PushStateTree.prototype))();
   }
 
-  var onhashchange = function (event) {
+  var readOnhashchange = false;
+  var onhashchange = function () {
     // Workaround IE8
-    if (readdOnhashchange) return;
+    if (readOnhashchange) return;
 
     // Don't dispatch, because already have dispatched in popstate event
     if (oldURI === rootElement.uri) return;
@@ -711,11 +731,10 @@
     oldState = rootElement.state;
   }.bind(rootElement);
 
-  var readdOnhashchange = false;
   function avoidTriggering() {
     // Avoid triggering hashchange event
     root.removeEventListener(HASHCHANGE, onhashchange);
-    readdOnhashchange = true;
+    readOnhashchange = true;
   }
 
   PushStateTree.prototype.hasPushState = root.history && !!root.history.pushState;

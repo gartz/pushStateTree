@@ -1,4 +1,4 @@
-var demoPath = basePath + 'demo/';
+var demoPath = basePath + '/demo/';
 
 //TODO: Optimize this function, not priority
 function navbarAdd(text, link, order){
@@ -8,7 +8,7 @@ function navbarAdd(text, link, order){
   $navbarAnchor = $('<li><a></a></li>');
   $navbarAnchor.find('a')
     .data('order', order)
-    .attr('href', link)
+    .attr('href', location.origin + link)
     .text(text);
   $navbarMain = $('#navbarMain');
   $anchors = $navbarMain.find('a[data-order]');
@@ -42,7 +42,7 @@ var pushStateTree = new PushStateTree({
 // Delegate anchor clicks to use pushStateTree
 $(document).on('click', 'a[href]', function (e){
   var href = $(e.target).attr('href');
-  if (href.indexOf('//') > 2 && href.indexOf('//') < 6) return;
+  if (href.indexOf('//') > 2 && href.indexOf('//') < 6 && href.indexOf(location.origin) !== 0) return;
   e.preventDefault();
   pushStateTree
     .pushState(null, null, href)
