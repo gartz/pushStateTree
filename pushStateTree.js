@@ -582,20 +582,25 @@
       /*jshint validthis:true */
 
       // Cache the URI, in case of an event try to change it
-      var currentURI = this.uri;
-      var currentOldURI = oldURI;
+      var debug = this.debug;
       
       function runner(uri, oldURI) {
         Array.prototype.slice.call(this.children || this.childNodes)
           .forEach(recursiveDispatcher.bind(this, uri, oldURI));
+        return uri;
       }
       
-      eventsQueue.push(runner.bind(this, currentURI, currentOldURI));
+      eventsQueue.push(runner.bind(this, this.uri));
       
-      if (eventsQueue.length !== 1) { return; }
+      if (eventsQueue.isBusy) { return; }
       
+      eventsQueue.isBusy = true;
       // Chain execute the evetsQueue
-      var next; while (next = eventsQueue.shift()) next();
+      var last = oldURI;
+      while (eventsQueue.length > 0) {
+        last = eventsQueue.shift().call(null, last);
+      }
+      eventsQueue.isBusy = false;
 
       function recursiveDispatcher(uri, oldURI, ruleElement) {
         if (!ruleElement.rule) return;
@@ -634,6 +639,15 @@
           params.detail[OLD_MATCH] = oldMatch || [];
           params.cancelable = true;
 
+          if (debug && console){
+            console.log({
+              name: name,
+              ruleElement: ruleElement,
+              params: params,
+              useURI: useURI,
+              useOldURI: useOldURI
+            });
+          }
           var event = new root.CustomEvent(name, params);
           return event;
         }
