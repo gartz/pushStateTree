@@ -1,5 +1,5 @@
 {
-  "name": "pushStateTree",
+  "name": "push-state-tree",
   "description": "A browser history micro-framework that works with events, navigation of single page app easier than ever.",
   "version": "0.8.0",
   "homepage": "https://github.com/gartz/pushStateTree/",

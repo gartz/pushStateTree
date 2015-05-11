@@ -54,6 +54,6 @@ $(document).on('click', 'a[href]', function (e){
 $('body').append(pushStateTree);
 
 load(demoPath + 'about.js');
-load(demoPath + 'api.js');
+//load(demoPath + 'api.js');
 load(demoPath + 'servers.js');
 load(demoPath + 'examples.js');

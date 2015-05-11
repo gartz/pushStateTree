@@ -592,15 +592,16 @@
       
       eventsQueue.push(runner.bind(this, this.uri));
       
-      if (eventsQueue.isBusy) { return; }
+      // Is there already a queue been executed, so just add the runner
+      // and let the main queue resolve it
+      if (eventsQueue.length > 1) { return; }
       
-      eventsQueue.isBusy = true;
       // Chain execute the evetsQueue
       var last = oldURI;
       while (eventsQueue.length > 0) {
-        last = eventsQueue.shift().call(null, last);
+        last = eventsQueue[0].call(null, last);
+        eventsQueue.shift();
       }
-      eventsQueue.isBusy = false;
 
       function recursiveDispatcher(uri, oldURI, ruleElement) {
         if (!ruleElement.rule) return;
