@@ -45,7 +45,7 @@ var pushStateTree = new PushStateTree({
 // Delegate anchor clicks to use pushStateTree
 $(document).on('click', 'a[href]', function (e){
   var href = $(e.target).attr('href');
-  if (href.indexOf('//') > 2 && href.indexOf('//') < 6) {
+  if (href.indexOf('//') > 2 && href.indexOf('//') <= 6) {
     if (href.indexOf(location.origin) === 0) href = href.substring(location.origin.length); else return;
   }
   
