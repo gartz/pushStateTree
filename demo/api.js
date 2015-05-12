@@ -46,20 +46,17 @@
     // Lazy execute when template is ready
     // if it already have been cached, will execute at same instant
     ready.done(function (){
-      $('#eventsList').css('display', 'block');
-      e.preventDefault();
-      e.stopPropagation();
-      pushStateTree.pushState(null, null, '/').dispatch();
+      $('#eventsList').removeClass('out').addClass('in');
+      $('#eventListToggler').attr('href', '/api');
     });
   });
 
   $(parentRule).on('leave', function(e){
-    $('#eventsList').css('display', 'none');
+    $('#eventsList').removeClass('in').addClass('out');
+    $('#eventListToggler').attr('href', '/api/events');
   });
 
   $(rule).append(parentRule);
   $(pushStateTree).append(rule);
 
-  // This was loaded after, so the system needs to dispatch again
-  pushStateTree.dispatch();
 })($, pushStateTree);
