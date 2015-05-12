@@ -93,7 +93,7 @@
         })
         .done(function (){
 		  $('#loading').modal('hide').on('hidden.bs.modal', function(){
-			$('#main').addClass('in');
+			$('#main').toggleClass('in', true);
 		  });
       });
     }
