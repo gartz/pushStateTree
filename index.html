@@ -59,17 +59,17 @@
         $('<script>')
           .appendTo('head')
           .attr('src', location.origin + src)
-          .on('load', function(){
-            setTimeout(defer.resolve);
-          })
+          .on('load', defer.resolve)
           .on('error', defer.reject);
-        return defer.promise;
+        return defer.promise();
       }
       // Export load as global
       window.load = load;
 
       $.when(load(basePath + '/pushStateTree.js'))
-        .then(load(basePath + '/demo/main.js'))
+        .then(function(){
+          return load(basePath + '/demo/main.js');
+        })
         .done(function (){
         //console.log('script loaded');
       });
