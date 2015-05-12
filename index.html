@@ -59,7 +59,9 @@
         $('<script>')
           .appendTo('head')
           .attr('src', location.origin + src)
-          .on('load', defer.resolve)
+          .on('load', function(){
+            setTimeout(defer.resolve);
+          })
           .on('error', defer.reject);
         return defer.promise;
       }

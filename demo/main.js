@@ -45,6 +45,7 @@ $(document).on('click', 'a[href]', function (e){
   var href = $(e.target).attr('href');
   if (href.indexOf('//') > 2 && href.indexOf('//') < 6 && href.indexOf(location.origin) !== 0) return;
   e.preventDefault();
+  href = href.substring(location.origin.length);
   pushStateTree
     .pushState(null, null, href)
     .dispatch();
