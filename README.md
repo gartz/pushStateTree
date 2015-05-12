@@ -1,4 +1,4 @@
-# pushStateTree [![Analytics](https://ga-beacon.appspot.com/UA-24619548-7/pushStateTree/readme)](https://github.com/igrigorik/ga-beacon) [![NPM version](https://badge.fury.io/js/pushStateTree.png)](http://badge.fury.io/js/pushStateTree)  [![Build Status](true.png)](true)
+# pushStateTree [![Analytics](https://ga-beacon.appspot.com/UA-24619548-7/pushStateTree/readme)](https://github.com/igrigorik/ga-beacon) [![NPM version](https://badge.fury.io/js/push-state-tree.png)](http://badge.fury.io/js/push-state-tree)  [![Build Status](true.png)](true)
 
 > A browser history micro-framework that works with events, navigation of single page app easier than ever.
 
@@ -186,6 +186,8 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
   - Dispatch all enters
   - Dispatch all changes
  - update event must dispatch before enter, change or leave
+ - Add enter state when re-dispatch right after add the match rule to the checking
+ - Add reset state method for the rules
 
 ## Helper Tools
 
