@@ -825,4 +825,7 @@
   }
 
   root.PushStateTree = PushStateTree;
-})(this);
+
+  // Node import support
+  if(typeof module !== 'undefined') module.exports = PushStateTree;
+})((function(){ return this; }()));
