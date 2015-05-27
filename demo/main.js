@@ -1,5 +1,7 @@
 var demoPath = basePath + '/demo/';
 
+$('#loading').modal('show');
+
 //TODO: Optimize this function, not priority
 function navbarAdd(text, link, order){
   // Create and add menu option in the right priority order
@@ -43,9 +45,11 @@ var pushStateTree = new PushStateTree({
 // Delegate anchor clicks to use pushStateTree
 $(document).on('click', 'a[href]', function (e){
   var href = $(e.target).attr('href');
-  if (href.indexOf('//') > 2 && href.indexOf('//') < 6 && href.indexOf(location.origin) !== 0) return;
+  if (href.indexOf('//') > 2 && href.indexOf('//') <= 6) {
+    if (href.indexOf(location.origin) === 0) href = href.substring(location.origin.length); else return;
+  }
+  
   e.preventDefault();
-  href = href.substring(location.origin.length);
   pushStateTree
     .pushState(null, null, href)
     .dispatch();
@@ -54,7 +58,12 @@ $(document).on('click', 'a[href]', function (e){
 // Exponse the pushStateTree on the DOM
 $('body').append(pushStateTree);
 
-load(demoPath + 'about.js');
-//load(demoPath + 'api.js');
-load(demoPath + 'servers.js');
-load(demoPath + 'examples.js');
+$.when(
+  load(demoPath + 'about.js'),
+  load(demoPath + 'servers.js'),
+  //load(demoPath + 'examples.js'),
+  load(demoPath + 'api.js')
+).done(function(){
+  // This was loaded after, so the system needs to dispatch again
+  pushStateTree.dispatch();
+});

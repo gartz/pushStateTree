@@ -7,6 +7,27 @@
     <meta name="description" content="">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
+	<style>
+	.glyphicon-refresh-animate {
+	  -animation: spin .7s infinite linear;
+	  -webkit-animation: spin2 .7s infinite linear;
+	}
+
+	@-webkit-keyframes spin2 {
+	  from { -webkit-transform: rotate(0deg);}
+	  to { -webkit-transform: rotate(360deg);}
+	}
+
+	@keyframes spin {
+	  from { transform: scale(1) rotate(0deg);}
+	  to { transform: scale(1) rotate(360deg);}
+	}
+
+	#loading-icon {
+		zoom: 10;
+	}
+	</style>
+
     <!-- Place favicon.ico and apple-touch-icon(s) in the root directory -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
@@ -71,7 +92,9 @@
           return load(basePath + '/demo/main.js');
         })
         .done(function (){
-        //console.log('script loaded');
+		  $('#loading').modal('hide').on('hidden.bs.modal', function(){
+			$('#main').toggleClass('in', true);
+		  });
       });
     }
     </script>
@@ -81,7 +104,7 @@
         <p class="browsehappy">You are using an <strong>outdated</strong> browser. Please <a href="http://browsehappy.com/">upgrade your browser</a> to improve your experience.</p>
     <![endif]-->
     
-    <div class="container">
+    <div id="main" class="container fade">
 
       <!-- Static navbar -->
       <div class="navbar navbar-default" role="navigation">
@@ -103,6 +126,10 @@
       <a href="https://github.com/gartz/pushStateTree" class="ribbon bg-green">Fork me on GitHub</a>
 
     </div>
-    
+    <div id="loading" class="modal bs-example-modal-sm fade" role="dialog" aria-hidden="false">
+	  <div class="modal-dialog modal-sm">
+		  <span id="loading-icon" class="glyphicon glyphicon-refresh glyphicon-refresh-animate"></span>
+	  </div>
+	</div>
   </body>
 </html>

@@ -22,7 +22,4 @@
   $(rule).on('leave', function(e){
     $about.remove && $about.remove();
   });
-
-  // This was loaded after, so the system needs to dispatch again
-  pushStateTree.dispatch();
 })($, pushStateTree);
