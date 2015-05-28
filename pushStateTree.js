@@ -578,8 +578,11 @@
     },
 
     dispatch: function () {
-      // Trigger the actual browser location
-      root.dispatchEvent(new Event(POPSTATE));
+      // Deferred trigger the actual browser location
+      setTimeout(function(){
+        // setTimeout is used to avoid triggering from inside event listeners
+        root.dispatchEvent(new Event(POPSTATE));
+      }, 0);
       return this;
     },
 
