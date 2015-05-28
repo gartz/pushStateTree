@@ -50,9 +50,7 @@ $(document).on('click', 'a[href]', function (e){
   }
   
   e.preventDefault();
-  pushStateTree
-    .pushState(null, null, href)
-    .dispatch();
+  pushStateTree.navigate(href);
 });
 
 // Exponse the pushStateTree on the DOM

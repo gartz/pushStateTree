@@ -131,6 +131,7 @@ There is a lot of ways, but if you use a common `href` this wont preventDefault 
  - **pushState**: same as oficial `(state, title, url)` but is chainable
  - **replaceState**: same as oficial `(state, title, url)` but is chainable
  - **dispatch**: will dispatch the `popstate` or `hashchange` event
+ - **navigate**: shortcut to `pushState(null, null, url).dispatch()`, is chainable, and only needs the destine URL, is also available in the rules
 
 Example:
 

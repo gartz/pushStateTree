@@ -550,7 +550,10 @@
       rule[MATCH] = [];
       rule[OLD_MATCH] = [];
 
-      //TODO: Add reset method, should reset all the children when triggered
+      rule.navigate = function(){
+        // Will transverse until find the router and apply the go method on it
+        this.parentElement.navigate.apply(this.parentElement, arguments);
+      };
 
       return rule;
     },
@@ -584,6 +587,11 @@
         root.dispatchEvent(new Event(POPSTATE));
       }, 0);
       return this;
+    },
+
+    navigate: function (url) {
+      // Shortcut for pushState and dispatch methods
+      return this.pushState(null, null, url).dispatch();
     },
 
     rulesDispatcher: function () {
