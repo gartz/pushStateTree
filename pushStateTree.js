@@ -418,6 +418,12 @@
       configurable: true
     });
 
+    rootElement.eventStack = {
+      leave: [],
+      change: [],
+      enter: []
+    };
+
     root.addEventListener(POPSTATE, function () {
       rootElement.rulesDispatcher();
 
@@ -603,6 +609,45 @@
         eventsQueue.shift();
       }
 
+      // A stack of all events to be dispatched, to ensure the priority order
+      var eventStack = this.eventStack;
+
+      //TODO: DRY those 3 blocks
+      // Execute the leave stack of events
+      while (eventStack.leave.length > 0) {
+        var events = eventStack.leave[0].events;
+        var element = eventStack.leave[0].element;
+
+        //TODO: Ignore if there isn't same in the enter stack and remove it
+        while (events.length > 0){
+          element.dispatchEvent(events[0]);
+          events.shift();
+        }
+        eventStack.leave.shift();
+      }
+      while (eventStack.change.length > 0) {
+        var events = eventStack.change[0].events;
+        var element = eventStack.change[0].element;
+
+        //TODO: Ignore if there isn't same in the enter stack and remove it
+        while (events.length > 0){
+          element.dispatchEvent(events[0]);
+          events.shift();
+        }
+        eventStack.change.shift();
+      }
+      while (eventStack.enter.length > 0) {
+        var events = eventStack.enter[0].events;
+        var element = eventStack.enter[0].element;
+
+        //TODO: Ignore if there isn't same in the enter stack and remove it
+        while (events.length > 0){
+          element.dispatchEvent(events[0]);
+          events.shift();
+        }
+        eventStack.enter.shift();
+      }
+
       function recursiveDispatcher(uri, oldURI, ruleElement) {
         if (!ruleElement.rule) return;
 
@@ -661,26 +706,34 @@
           }
           children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
 
-          // dispatch leave event
-          ruleElement.dispatchEvent(new PushStateTreeEvent(LEAVE));
-
-          // dispatch the any event
-          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
-            detail: {type: LEAVE}
-          }));
+          // stack dispatch leave event
+          this.eventStack.leave.push({
+            element: ruleElement,
+            events: [
+              new PushStateTreeEvent(LEAVE),
+              new PushStateTreeEvent(UPDATE, {
+                detail: {type: LEAVE}
+              })
+            ]
+          });
           return;
         }
 
         // dispatch the match event
-        ruleElement.dispatchEvent(new PushStateTreeEvent(MATCH));
+        var matchEvent = new PushStateTreeEvent(MATCH);
 
         if (oldMatch.length === 0) {
-          // dispatch the enter event
-          ruleElement.dispatchEvent(new PushStateTreeEvent(ENTER));
-
-          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
-            detail: {type: ENTER}
-          }));
+          // stack dispatch enter event
+          this.eventStack.leave.push({
+            element: ruleElement,
+            events: [
+              matchEvent,
+              new PushStateTreeEvent(ENTER),
+              new PushStateTreeEvent(UPDATE, {
+                detail: {type: ENTER}
+              })
+            ]
+          });
 
           children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
           return;
@@ -688,11 +741,17 @@
 
         // if has something changed, dispatch the change event
         if (match[0] !== oldMatch[0]) {
-          ruleElement.dispatchEvent(new PushStateTreeEvent(CHANGE));
-
-          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
-            detail: {type: CHANGE}
-          }));
+          // stack dispatch enter event
+          this.eventStack.leave.push({
+            element: ruleElement,
+            events: [
+              matchEvent,
+              new PushStateTreeEvent(CHANGE),
+              new PushStateTreeEvent(UPDATE, {
+                detail: {type: CHANGE}
+              })
+            ]
+          });
         }
 
         children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
