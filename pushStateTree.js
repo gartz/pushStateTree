@@ -582,10 +582,7 @@
 
     dispatch: function () {
       // Deferred trigger the actual browser location
-      setTimeout(function(){
-        // setTimeout is used to avoid triggering from inside event listeners
-        root.dispatchEvent(new Event(POPSTATE));
-      }, 0);
+      root.dispatchEvent(new Event(POPSTATE));
       return this;
     },
 
