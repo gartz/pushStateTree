@@ -731,14 +731,13 @@
         }
 
         // dispatch the match event
-        var matchEvent = new PushStateTreeEvent(MATCH);
+        ruleElement.dispatchEvent(new PushStateTreeEvent(MATCH));
 
         if (oldMatch.length === 0) {
           // stack dispatch enter event
           this.eventStack.leave.push({
             element: ruleElement,
             events: [
-              matchEvent,
               new PushStateTreeEvent(UPDATE, {
                 detail: {type: ENTER}
               }),
@@ -756,7 +755,6 @@
           this.eventStack.leave.push({
             element: ruleElement,
             events: [
-              matchEvent,
               new PushStateTreeEvent(UPDATE, {
                 detail: {type: CHANGE}
               }),
