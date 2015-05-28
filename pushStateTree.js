@@ -28,7 +28,7 @@
       }
 
       var aArgs = Array.prototype.slice.call(arguments, 1),
-          fToBind = this, 
+          fToBind = this,
           FNOP = function () {},
           fBound = function () {
             var context = oThis;
@@ -53,9 +53,9 @@
     if (!Element.prototype.addEventListener) { return; }
 
     function CustomEvent(event, params) {
-      params = params || { 
-        bubbles: false, 
-        cancelable: false, 
+      params = params || {
+        bubbles: false,
+        cancelable: false,
         detail: undefined
       };
       var evt = document.createEvent('CustomEvent');
@@ -262,7 +262,7 @@
     }
     if (typeof String.prototype.trim !== 'function') {
       String.prototype.trim = function() {
-        return this.replace(/^\s+|\s+$/g, ''); 
+        return this.replace(/^\s+|\s+$/g, '');
       };
     }
     if (!Array.prototype.filter) {
@@ -467,7 +467,7 @@
       // Create a pushstreamtree-rule element from a literal object
 
       var rule = document.createElement('pushstatetree-rule');
-      
+
       // Bind rule propertie with element attribute
       var cachedRule = {
         regexp: new RegExp(),
@@ -495,7 +495,7 @@
         },
         set: rule.setAttribute.bind(rule, 'rule'),
       });
-      
+
       // Bind rule propertie with element attribute
       Object.defineProperty(rule, 'parentGroup', {
         get: function () {
@@ -514,7 +514,7 @@
           }
         },
       });
-      
+
       for (var prop in options)
       if (options.hasOwnProperty(prop)) {
         rule[prop] = options[prop];
@@ -543,7 +543,7 @@
 
       rule[MATCH] = [];
       rule[OLD_MATCH] = [];
-      
+
       //TODO: Add reset method, should reset all the children when triggered
 
       return rule;
@@ -583,19 +583,19 @@
 
       // Cache the URI, in case of an event try to change it
       var debug = this.debug;
-      
+
       function runner(uri, oldURI) {
         Array.prototype.slice.call(this.children || this.childNodes)
           .forEach(recursiveDispatcher.bind(this, uri, oldURI));
         return uri;
       }
-      
+
       eventsQueue.push(runner.bind(this, this.uri));
-      
+
       // Is there already a queue been executed, so just add the runner
       // and let the main queue resolve it
       if (eventsQueue.length > 1) { return; }
-      
+
       // Chain execute the evetsQueue
       var last = oldURI;
       while (eventsQueue.length > 0) {
@@ -701,7 +701,7 @@
   };
 
   // Wrap history methods
-  for (var method in root.history) 
+  for (var method in root.history)
   if (typeof root.history[method] === 'function') {
     (function () {
       var scopeMethod = method;
