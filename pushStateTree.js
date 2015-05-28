@@ -421,7 +421,8 @@
     rootElement.eventStack = {
       leave: [],
       change: [],
-      enter: []
+      enter: [],
+      match: []
     };
 
     root.addEventListener(POPSTATE, function () {
@@ -467,6 +468,8 @@
   var oldState = null;
   var oldURI = null;
   var eventsQueue = [];
+  var holdingDispatch = false;
+  var holdDispatch = false;
 
   PushStateTree.prototype = {
     createRule: function (options) {
@@ -582,6 +585,11 @@
 
     dispatch: function () {
       // Deferred trigger the actual browser location
+      if (holdDispatch) {
+        holdingDispatch = true;
+        return this;
+      }
+      holdingDispatch = false;
       root.dispatchEvent(new Event(POPSTATE));
       return this;
     },
@@ -617,10 +625,24 @@
         eventsQueue.shift();
       }
 
+      // If a dispatch is triggered inside a event callback, it need to hold
+      holdDispatch = true;
+
       // A stack of all events to be dispatched, to ensure the priority order
       var eventStack = this.eventStack;
 
       //TODO: DRY those 3 blocks
+      while (eventStack.match.length > 0) {
+        var events = eventStack.match[0].events;
+        var element = eventStack.match[0].element;
+
+        //TODO: Ignore if there isn't same in the enter stack and remove it
+        while (events.length > 0){
+          element.dispatchEvent(events[0]);
+          events.shift();
+        }
+        eventStack.match.shift();
+      }
       // Execute the leave stack of events
       while (eventStack.leave.length > 0) {
         var events = eventStack.leave[0].events;
@@ -654,6 +676,12 @@
           events.shift();
         }
         eventStack.enter.shift();
+      }
+
+      // If there is holding dispatchs in the event, do it now
+      holdDispatch = false;
+      if (holdingDispatch) {
+        this.dispatch();
       }
 
       function recursiveDispatcher(uri, oldURI, ruleElement) {
@@ -715,7 +743,7 @@
           children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
 
           // stack dispatch leave event
-          this.eventStack.leave.push({
+          this.eventStack[LEAVE].push({
             element: ruleElement,
             events: [
               new PushStateTreeEvent(UPDATE, {
@@ -728,11 +756,16 @@
         }
 
         // dispatch the match event
-        ruleElement.dispatchEvent(new PushStateTreeEvent(MATCH));
+        this.eventStack[MATCH].push({
+          element: ruleElement,
+          events: [
+            new PushStateTreeEvent(MATCH)
+          ]
+        });
 
         if (oldMatch.length === 0) {
           // stack dispatch enter event
-          this.eventStack.leave.push({
+          this.eventStack[ENTER].push({
             element: ruleElement,
             events: [
               new PushStateTreeEvent(UPDATE, {
@@ -749,7 +782,7 @@
         // if has something changed, dispatch the change event
         if (match[0] !== oldMatch[0]) {
           // stack dispatch enter event
-          this.eventStack.leave.push({
+          this.eventStack[CHANGE].push({
             element: ruleElement,
             events: [
               new PushStateTreeEvent(UPDATE, {
