@@ -710,10 +710,10 @@
           this.eventStack.leave.push({
             element: ruleElement,
             events: [
-              new PushStateTreeEvent(LEAVE),
               new PushStateTreeEvent(UPDATE, {
                 detail: {type: LEAVE}
-              })
+              }),
+              new PushStateTreeEvent(LEAVE)
             ]
           });
           return;
@@ -728,10 +728,10 @@
             element: ruleElement,
             events: [
               matchEvent,
-              new PushStateTreeEvent(ENTER),
               new PushStateTreeEvent(UPDATE, {
                 detail: {type: ENTER}
-              })
+              }),
+              new PushStateTreeEvent(ENTER)
             ]
           });
 
@@ -746,10 +746,10 @@
             element: ruleElement,
             events: [
               matchEvent,
-              new PushStateTreeEvent(CHANGE),
               new PushStateTreeEvent(UPDATE, {
                 detail: {type: CHANGE}
-              })
+              }),
+              new PushStateTreeEvent(CHANGE)
             ]
           });
         }
