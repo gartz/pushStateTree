@@ -28,15 +28,15 @@
       }
 
       var aArgs = Array.prototype.slice.call(arguments, 1),
-          fToBind = this,
-          FNOP = function () {},
-          fBound = function () {
-            var context = oThis;
-            if (this instanceof FNOP && oThis){
-                context = this;
-            }
-            return fToBind.apply(context, aArgs.concat(Array.prototype.slice.call(arguments)));
-          };
+        fToBind = this,
+        FNOP = function () {},
+        fBound = function () {
+          var context = oThis;
+          if (this instanceof FNOP && oThis){
+            context = this;
+          }
+          return fToBind.apply(context, aArgs.concat(Array.prototype.slice.call(arguments)));
+        };
 
       FNOP.prototype = this.prototype;
       fBound.prototype = new FNOP();
@@ -96,7 +96,7 @@
   (function () {
     if (Element.prototype.addEventListener || !Object.defineProperty) { return; }
 
-     // create an MS event object and get prototype
+    // create an MS event object and get prototype
     var proto = document.createEventObject().constructor.prototype;
 
     Object.defineProperty(proto, 'target', {
@@ -373,27 +373,27 @@
 
     //TODO: emcapsulate this
     for (var prop in PushStateTree.prototype)
-    if (PushStateTree.prototype.hasOwnProperty(prop)) {
-      (function (prop) {
-        if (typeof PushStateTree.prototype[prop] === 'function') {
-          // function wrapper
+      if (PushStateTree.prototype.hasOwnProperty(prop)) {
+        (function (prop) {
+          if (typeof PushStateTree.prototype[prop] === 'function') {
+            // function wrapper
             rootElement[prop] = function () {
               return PushStateTree.prototype[prop].apply(this, arguments);
             };
-        } else {
-          if (typeof rootElement[prop] !== 'undefined') return;
-          // property wrapper
-          Object.defineProperty(rootElement, prop, {
-            get: function () {
-              return PushStateTree.prototype[prop];
-            },
-            set: function (val) {
-              PushStateTree.prototype[prop] = val;
-            },
-          });
-        }
-      })(prop);
-    }
+          } else {
+            if (typeof rootElement[prop] !== 'undefined') return;
+            // property wrapper
+            Object.defineProperty(rootElement, prop, {
+              get: function () {
+                return PushStateTree.prototype[prop];
+              },
+              set: function (val) {
+                PushStateTree.prototype[prop] = val;
+              },
+            });
+          }
+        })(prop);
+      }
 
     wrapProperty(rootElement, 'length', root.history.length);
     wrapProperty(rootElement, 'state', root.history.state);
@@ -516,9 +516,9 @@
       });
 
       for (var prop in options)
-      if (options.hasOwnProperty(prop)) {
-        rule[prop] = options[prop];
-      }
+        if (options.hasOwnProperty(prop)) {
+          rule[prop] = options[prop];
+        }
 
       // Match is always a array, so you can test for match[n] anytime
       var match = [];
@@ -702,36 +702,36 @@
 
   // Wrap history methods
   for (var method in root.history)
-  if (typeof root.history[method] === 'function') {
-    (function () {
-      var scopeMethod = method;
-      this[method] = function () {
-        // Wrap method
+    if (typeof root.history[method] === 'function') {
+      (function () {
+        var scopeMethod = method;
+        this[method] = function () {
+          // Wrap method
 
-        // remove the method from arguments
-        var args = Array.prototype.slice.call(arguments);
+          // remove the method from arguments
+          var args = Array.prototype.slice.call(arguments);
 
-        // if has a basePath translate the not relative paths to use the basePath
-        if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
-          if (!this[USE_PUSH_STATE] && !isExternal(args[2]) && args[2][0] !== '#') {
-            if (isRelative(args[2])) {
-              args[2] = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + args[2];
-            }
-            args[2] = '#' + args[2];
-          } else if (!isExternal(args[2])) {
-            if (this.basePath && !isRelative(args[2]) && args[2][0] !== '#') {
-              args[2] = this.basePath + args[2];
+          // if has a basePath translate the not relative paths to use the basePath
+          if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
+            if (!this[USE_PUSH_STATE] && !isExternal(args[2]) && args[2][0] !== '#') {
+              if (isRelative(args[2])) {
+                args[2] = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + args[2];
+              }
+              args[2] = '#' + args[2];
+            } else if (!isExternal(args[2])) {
+              if (this.basePath && !isRelative(args[2]) && args[2][0] !== '#') {
+                args[2] = this.basePath + args[2];
+              }
             }
           }
-        }
 
-        root.history[scopeMethod].apply(root.history, args);
+          root.history[scopeMethod].apply(root.history, args);
 
-        // Chainnable
-        return this;
-      };
-    }.bind(PushStateTree.prototype))();
-  }
+          // Chainnable
+          return this;
+        };
+      }.bind(PushStateTree.prototype))();
+    }
 
   var readOnhashchange = false;
   var onhashchange = function () {
@@ -763,7 +763,7 @@
     PushStateTree.prototype.pushState = function(state, title, url) {
       var t = document.title || '';
       if (lastTitle !== null) {
-          document.title = lastTitle;
+        document.title = lastTitle;
       }
       avoidTriggering();
 
@@ -795,7 +795,7 @@
     PushStateTree.prototype.replaceState = function(state, title, url) {
       var t = document.title || '';
       if (lastTitle !== null) {
-          document.title = lastTitle;
+        document.title = lastTitle;
       }
       avoidTriggering();
 
