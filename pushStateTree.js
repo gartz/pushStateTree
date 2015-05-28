@@ -319,7 +319,7 @@
       get: function () {
         return target;
       },
-      set: function () {},
+      set: function () {}
     });
   }
 
