@@ -183,7 +183,8 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 ## Todo
 
  - Add enter state when re-dispatch right after add the match rule to the checking
- - Add reset state method for the rules
+ - Wrap location methods (like replace and assign)
+ - Add option to remove first slash when using hash navigation
 
 ## Helper Tools
 
