@@ -736,7 +736,7 @@
 
         // Not match or leave?
         if (match.length === 0) {
-          if (oldMatch.length === 0) {
+          if (oldMatch.length === 0 || ruleElement.lastMatchURI !== oldURI) {
             // just not match...
             return;
           }
@@ -763,7 +763,10 @@
           ]
         });
 
-        if (oldMatch.length === 0) {
+        var isNewURI = ruleElement.lastMatchURI !== this.uri;
+        ruleElement.lastMatchURI = this.uri;
+
+        if (oldMatch.length === 0 || isNewURI) {
           // stack dispatch enter event
           this.eventStack[ENTER].push({
             element: ruleElement,
