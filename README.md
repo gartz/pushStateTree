@@ -192,15 +192,14 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
  - Add preventDefault in match and update, to don't dispatch enter, change and leave events.
  - Add stopPropagation to don't dispatch children events
- - Move the browsers shim to another repo
- - Add common used regular expression shortcuts generator, like `something/:option1/:option2`
- - Add full compatibility with Web Components
- - Optimize some tree matching operations
+ - Decouple browsers shim
+ - Add common used regular expression shortcuts generator, like `static/:dynamic/:*nested-group`
 
 ## Todo
 
  - Wrap location methods (like replace and assign)
  - Add option to remove first slash when using hash navigation
+ - Optimize code, by removing repeated code and using wrapping techniques
 
 ## Helper Tools
 
