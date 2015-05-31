@@ -1,6 +1,19 @@
 # pushStateTree [![Analytics](https://ga-beacon.appspot.com/UA-24619548-7/pushStateTree/readme)](https://github.com/igrigorik/ga-beacon) [![NPM version](https://badge.fury.io/js/push-state-tree.png)](http://badge.fury.io/js/push-state-tree)  [![Build Status](true.png)](true)
 
-> A browser history micro-framework that works with events, navigation of single page app easier than ever.
+> A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading).
+
+## Motivation
+
+The open-source router system solutions available when I started designing this library were all working with a callback
+"match" and they are very hard to work with nested levels, and/or not support on-fly changes.
+
+The main goal to have a robust router system is to build Single Page Application, and the in the state of the art is be
+able to never needs to be reload the page, and be able to add new modules and update the existing ones. To archive it
+a robust router system is required.
+
+PushStateTree is based in another implementation for a IPTV system for a company called Cianet in Brazil made in 2011,
+at that time the project was based on Backbone library, and further I decided to create a standalone version compatible
+with IE8, and what mimic Web Components, to allow (as optional) to expose in the DOM and make easier to debug it.
 
 ### [Demo page](http://gartz.github.io/pushStateTree/)
 
@@ -9,13 +22,16 @@
 The following quick start options are available:
 
 * Install with [Bower](http://bower.io): `bower install pushStateTree`.
+* Install with [NPM](https://www.npmjs.com/): `npm install push-state-tree`.
 * Clone the repo: `git clone https://github.com/gartz/pushStateTree.git`.
 * [Download the latest release](https://github.com/gartz/pushStateTree/archive/master.zip).
 
 
 ## Getting Started
 
-Just create a instance of `PushStateTree`, the instances aren't singleton, but the rules are in a singleton.
+Create an `PushStateTree` router instance, create the as many instance of rules you need, append to the router, add
+listeners and dispatch the router, or do in the order you prefer (always dispatch if you want to events being triggered
+in the end of your routine).
 
 This means you can use in the same app rules to navigate using pushState and not using it.
 
@@ -164,12 +180,13 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
 ## Features
 
- - It's easy to use and very flexible
- - You can extend it and change how it works if you want
+ - Use event listeners for a total control of each rule in the router
+ - Allow any regular expression in the rules
+ - Allow on-fly rule add or remove
+ - It's very convenient to create lazy module loading
  - Work with all modern browsers and some old ones (IE7 or older aren't supported)
- - Use DOM methods to find and change Rules elements
- - It will use native browser features if it can
- - Min file has only 8kb with shim
+ - Use DOM methods to find and change Rules elements (compatible with jQuery)
+ - Allow use pushState and/or location.history hash navigation
 
 ## Goals
 
@@ -182,20 +199,14 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
 ## Todo
 
- - Add enter state when re-dispatch right after add the match rule to the checking
  - Wrap location methods (like replace and assign)
  - Add option to remove first slash when using hash navigation
 
 ## Helper Tools
 
- - **[RegExr](http://regexr.com/)** is a tool that help you creating regular expressions and testing it.
- - **[RegExper](http://www.regexper.com/)** is a tool that explain how your regular expression works.
-
-## Contributing
-
-Please read through the [contributing guidelines](CONTRIBUTING.md). In lieu of a formal styleguide, take care to maintain the existing coding style. Add unit tests for any new or changed functionality. Lint and test your code using [grunt](http://gruntjs.com/).
-
-Editor preferences are available in the [editor config](.editorconfig) for easy use in common text editors. Read more and download plugins at [http://editorconfig.org](http://editorconfig.org).
+ - **[Regex101](https://regex101.com/#javascript)** helps create, test and explain how to read the regular expression
+ - **[RegExr](http://regexr.com/)** like Regex101 but only focus on testing
+ - **[RegExper](http://www.regexper.com/)** create graphical flow of the regular expression explain
 
 ## License
 Copyright (c) 2014 Gabriel Reitz Giannattasio
