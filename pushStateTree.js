@@ -553,9 +553,29 @@
       rule[MATCH] = [];
       rule[OLD_MATCH] = [];
 
-      rule.navigate = function(){
+      rule.navigate = rule.assign = function(){
         // Will transverse until find the router and apply the go method on it
-        this.parentElement.navigate.apply(this.parentElement, arguments);
+        this.parentElement.assign.apply(this.parentElement, arguments);
+      };
+
+      rule.replace = function(){
+        // Will transverse until find the router and apply the go method on it
+        this.parentElement.replace.apply(this.parentElement, arguments);
+      };
+
+      rule.dispatch = function(){
+        // Will transverse until find the router and apply the go method on it
+        this.parentElement.dispatch.apply(this.parentElement, arguments);
+      };
+
+      rule.pushState = function(){
+        // Will transverse until find the router and apply the go method on it
+        this.parentElement.pushState.apply(this.parentElement, arguments);
+      };
+
+      rule.replaceState = function(){
+        // Will transverse until find the router and apply the go method on it
+        this.parentElement.replaceState.apply(this.parentElement, arguments);
       };
 
       return rule;
@@ -594,9 +614,18 @@
       return this;
     },
 
-    navigate: function (url) {
+    assign: function (url) {
       // Shortcut for pushState and dispatch methods
       return this.pushState(null, null, url).dispatch();
+    },
+
+    replace: function (url) {
+      // Shortcut for pushState and dispatch methods
+      return this.replaceState(null, null, url).dispatch();
+    },
+
+    navigate: function(){
+      this.assign.apply(this, arguments);
     },
 
     rulesDispatcher: function () {
