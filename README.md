@@ -49,7 +49,7 @@ The options passed to rule will be used as element properties, so if you setup `
 
 To create a Rule use the method `createRule` from `PushStateTree`, then you can appendChild to the instance, example:
 
-```
+```js
 var pushStateTree = new PushStateTree();
 
 // Create a Rule element
@@ -64,14 +64,14 @@ pushStateTree.appendChild(myRuleElement);
 
 If you remove a rule from pushStateTree, it will be disabled and no events will be triggered to it until you append it back.
 
-```
+```js
 // Remove from pushStateTree to disable
 pushStateTree.removeChild(myRuleElement);
 ```
 
 And you can create nested child rules:
 
-```
+```js
 // Create a Rule element
 var myChildRuleELement = pushStateTree.createRule({
   rule: /child/i
@@ -86,7 +86,7 @@ This child rule depends the `myRuleElement` so if the parent dispatch a `leave` 
 
 The `parentGroup` is the match position from the other rule, example:
 
-```
+```js
 var matchExample = 'foo/bar/zaz'.match(/foo\/(.+)\/(.+)/i);
 
 // ---------\/----- this number indicate the parentGroup
@@ -97,7 +97,7 @@ matchExample[2]; // zaz
 
 There is a shortcut to `createRule` and `appendChild` tha is called `add`:
 
-```
+```js
 // Create a Rule element
 pushStateTree.add({
   rule: /foo\/(.+)\/(.+)/i
@@ -110,7 +110,7 @@ This is the easiest part at all. Rules are *HTMLElements* so you just need to fi
 
 Using `querySelector`:
 
-```
+```js
   pushStateTree.querySelector('#id'); // find by id
   pushStateTree.querySelector('.class'); // find by class
   pushStateTree.querySelector('pushstatetree-rule > pushstatetree-rule'); // find by tag
@@ -151,7 +151,7 @@ There is a lot of ways, but if you use a common `href` this wont preventDefault 
 
 Example:
 
-```
+```js
 pushStateTree.pushState({foo: 'bar'}, 'no title', 'foo/bar/zaz');
 // it changed the url, added to history, but doesn't trigger any event.
 
