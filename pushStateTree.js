@@ -660,18 +660,8 @@
       // A stack of all events to be dispatched, to ensure the priority order
       var eventStack = this.eventStack;
 
-      //TODO: DRY those 3 blocks
-      while (eventStack.match.length > 0) {
-        var events = eventStack.match[0].events;
-        var element = eventStack.match[0].element;
+      //TODO: DRY those blocks
 
-        //TODO: Ignore if there isn't same in the enter stack and remove it
-        while (events.length > 0){
-          element.dispatchEvent(events[0]);
-          events.shift();
-        }
-        eventStack.match.shift();
-      }
       // Execute the leave stack of events
       while (eventStack.leave.length > 0) {
         var events = eventStack.leave[0].events;
@@ -705,6 +695,17 @@
           events.shift();
         }
         eventStack.enter.shift();
+      }
+      while (eventStack.match.length > 0) {
+        var events = eventStack.match[0].events;
+        var element = eventStack.match[0].element;
+
+        //TODO: Ignore if there isn't same in the enter stack and remove it
+        while (events.length > 0){
+          element.dispatchEvent(events[0]);
+          events.shift();
+        }
+        eventStack.match.shift();
       }
 
       // If there is holding dispatchs in the event, do it now
