@@ -56,7 +56,7 @@
     $template.remove && $template.remove();
   });
 
-  $(scrollSpyRule).on('update', function(event){
+  $(scrollSpyRule).on('match', function(event){
     // on match any scroll spy rule, animate the scroll to the element with the corresponding ID on DOM if it exists
 
     var oEvent = event.originalEvent;
