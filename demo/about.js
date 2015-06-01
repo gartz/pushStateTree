@@ -1,4 +1,4 @@
-/* global $, pushStateTree, demoPath */
+/* global $, pushStateTree, demoPath, navbarAdd */
 (function($, pushStateTree){
   'use strict';
 
@@ -18,7 +18,7 @@
 
   function onEnter(){
     ready.done(function (){
-      $('body .container').append($about);
+      $('#content').append($about);
     });
   }
 

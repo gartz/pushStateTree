@@ -26,7 +26,7 @@
     // Lazy execute when template is ready
     // if it already have been cached, will execute at same instant
     ready.done(function (){
-      $('body .container').append($about);
+      $('#content').append($about);
     });
   });
 
