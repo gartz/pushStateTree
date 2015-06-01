@@ -1,4 +1,7 @@
+/* global $, pushStateTree, demoPath */
 (function($, pushStateTree){
+  'use strict';
+
   var rule = pushStateTree.createRule({
     id: 'about',
     rule: /^$/
@@ -9,17 +12,23 @@
   var $about;
   
   // Load template
-  var ready = $.ajax(demoPath + 'about.html').done(function (tmpl){
-    $about = $(tmpl);
+  var ready = $.ajax(demoPath + 'about.html').done(function (template){
+    $about = $(template);
   });
 
-  $(rule).on('enter', function(e){
+  function onEnter(){
     ready.done(function (){
       $('body .container').append($about);
     });
-  });
-  
-  $(rule).on('leave', function(e){
+  }
+
+  function onLeave(e){
     $about.remove && $about.remove();
-  });
+  }
+
+  $(rule)
+    .on('enter', onEnter)
+    .on('leave', onLeave)
+    .get(0).dispatch();
+
 })($, pushStateTree);

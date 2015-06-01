@@ -1,4 +1,7 @@
+/* global $, pushStateTree, demoPath, navbarAdd */
 (function($, pushStateTree){
+  'use strict';
+
   var rule = pushStateTree.createRule({
     id: 'api',
     rule: /^api($|\/(.*))/
@@ -32,31 +35,36 @@
     $about.remove && $about.remove();
   });
 
-  var parentRule = pushStateTree.createRule({
-    id: 'events',
-    parentGroup: 2,
-    rule: /(.+)/
-  });
-
-  $(parentRule).on('change', function(e){
-    debugger;
-  });
-
-  $(parentRule).on('enter', function(e){
+  function onEnter(){
     // Lazy execute when template is ready
     // if it already have been cached, will execute at same instant
     ready.done(function (){
       $('#eventsList').removeClass('out').addClass('in');
       $('#eventListToggler').attr('href', '/api');
     });
-  });
+  }
 
-  $(parentRule).on('leave', function(e){
+  function onLeave(){
     $('#eventsList').removeClass('in').addClass('out');
     $('#eventListToggler').attr('href', '/api/events');
+  }
+
+  function onChange(){
+
+  }
+
+  var parentRule = pushStateTree.createRule({
+    id: 'events',
+    parentGroup: 2,
+    rule: /(.+)/
   });
 
-  $(rule).append(parentRule);
-  $(pushStateTree).append(rule);
+  $(parentRule)
+    .on('enter', onEnter)
+    .on('change', onChange)
+    .on('leave', onLeave)
+    .appendTo(rule).parent()
+    .appendTo(pushStateTree)
+    .get(0).dispatch();
 
 })($, pushStateTree);

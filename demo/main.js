@@ -1,3 +1,6 @@
+/* global load, PushStateTree, basePath, $ */
+"use strict";
+
 var demoPath = basePath + '/demo/';
 
 $('#loading').modal('show');
@@ -7,13 +10,13 @@ function navbarAdd(text, link, order){
   // Create and add menu option in the right priority order
 
   order = order || 1;
-  $navbarAnchor = $('<li><a></a></li>');
+  var $navbarAnchor = $('<li><a></a></li>');
   $navbarAnchor.find('a')
     .data('order', order)
     .attr('href', location.origin + link)
     .text(text);
-  $navbarMain = $('#navbarMain');
-  $anchors = $navbarMain.find('a[data-order]');
+  var $navbarMain = $('#navbarMain');
+  var $anchors = $navbarMain.find('a[data-order]');
   if ($anchors.length === 0){
     $navbarMain.append($navbarAnchor);
   } else {
@@ -43,25 +46,28 @@ var pushStateTree = new PushStateTree({
 });
 
 // Delegate anchor clicks to use pushStateTree
-$(document).on('click', 'a[href]', function (e){
+$(document).on('click', 'a[href]', function (e) {
   var href = $(e.target).attr('href');
   if (href.indexOf('//') > 2 && href.indexOf('//') <= 6) {
-    if (href.indexOf(location.origin) === 0) href = href.substring(location.origin.length); else return;
+    if (href.indexOf(location.origin) === 0) {
+      href = href.substring(location.origin.length);
+    } else {
+      return;
+    }
   }
   
   e.preventDefault();
   pushStateTree.navigate(href);
 });
 
-// Exponse the pushStateTree on the DOM
+// Expose the pushStateTree on the DOM
 $('body').append(pushStateTree);
 
-$.when(
-  load(demoPath + 'about.js'),
-  load(demoPath + 'servers.js'),
-  //load(demoPath + 'examples.js'),
-  load(demoPath + 'api.js')
-).done(function(){
-  // This was loaded after, so the system needs to dispatch again
-  pushStateTree.dispatch();
-});
+
+load(demoPath + 'about.js');
+load(demoPath + 'servers.js');
+//load(demoPath + 'examples.js');
+load(demoPath + 'api.js');
+
+// This was loaded after, so the system needs to dispatch again
+pushStateTree.dispatch();
