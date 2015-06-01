@@ -758,6 +758,7 @@
               useURI: useURI,
               useOldURI: useOldURI
             });
+            console.trace();
           }
           var event = new root.CustomEvent(name, params);
           return event;
@@ -792,7 +793,7 @@
           ]
         });
 
-        var isNewURI = ruleElement.lastMatchURI !== this.uri;
+        var isNewURI = ruleElement.lastMatchURI !== oldURI;
         ruleElement.lastMatchURI = this.uri;
 
         if (oldMatch.length === 0 || isNewURI) {
