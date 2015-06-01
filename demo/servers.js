@@ -1,21 +1,17 @@
-/* global $, pushStateTree, demoPath, navbarAdd */
+/* global $, pushStateTree, demoPath, navbarAdd, trottle */
 
 (function($, pushStateTree){
   'use strict';
 
   var rule = pushStateTree.createRule({
     id: 'servers',
-    rule: /^servers\/(.*)/
+    rule: /^servers(\/)?(.*)/
   });
   var scrollSpyRule = pushStateTree.createRule({
     id: 'server-scrollspy',
-    parentGroup: 1,
+    parentGroup: 2,
     rule: /[^/]+/
   });
-
-  $(rule)
-    .append(scrollSpyRule)
-    .appendTo(pushStateTree);
   
   // Add menu option in the first load
   navbarAdd('Servers', '/servers/', 3);
@@ -24,11 +20,6 @@
   var $body = $('body');
   var $window = $(window);
   var $sidebar;
-  
-  // Load template
-  var ready = $.ajax(demoPath + 'servers.html').done(function (template){
-    $template = $(template);
-  }).promise();
 
   var onScroll = trottle(function (){
     if (!$sidebar) return;
@@ -40,12 +31,23 @@
       $sidebar.toggleClass('affix-top', false).toggleClass('affix', true);
     }
   }, 50);
+  
+  // Load template
+  $.ajax(demoPath + 'servers.html').done(function (template){
+    $template = $(template);
+  }).done(function(){
+    // Add the rules after the HTML is loaded, and then dispatch the url changing check
+    $(rule)
+      .append(scrollSpyRule)
+      .appendTo(pushStateTree)
+      .get(0).dispatch();
+  });
+
+
 
   $(rule).on('enter', function(){
-    ready.done(function (){
-      $('#content').append($template);
-      $sidebar = $template.find('.bs-docs-sidebar');
-    });
+    $('#content').append($template);
+    $sidebar = $template.find('.bs-docs-sidebar');
 
     // Listen for scroll event
     $window.on('scroll', onScroll);
@@ -54,6 +56,16 @@
     $window.off('scroll', onScroll);
 
     $template.remove && $template.remove();
+  }).on('match', function(event){
+    // if match the app uri, but without the end slash redirect to add the slash, this make relative links work
+
+    var oEvent = event.originalEvent;
+    var uri = oEvent.detail.match[0];
+    var hasSlash = !!oEvent.detail.match[1];
+
+    if (!hasSlash) {
+      this.replace(uri + '/');
+    }
   });
 
   $(scrollSpyRule).on('match', function(event){
@@ -62,23 +74,21 @@
     var oEvent = event.originalEvent;
     var section = oEvent.detail.match[0];
 
-    ready.done(function () {
-      var $focusDocElement = $('#' + section);
-      $body.animate({
-        scrollTop: $focusDocElement.offset().top
-      }, 300, function(){
-        $focusDocElement.css({
-          backgroundColor: '#ffffcc'
-        });
-        setTimeout(function(){
-          $focusDocElement.css({
-            backgroundColor: ''
-          });
-        }, 1e3);
+    var $focusDocElement = $('#' + section);
+    $body.animate({
+      scrollTop: $focusDocElement.offset().top
+    }, 300, function(){
+      $focusDocElement.css({
+        backgroundColor: '#ffffcc'
       });
-      $sidebar.find('.active').removeClass('active');
-      $sidebar.find('[href="' + section + '"]').parents('li').addClass('active');
+      setTimeout(function(){
+        $focusDocElement.css({
+          backgroundColor: ''
+        });
+      }, 1e3);
     });
+    $sidebar.find('.active').removeClass('active');
+    $sidebar.find('[href="' + section + '"]').parents('li').addClass('active');
   });
 
 })($, pushStateTree);
