@@ -767,10 +767,13 @@
 
         // Not match or leave?
         if (match.length === 0) {
-          if (oldMatch.length === 0 || ruleElement.lastMatchURI !== oldURI) {
+          if (oldMatch.length === 0 || ruleElement.routerURI !== oldURI) {
             // just not match...
             return;
           }
+          ruleElement.uri = null;
+          ruleElement.removeAttribute('uri');
+
           children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
 
           // stack dispatch leave event
@@ -794,8 +797,10 @@
           ]
         });
 
-        var isNewURI = ruleElement.lastMatchURI !== oldURI;
-        ruleElement.lastMatchURI = this.uri;
+        var isNewURI = ruleElement.routerURI !== oldURI;
+        ruleElement.routerURI = this.uri;
+        ruleElement.uri = match[0];
+        ruleElement.setAttribute('uri', match[0]);
 
         if (oldMatch.length === 0 || isNewURI) {
           // stack dispatch enter event
