@@ -660,53 +660,21 @@
       // A stack of all events to be dispatched, to ensure the priority order
       var eventStack = this.eventStack;
 
-      //TODO: DRY those blocks
+      // Order of events stack execution
+      [LEAVE, CHANGE, ENTER, MATCH].forEach(function(type){
+        // Execute the leave stack of events
+        while (eventStack[type].length > 0) {
+          var events = eventStack[type][0].events;
+          var element = eventStack[type][0].element;
 
-      // Execute the leave stack of events
-      while (eventStack.leave.length > 0) {
-        var events = eventStack.leave[0].events;
-        var element = eventStack.leave[0].element;
-
-        //TODO: Ignore if there isn't same in the enter stack and remove it
-        while (events.length > 0){
-          element.dispatchEvent(events[0]);
-          events.shift();
+          //TODO: Ignore if there isn't same in the enter stack and remove it
+          while (events.length > 0){
+            element.dispatchEvent(events[0]);
+            events.shift();
+          }
+          eventStack[type].shift();
         }
-        eventStack.leave.shift();
-      }
-      while (eventStack.change.length > 0) {
-        var events = eventStack.change[0].events;
-        var element = eventStack.change[0].element;
-
-        //TODO: Ignore if there isn't same in the enter stack and remove it
-        while (events.length > 0){
-          element.dispatchEvent(events[0]);
-          events.shift();
-        }
-        eventStack.change.shift();
-      }
-      while (eventStack.enter.length > 0) {
-        var events = eventStack.enter[0].events;
-        var element = eventStack.enter[0].element;
-
-        //TODO: Ignore if there isn't same in the enter stack and remove it
-        while (events.length > 0){
-          element.dispatchEvent(events[0]);
-          events.shift();
-        }
-        eventStack.enter.shift();
-      }
-      while (eventStack.match.length > 0) {
-        var events = eventStack.match[0].events;
-        var element = eventStack.match[0].element;
-
-        //TODO: Ignore if there isn't same in the enter stack and remove it
-        while (events.length > 0){
-          element.dispatchEvent(events[0]);
-          events.shift();
-        }
-        eventStack.match.shift();
-      }
+      });
 
       // If there is holding dispatchs in the event, do it now
       holdDispatch = false;
