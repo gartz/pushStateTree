@@ -20,17 +20,25 @@
   var $body = $('body');
   var $window = $(window);
   var $sidebar;
+  var $anchorElements;
 
-  var onScroll = trottle(function (){
-    if (!$sidebar) return;
-    if ($sidebar.parent().offset().top >= $body.scrollTop()) {
-      if($sidebar.hasClass('affix-top')) return;
-      $sidebar.toggleClass('affix-top', true).toggleClass('affix', false);
-    } else {
-      if($sidebar.hasClass('affix')) return;
-      $sidebar.toggleClass('affix-top', false).toggleClass('affix', true);
-    }
-  }, 50);
+  var onScroll = (function (pixels){
+    var lastPos = 0;
+    return function(){
+      // Firefox or Chrome
+      var pos = $('html').scrollTop() || $('body').scrollTop();
+      if (!(lastPos + pixels < pos || lastPos - pixels > pos)) return;
+      lastPos = pos;
+
+      if ($sidebar.parent().offset().top >= pos) {
+        if($sidebar.hasClass('affix-top')) return;
+        $sidebar.toggleClass('affix-top', true).toggleClass('affix', false);
+      } else {
+        if($sidebar.hasClass('affix')) return;
+        $sidebar.toggleClass('affix-top', false).toggleClass('affix', true);
+      }
+    };
+  }(10));
   
   // Load template
   $.ajax(demoPath + 'servers.html').done(function (template){
@@ -43,17 +51,49 @@
       .get(0).dispatch();
   });
 
+  var scrollspy = function(event){
 
+    // Avoid multiple re
+    if($(event.target).find('.active').length > 0) return;
+    var uri = $(event.target).find('a[href]').attr('href').slice(1);
+
+    // Replace the URL, but don't dispatch (because the animation for match it)
+    scrollSpyRule.replaceState(null, null, uri);
+  };
 
   $(rule).on('enter', function(){
     $('#content').append($template);
+    $anchorElements = $template.find('[role=main] [id]');
     $sidebar = $template.find('.bs-docs-sidebar');
+
+    // Enable Bootstrap scrollspy
+    $body
+      .attr({
+        'data-spy': 'scroll',
+        'data-target': '.bs-docs-sidebar',
+        'data-offset': '0'
+      })
+      .scrollspy('refresh')
+      .on('activate.bs.scrollspy', scrollspy);
 
     // Listen for scroll event
     $window.on('scroll', onScroll);
+
+    // Apply on enter
+    onScroll();
   }).on('leave', function(){
     // Stop listening for scroll event
     $window.off('scroll', onScroll);
+
+    // Disable Bootstrap scrollspy
+    $body
+      .attr({
+        'data-spy': '',
+        'data-target': '',
+        'data-offset': ''
+      })
+      .scrollspy('refresh')
+      .off('activate.bs.scrollspy', scrollspy);
 
     $template.remove && $template.remove();
   }).on('match', function(event){
@@ -68,6 +108,8 @@
     }
   });
 
+  var $animation;
+
   $(scrollSpyRule).on('match', function(event){
     // on match any scroll spy rule, animate the scroll to the element with the corresponding ID on DOM if it exists
 
@@ -75,7 +117,10 @@
     var section = oEvent.detail.match[0];
 
     var $focusDocElement = $('#' + section);
-    $body.animate({
+    $animation && $animation.stop();
+
+    // Firefox use html, and webkit uses body
+    $animation = $('html, body').animate({
       scrollTop: $focusDocElement.offset().top
     }, 300, function(){
       $focusDocElement.css({
@@ -87,8 +132,6 @@
         });
       }, 1e3);
     });
-    $sidebar.find('.active').removeClass('active');
-    $sidebar.find('[href="' + section + '"]').parents('li').addClass('active');
   });
 
 })($, pushStateTree);

@@ -1,3 +1,8 @@
+body {
+    position: relative;
+    height: 100%;
+}
+
 .ribbon {
     top: 3.2em;
     right: -3.7em;

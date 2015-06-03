@@ -22,7 +22,7 @@ function debounce(func, wait, immediate) {
     timeout = setTimeout(later, wait);
     if (callNow) func.apply(context, args);
   };
-};
+}
 
 function trottle(func, wait) {
   var timeout;
@@ -34,7 +34,7 @@ function trottle(func, wait) {
     if (!timeout) func.apply(context, args);
     timeout = setTimeout(later, wait);
   };
-};
+}
 
 //TODO: Optimize this function, not priority
 function navbarAdd(text, link, order){
@@ -88,6 +88,8 @@ $(document).on('click', 'a[href]', function (e) {
   }
   
   e.preventDefault();
+  if(href[0] == '#') href = href.slice(1);
+
   pushStateTree.navigate(href);
 });
 
