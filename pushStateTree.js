@@ -505,7 +505,7 @@
         set: rule.setAttribute.bind(rule, 'rule'),
       });
 
-      // Bind rule propertie with element attribute
+      // Bind rule property with element attribute
       Object.defineProperty(rule, 'parentGroup', {
         get: function () {
           var attr = rule.getAttribute('parent-group');
@@ -553,30 +553,12 @@
       rule[MATCH] = [];
       rule[OLD_MATCH] = [];
 
-      rule.navigate = rule.assign = function(){
-        // Will transverse until find the router and apply the go method on it
-        this.parentElement.assign.apply(this.parentElement, arguments);
-      };
-
-      rule.replace = function(){
-        // Will transverse until find the router and apply the go method on it
-        this.parentElement.replace.apply(this.parentElement, arguments);
-      };
-
-      rule.dispatch = function(){
-        // Will transverse until find the router and apply the go method on it
-        this.parentElement.dispatch.apply(this.parentElement, arguments);
-      };
-
-      rule.pushState = function(){
-        // Will transverse until find the router and apply the go method on it
-        this.parentElement.pushState.apply(this.parentElement, arguments);
-      };
-
-      rule.replaceState = function(){
-        // Will transverse until find the router and apply the go method on it
-        this.parentElement.replaceState.apply(this.parentElement, arguments);
-      };
+      // Replicate the methods from `router` to the rule, by transversing until find and execute the router method
+      ['assign', 'navigate', 'replace', 'dispatch', 'pushState', 'replaceState'].forEach(function(methodName){
+        rule[methodName] = function(){
+          this.parentElement[methodName].apply(this.parentElement, arguments);
+        };
+      });
 
       return rule;
     },
