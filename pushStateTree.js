@@ -560,7 +560,6 @@
 
     remove: function (queryOrElement) {
       // Remove a pushstateree-rule, pass a element or it query
-      //TODO: Should be moved to Utils, it's just a shortcut
 
       var element = queryOrElement;
       if (typeof queryOrElement === 'string') {
@@ -631,7 +630,7 @@
       var eventStack = this.eventStack;
 
       // Order of events stack execution
-      [LEAVE, CHANGE, ENTER, MATCH].forEach(function(type){
+      [CHANGE, ENTER, MATCH].forEach(function(type){
         // Execute the leave stack of events
         while (eventStack[type].length > 0) {
           var events = eventStack[type][0].events;
@@ -714,16 +713,12 @@
 
           children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
 
-          // stack dispatch leave event
-          this.eventStack[LEAVE].push({
-            element: ruleElement,
-            events: [
-              new PushStateTreeEvent(UPDATE, {
-                detail: {type: LEAVE}
-              }),
-              new PushStateTreeEvent(LEAVE)
-            ]
-          });
+          // Don't use stack for LEAVE event, dispatch in this loop
+          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
+            detail: {type: LEAVE}
+          }));
+
+          ruleElement.dispatchEvent(new PushStateTreeEvent(LEAVE));
           return;
         }
 
