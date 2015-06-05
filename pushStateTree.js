@@ -355,6 +355,9 @@
     }
     ready = true;
 
+    // Allow to switch between using pushState or hash navigation mode, browser that doesn't support
+    // pushState will always be false, and use hash navigation, use backend 301 redirect when detect
+    // old browsers request, to load in you basePath and use hash to match the destine or let it ugly :)
     if (!PushStateTree.prototype.hasPushState) {
       wrapProperty(rootElement, USE_PUSH_STATE, false);
     } else {
@@ -364,10 +367,20 @@
         },
         set: function (val) {
           PushStateTree.prototype[USE_PUSH_STATE] = val !== false;
-        },
+        }
       });
       PushStateTree.prototype[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
     }
+
+    // When enabled beautifyLocation will auto switch between hash to pushState if the same is supported
+    Object.defineProperty(rootElement, 'beautifyLocation', {
+      get: function () {
+        return !!PushStateTree.prototype.beautifyLocation;
+      },
+      set: function (val) {
+        PushStateTree.prototype.beautifyLocation = !!val;
+      }
+    });
 
     rootElement.basePath = options.basePath || rootElement.basePath || '';
 
@@ -406,7 +419,7 @@
           // Remove all begin # chars from the location when using hash
           uri = location.hash.match(/^(#*)?(.*\/?)/)[2];
 
-          if (rootElement.usePushState) {
+          if (rootElement.beautifyLocation && rootElement.usePushState) {
             // when using pushState, replace the browser location to avoid ugly URLs
             rootElement.replaceState(rootElement.state, rootElement.title, uri[0] === '/' ? uri : '/' + uri);
           }
@@ -483,6 +496,9 @@
   var holdDispatch = false;
 
   PushStateTree.prototype = {
+    // Version ~0.11 beatifyLocation is enabled by default
+    beautifyLocation: true,
+
     createRule: function (options) {
       // Create a pushstreamtree-rule element from a literal object
 
