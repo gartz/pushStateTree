@@ -553,9 +553,9 @@
 
     add: function (options) {
       // Transform any literal object in a pushstatetree-rule and append it
-      //TODO: It should be moved to Utils, it's just a shortcut
 
       this.appendChild(this.createRule(options));
+      return this;
     },
 
     remove: function (queryOrElement) {
