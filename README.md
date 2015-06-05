@@ -139,6 +139,7 @@ Importante note: *match* will not dispatch when *leave*, because it doesn't matc
 Options you can pass in the constructor params.
 
  - *usePushState*: Boolean, default is true, if you disable it will use a hash `#` in your pushState/replaceState urls.
+ - *beautifyLocation*: Boolean, default is true, this will replace URL with hash to the pushState corresponding url.
 
 If you chose to support old browsers, make sur your backend detect the browser support to pushState, if it doesn't the feature is auto-disabled, so a good aproach is to redirect the request in the backend to a URL with hash, exemple: `www.exemple.com/my/route/to/app` if browser don't support pushState redirect to `www.exemple.com/#my/route/to/app`.
 
