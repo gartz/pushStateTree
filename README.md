@@ -141,11 +141,11 @@ Options you can pass in the constructor params.
  - *usePushState*: Boolean, default is true, if you disable it will use a hash `#` in your pushState/replaceState urls.
  - *beautifyLocation*: Boolean, default is true, this will replace URL with hash to the pushState corresponding url.
 
-If you chose to support old browsers, make sur your backend detect the browser support to pushState, if it doesn't the feature is auto-disabled, so a good aproach is to redirect the request in the backend to a URL with hash, exemple: `www.exemple.com/my/route/to/app` if browser don't support pushState redirect to `www.exemple.com/#my/route/to/app`.
+If you chose to support old browsers, make sur your backend detect the browser support to pushState, if it doesn't the feature is auto-disabled, so a good aproach is to redirect the request in the backend to a URL with hash, example: `www.exemple.com/my/route/to/app` if browser don't support pushState redirect to `www.exemple.com/#my/route/to/app`.
 
 By not doing a redirect in the backend and support non-modern browsers, when the user start navigating using the PushStateTree methods, it will end in adress that looks like this: `www.exemple.com/my/route/to/app#my/route/to/anotherApp`
 
-You can disable the pushState and use only hash navigation, like we do in our [demo](http://gartz.github.io/pushStateTree/), what if you execute by `npm start` in your local enviroment will support pushState support as default, because we use a node server that support's it.
+You can disable the pushState and use only hash navigation, like we do in our [demo](http://gartz.github.io/pushStateTree/), what if you execute by `npm start` in your local environment will support pushState support as default, because we use a node server that support it.
 
 ### Navigating
 

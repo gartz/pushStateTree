@@ -55,7 +55,14 @@
 
     // Avoid multiple re
     if($(event.target).find('.active').length > 0) return;
-    var uri = $(event.target).find('a[href]').attr('href').slice(1);
+    var $anchor = $(event.target).find('a[href]');
+    if (!$anchor || $anchor.length === 0) return;
+
+    var uri = $anchor.attr('href');
+
+    // Old browsers show links that can conflict here
+    if(uri.indexOf('http://') == 0 || uri.indexOf('https://') == 0) return;
+
 
     // Replace the URL, but don't dispatch (because the animation for match it)
     scrollSpyRule.replaceState(null, null, uri);
@@ -118,6 +125,7 @@
 
     var $focusDocElement = $('#' + section);
     $animation && $animation.stop();
+    if (!$focusDocElement || $focusDocElement.length === 0) return;
 
     // Firefox use html, and webkit uses body
     $animation = $('html, body').animate({
