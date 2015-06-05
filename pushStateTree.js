@@ -784,13 +784,18 @@
 
           // if has a basePath translate the not relative paths to use the basePath
           if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
-            if (!this[USE_PUSH_STATE] && !isExternal(args[2]) && args[2][0] !== '#') {
+
+            // PushState doesn't work with hash char, remove it if was pushed in the begin of the uri
+            args[2] = args[2].match(/^(#*)?(.*\/?)/)[2];
+
+            if (!this[USE_PUSH_STATE] && !isExternal(args[2])) {
               if (isRelative(args[2])) {
-                args[2] = root.location.hash.match(/#(.*\/)/)[1] + args[2];
+                args[2] = root.location.hash.match(/(.*\/)/)[1] + args[2];
               }
               args[2] = '#' + args[2];
             } else if (!isExternal(args[2])) {
-              if (this.basePath && !isRelative(args[2]) && args[2][0] !== '#') {
+              if (this.basePath && !isRelative(args[2])) {
+                // Remove from the uri all begin chars of #
                 args[2] = this.basePath + args[2];
               }
             }
