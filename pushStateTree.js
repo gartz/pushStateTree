@@ -477,39 +477,27 @@
 
       var rule = document.createElement('pushstatetree-rule');
 
-      // Bind rule propertie with element attribute
-      var cachedRule = {
-        regexp: new RegExp(),
-        attribute: ''
-      };
+      // Bind rule property with element attribute
       Object.defineProperty(rule, 'rule', {
         get: function () {
           var attr = rule.getAttribute('rule') || '';
-          if (cachedRule.attribute !== attr) {
-            cachedRule.attribute = attr;
-            //TODO: reset the rule state, after current queue of events
+          if (rule.calculatedRuleString !== attr) {
+            rule.calculatedRuleString = attr;
 
-            // Detect RegExp with flags
-            var flags = '';
-            if (attr[0] === '/') {
-              var lastSlash = attr.lastIndexOf('/');
-              if (lastSlash > 0) {
-                flags = attr.slice(lastSlash + 1);
-                attr = attr.slice(1, lastSlash);
-              }
-            }
-            cachedRule.regexp = new RegExp(attr, flags);
+            // Slice the pattern from the attribute
+            var slicedPattern = attr.match(/^\/(.+)\/([gmi]*)|(.*)/);
+
+            rule.calculatedRule = new RegExp(slicedPattern[1] || slicedPattern[3], slicedPattern[2]);
           }
-          return cachedRule.regexp ;
+          return rule.calculatedRule ;
         },
-        set: rule.setAttribute.bind(rule, 'rule'),
+        set: rule.setAttribute.bind(rule, 'rule')
       });
 
       // Bind rule property with element attribute
       Object.defineProperty(rule, 'parentGroup', {
         get: function () {
           var attr = rule.getAttribute('parent-group');
-          //TODO: reset state when parent-group has changed or if the parent element has changed
           if (attr && isInt(attr)) {
             return + attr;
           }
