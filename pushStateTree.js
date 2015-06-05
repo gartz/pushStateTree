@@ -504,21 +504,29 @@
 
       var rule = document.createElement('pushstatetree-rule');
 
+      var ruleRegex = new RegExp('');
+
       // Bind rule property with element attribute
       Object.defineProperty(rule, 'rule', {
         get: function () {
-          var attr = rule.getAttribute('rule') || '';
-          if (rule.calculatedRuleString !== attr) {
-            rule.calculatedRuleString = attr;
+          return ruleRegex;
+        },
+        set: function (val) {
+          if (val instanceof RegExp){
+            ruleRegex = val;
+          } else {
+
+            // IE8 trigger set from the property when update the attribute, avoid recursive loop
+            if(val == ruleRegex.toString()) return;
 
             // Slice the pattern from the attribute
-            var slicedPattern = attr.match(/^\/(.+)\/([gmi]*)|(.*)/);
+            var slicedPattern = (val + '').match(/^\/(.+)\/([gmi]*)|(.*)/);
 
-            rule.calculatedRule = new RegExp(slicedPattern[1] || slicedPattern[3], slicedPattern[2]);
+            ruleRegex = new RegExp(slicedPattern[1] || slicedPattern[3], slicedPattern[2]);
           }
-          return rule.calculatedRule ;
-        },
-        set: rule.setAttribute.bind(rule, 'rule')
+
+          rule.setAttribute('rule', ruleRegex.toString());
+        }
       });
 
       // Bind rule property with element attribute
@@ -536,7 +544,7 @@
           } else {
             rule.removeAttribute('parent-group');
           }
-        },
+        }
       });
 
       for (var prop in options)
@@ -724,7 +732,7 @@
               useURI: useURI,
               useOldURI: useOldURI
             });
-            console.trace();
+            console.trace && console.trace();
           }
           var event = new root.CustomEvent(name, params);
           return event;
@@ -863,29 +871,30 @@
   var lastTitle = null;
 
   if (!PushStateTree.prototype.pushState) {
-    PushStateTree.prototype.pushState = function(state, title, url) {
+    PushStateTree.prototype.pushState = function(state, title, uri) {
       var t = document.title || '';
+      uri = uri || '';
       if (lastTitle !== null) {
         document.title = lastTitle;
       }
       avoidTriggering();
 
       // Replace hash url
-      if (isExternal(url)) {
+      if (isExternal(uri)) {
         // this will redirect the browser, so doesn't matters the rest...
-        root.location.href = url;
+        root.location.href = uri;
       }
 
       // Remove the has if is it present
-      if (url[0] === '#') {
-        url = url.slice(1);
+      if (uri[0] === '#') {
+        uri = uri.slice(1);
       }
 
-      if (isRelative(url)) {
-        url = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + url;
+      if (isRelative(uri)) {
+        uri = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + uri;
       }
 
-      root.location.hash = url;
+      root.location.hash = uri;
 
       document.title = t;
       lastTitle = title;
@@ -895,31 +904,32 @@
   }
 
   if (!PushStateTree.prototype.replaceState) {
-    PushStateTree.prototype.replaceState = function(state, title, url) {
+    PushStateTree.prototype.replaceState = function(state, title, uri) {
       var t = document.title || '';
+      uri = uri || '';
       if (lastTitle !== null) {
         document.title = lastTitle;
       }
       avoidTriggering();
 
       // Replace the url
-      if (isExternal(url)) {
+      if (isExternal(uri)) {
         throw new Error('Invalid url replace.');
       }
 
-      if (url[0] === '#') {
-        url = url.slice(1);
+      if (uri[0] === '#') {
+        uri = uri.slice(1);
       }
 
-      if (isRelative(url)) {
+      if (isRelative(uri)) {
         var relativePos = root.location.hash.lastIndexOf('/') + 1;
-        url = root.location.hash.slice(1, relativePos) + url;
+        uri = root.location.hash.slice(1, relativePos) + uri;
       }
 
       // Always use hash navigation
-      url = '#' + url;
+      uri = '#' + uri;
 
-      root.location.replace(url);
+      root.location.replace(uri);
       document.title = t;
       lastTitle = title;
 
