@@ -629,7 +629,8 @@
       // A stack of all events to be dispatched, to ensure the priority order
       var eventStack = this.eventStack;
 
-      // Order of events stack execution
+      // Order of events stack execution, leave event isn't here because it executes in the
+      // recursiveDispatcher, for one loop less
       [CHANGE, ENTER, MATCH].forEach(function(type){
         // Execute the leave stack of events
         while (eventStack[type].length > 0) {
@@ -785,7 +786,7 @@
           if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
             if (!this[USE_PUSH_STATE] && !isExternal(args[2]) && args[2][0] !== '#') {
               if (isRelative(args[2])) {
-                args[2] = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + args[2];
+                args[2] = root.location.hash.match(/#(.*\/)/)[1] + args[2];
               }
               args[2] = '#' + args[2];
             } else if (!isExternal(args[2])) {
