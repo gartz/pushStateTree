@@ -825,7 +825,7 @@
 
             if (!this[USE_PUSH_STATE] && !isExternal(args[2])) {
               if (isRelative(args[2])) {
-                args[2] = root.location.hash.match(/(.*\/)/)[1] + args[2];
+                args[2] = root.location.hash.match(/^(#*)?(.*\/)/)[2] + args[2];
               }
               args[2] = '#' + args[2];
             } else if (!isExternal(args[2])) {
