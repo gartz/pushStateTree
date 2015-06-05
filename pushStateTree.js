@@ -328,12 +328,9 @@
     return (/^[a-z0-9]+:\/\//i).test(url);
   }
 
-  function isRelative(url) {
-    // Check if a URL is relative path
-    if (url[0] === '#') {
-      url = url.slice(1);
-    }
-    return url[0] !== '/';
+  function isRelative(uri) {
+    // Check if a URI is relative path, when begin with # or / isn't relative uri
+    return (/^[^#/]/).test(uri);
   }
 
   //TODO: the container reference must be configurable to work with web components
@@ -820,18 +817,25 @@
           // if has a basePath translate the not relative paths to use the basePath
           if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
 
-            // PushState doesn't work with hash char, remove it if was pushed in the begin of the uri
-            args[2] = args[2].match(/^(#*)?(.*\/?)/)[2];
+            if (!isExternal(args[2])) {
+              // When not external link, need to normalize the URI
 
-            if (!this[USE_PUSH_STATE] && !isExternal(args[2])) {
               if (isRelative(args[2])) {
-                args[2] = root.location.hash.match(/^(#*)?(.*\/)/)[2] + args[2];
+                // Relative to the oldURI
+                args[2] = oldURI.match(/^(.*)\//)[1] + '/' + args[2];
+              } else {
+                // This isn't relative, will cleanup / and # from the begin and use the remain path
+                args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
               }
-              args[2] = '#' + args[2];
-            } else if (!isExternal(args[2])) {
-              if (this.basePath && !isRelative(args[2])) {
-                // Remove from the uri all begin chars of #
-                args[2] = this.basePath + args[2];
+
+              if (!this[USE_PUSH_STATE]) {
+
+                // When pushState is disabled, the basePath is ignored, probably will be at the url already
+                args[2] = '#' + args[2];
+              } else {
+
+                // Add the basePath to your uri, not allowing to go by pushState outside the basePath
+                args[2] = '/' + this.basePath + args[2];
               }
             }
           }
