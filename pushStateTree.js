@@ -401,16 +401,23 @@
     Object.defineProperty(rootElement, 'uri', {
       get: function () {
         var uri;
-        var hashPos = location.href.indexOf('#');
-        if (hashPos !== -1) {
-          uri = location.href.slice(hashPos + 1);
-          uri = uri.replace(/^[#]+/, '');
+
+        if (location.hash.length || location.href[location.href.length - 1] === '#') {
+          // Remove all begin # chars from the location when using hash
+          uri = location.hash.match(/^(#*)?(.*\/?)/)[2];
+
+          if (rootElement.usePushState) {
+            // when using pushState, replace the browser location to avoid ugly URLs
+            rootElement.replaceState(rootElement.state, rootElement.title, uri[0] === '/' ? uri : '/' + uri);
+          }
         } else {
-          uri = location.href.slice(location.origin.length);
+          uri = location.pathname + location.search;
           if (uri.indexOf(this.basePath) === 0) {
             uri = uri.slice(this.basePath.length);
           }
         }
+
+        // Remove the very first slash, do don't match it as URI
         uri = uri.replace(/^[\/]+/, '');
 
         if (rootElement.getAttribute('uri') !== uri) {
