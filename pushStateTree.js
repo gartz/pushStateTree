@@ -413,6 +413,10 @@
         }
         uri = uri.replace(/^[\/]+/, '');
 
+        if (rootElement.getAttribute('uri') !== uri) {
+          rootElement.setAttribute('uri', uri);
+        }
+
         return uri;
       },
       configurable: true
