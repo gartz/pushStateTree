@@ -63,6 +63,9 @@
     // Old browsers show links that can conflict here
     if(uri.indexOf('http://') == 0 || uri.indexOf('https://') == 0) return;
 
+    // Remove the # begin to make the links relative
+    uri = uri.match(/^(#*)?(.*)/)[2];
+
 
     // Replace the URL, but don't dispatch (because the animation for match it)
     scrollSpyRule.replaceState(null, null, uri);
