@@ -43,7 +43,7 @@ Older browsers will disable it and run as fallback.
 
 Rules are HTML Elements with two special properties `rule` and `parentGroup`, when you create this HTML elements, you can add it to a PushStateTree instance. When some URL has change it will validate your options and dispatch the right events.
 
-It's possible to create tree of rules, you can bind the result from a parent rule using the `parentGroup` option, what will use the match group in the regular expresion `rule` parent result.
+It's possible to create tree of rules, you can bind the result from a parent rule using the `parentGroup` option, what will use the match group in the regular expression `rule` parent result.
 
 The options passed to rule will be used as element properties, so if you setup `id` or `className` your element will have this properties.
 
@@ -125,10 +125,10 @@ You also can use `querySelectorAll` or any of that stuff. If you are programming
 You also can add and remove events from this element, the events list are:
 
  - **enter** dispatched when rule match from a url that doesn't match that rule.
- - **leave** dispatched when the rule was matching and the new url doesn't match anymore. (it will dispatch for every childrens)
- - **change** dispatched when a change ocours, that's means the URI isn't the same, but still matching with this rule.
+ - **leave** dispatched when the rule was matching and the new url doesn't match anymore. (it will dispatch for every children)
+ - **change** dispatched when a change occurs, that's means the URI isn't the same, but still matching with this rule.
  - **update** dispatched when any event is dispatched, will expose the type of the event dispatched in `event.detail.type`.
- - **match** dispatched everytime the events `popstate` or `hashchange` are triggered and match with the rule, doesn't matters if is the same url as before.
+ - **match** dispatched every time the events `popstate` or `hashchange` are triggered and match with the rule, doesn't matters if is the same url as before.
 
 Importante note: *match* will not dispatch when *leave*, because it doesn't match.
 
@@ -151,8 +151,8 @@ You can disable the pushState and use only hash navigation, like we do in our [d
 
 Any of the available navigation methods are also available in the all rules, but they will return always the router in the chain.
 
- - **pushState**: same as oficial `(state, title, url)`
- - **replaceState**: same as oficial `(state, title, url)`
+ - **pushState**: same as official `(state, title, url)`
+ - **replaceState**: same as official `(state, title, url)`
  - **dispatch**: will dispatch the `popstate` or `hashchange` event
  - **assign**: shortcut to `pushState(null, null, url).dispatch()`
  - **replace**: shortcut to `replaceState(null, null, url).dispatch()`
