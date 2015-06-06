@@ -447,10 +447,17 @@
     };
 
     root.addEventListener(POPSTATE, function () {
+      var eventURI = rootElement.uri;
+      var eventState = rootElement.state;
       rootElement.rulesDispatcher();
 
-      oldURI = rootElement.uri;
-      oldState = rootElement.state;
+      oldURI = eventURI;
+      oldState = eventState;
+
+      // If there is holding dispatch in the event, do it now
+      if (holdingDispatch) {
+        this.dispatch();
+      }
     }.bind(rootElement));
 
     root.addEventListener(HASHCHANGE, onhashchange);
@@ -680,9 +687,6 @@
 
       // If there is holding dispatchs in the event, do it now
       holdDispatch = false;
-      if (holdingDispatch) {
-        this.dispatch();
-      }
 
       function recursiveDispatcher(uri, oldURI, ruleElement) {
         if (!ruleElement.rule) return;
@@ -822,7 +826,9 @@
 
               if (isRelative(args[2])) {
                 // Relative to the oldURI
-                args[2] = oldURI.match(/^(.*)\//)[1] + '/' + args[2];
+                var basePath = this.uri.match(/^(.*)\//);
+                basePath = basePath ? basePath[1] + '/' : '';
+                args[2] = basePath + args[2];
               } else {
                 // This isn't relative, will cleanup / and # from the begin and use the remain path
                 args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
@@ -855,10 +861,18 @@
 
     // Don't dispatch, because already have dispatched in popstate event
     if (oldURI === rootElement.uri) return;
+
+    var eventURI = rootElement.uri;
+    var eventState = rootElement.state;
     rootElement.rulesDispatcher();
 
-    oldURI = rootElement.uri;
-    oldState = rootElement.state;
+    oldURI = eventURI;
+    oldState = eventState;
+
+    // If there is holding dispatch in the event, do it now
+    if (holdingDispatch) {
+      this.dispatch();
+    }
   }.bind(rootElement);
 
   function avoidTriggering() {
