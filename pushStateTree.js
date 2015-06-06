@@ -379,7 +379,16 @@
       }
     });
 
-    rootElement.basePath = options.basePath || rootElement.basePath || '';
+    var basePath;
+    Object.defineProperty(rootElement, 'basePath', {
+      get: function () {
+        return basePath;
+      },
+      set: function (val) {
+        val = val || '';
+        basePath = val.match(/^(\/)?((.*?)\/?)(\/*)$/)[3] + '/';
+      }
+    });
 
     //TODO: emcapsulate this
     for (var prop in PushStateTree.prototype)
