@@ -417,21 +417,26 @@
     wrapProperty(rootElement, 'length', root.history.length);
     wrapProperty(rootElement, 'state', root.history.state);
 
+    var cachedUri = {
+      url: '',
+      uri: ''
+    };
     Object.defineProperty(rootElement, 'uri', {
       get: function () {
-        var uri;
+        if (cachedUri.url === root.location.href) return cachedUri.uri;
 
-        if (location.hash.length || location.href[location.href.length - 1] === '#') {
+        var uri;
+        if (root.location.hash.length || root.location.href[location.href.length - 1] === '#') {
           // Remove all begin # chars from the location when using hash
-          uri = location.hash.match(/^(#*)?(.*\/?)/)[2];
+          uri = root.location.hash.match(/^(#*)?(.*\/?)/)[2];
 
           if (rootElement.beautifyLocation && rootElement.usePushState) {
             // when using pushState, replace the browser location to avoid ugly URLs
             rootElement.replaceState(rootElement.state, rootElement.title, uri[0] === '/' ? uri : '/' + uri);
           }
         } else {
-          uri = location.pathname + location.search;
-          if (uri.indexOf(this.basePath) === 0) {
+          uri = root.location.pathname + root.location.search;
+          if (uri.indexOf('/' + this.basePath) === 0) {
             uri = uri.slice(this.basePath.length);
           }
         }
@@ -443,6 +448,8 @@
           rootElement.setAttribute('uri', uri);
         }
 
+        cachedUri.url = root.location.href;
+        cachedUri.uri = uri;
         return uri;
       },
       configurable: true
