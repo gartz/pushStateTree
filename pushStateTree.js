@@ -387,6 +387,7 @@
       set: function (val) {
         val = val || '';
         basePath = val.match(/^(\/)?((.*?)\/?)(\/*)$/)[3] + '/';
+        if (basePath.length > 1) basePath = '/' + basePath;
       }
     });
 
