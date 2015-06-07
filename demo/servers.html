@@ -76,14 +76,77 @@ RewriteRule (.*) /index.html [NC,L,QSA]</code>
           Nginx
           <a href="nginx" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
         </h2>
+        <p>
+          Nginx configuration is very simple, <code>try_file</code> will try the file in your backend site folder, if
+          no file is hit, we do a internal rewrite to the <bode>index.html</bode>, but remember to use rewrite. Other
+          redirects that change the URL in the browser will not allow PushStateTree to detect the typed URL, and match
+          the rules, that's why a rewrite is needed.
+        </p>
+        <div class="highlight">
+          <pre>
+<code>location / {
+  try_files = $uri $uri/ @rewrite;
+
+  location @rewrite {
+    rewrite (.*) /index.html;
+  }
+}</code>
+          </pre>
+        </div>
         <h2 id="nodejs">
           Nodejs
           <a href="nodejs" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
         </h2>
+        <p>
+          Usually Nodejs is used in development mode, it can be used in production nowadays and in this package we have
+          a example that uses <b>node-static</b> as a dependency with the follow code:
+        </p>
+        <div class="highlight">
+          <pre>
+<code class="language-js" data-lang="js">var static = require('node-static');
+
+var fileServer = new static.Server('./');
+
+require('http').createServer(function (request, response) {
+  request.addListener('end', function () {
+    fileServer.serve(request, response, function (e){
+      if (e && (e.status === 404)) { // If the file wasn't found
+        fileServer.serveFile('/index.html', 200, {}, request, response);
+      }
+    });
+  }).resume();
+}).listen(3000, function (){
+  console.log('http://localhost:3000');
+});</code>
+          </pre>
+        </div>
         <h2 id="php">
           PHP
           <a href="php" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
         </h2>
+        <p>
+          PHP developers can enable push state if they already have a server redirecting all the requests to
+          <code>index.php</code>, by reading information from the <code>$_SERVER['REQUEST_URI']</code> you can chose to
+          delivery the html content for your single page application, or might ignore it to allow your regular existing
+          application to load.
+        </p>
+        <p>
+          The follow example was extracted from a project that uses Zend Framework and do a alternative include, in the
+          example there is a <code>preg_match</code> that is getting anything from the REQUEST_URI (in other words the
+          conditional in the example is useless, but..) it means you can do custom regular expressions to only match a
+          certain basePath, example <code>/^(\/)?app(\/|$)/</code> will only work inside the basePath <code>/app</code>.
+        </p>
+        <div class="highlight">
+          <pre>
+<code>// Get the global definitions and check for the SPA route
+if ($_SERVER['REQUEST_METHOD'] === 'GET' && preg_match('/(.*)/', $_SERVER['REQUEST_URI'])) {
+  require_once './spa-index.php';
+
+  // You shall not pass!
+  die();
+}</code>
+          </pre>
+        </div>
       </div>
     </div>
     <div class="col-md-3" role="complementary">
