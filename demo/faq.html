@@ -1,0 +1,144 @@
+<div class="container bs-docs-container">
+  <div class="row">
+    <div class="col-md-12" role="main">
+      <div class="bs-docs-section">
+        <h1>Frequently Asked Questions</h1>
+        <p>If your question isn't available here, or you have suggestions to do, please
+          <a href="https://github.com/gartz/pushStateTree/issues"> open a Issue</a> in the Github repository.
+        </p>
+        <h2>What is the minimum browser supported?</h2>
+        <p>
+          Internet Explorer 8 is the minimum supported browser, there are no plans to add support to older browsers.
+        </p>
+        <h2>What happens when push state is enabled and the browser doesn't support?</h2>
+        <p>
+          In that case PushStateTree will fallback the feature to work using hash navigation.
+        </p>
+        <p>
+          A good way of supporting old browsers, is to detect than in your backend and redirect the page to a hash URL,
+          example of a IE8 trying to access <code>http://my-spa.io/app/service/id/edit</code> should be redirect with
+          301 code to <code>http://my-spa.io/#app/service/id/edit</code> and the PushStateTree will do the rest.
+        </p>
+        <p>
+          If you don't backend redirect it still works but you will get ugly URLs like:
+          <code>http://my-spa.io/app/service/id/edit#otherApp/otherService/otherId</code> because PushStateTree will
+          start working with hash system and won't refresh your Single Page Application.
+        </p>
+        <h2>Can I use links with hash to a push state supported browser?</h2>
+        <p>
+          Yes you can. And by default <code>beautifyLocation</code> feature is enabled, and it will replace the hash
+          to a beautiful non hash URL.
+        </p>
+        <h2>Can I use multiples hash in my URLs?</h2>
+        <p>
+          You can, but you should not. Even with push state supported and enabled, PushStateTree still read
+          <code>hashchange</code> event from your browser, and your URL navigation can became messy to work by doing
+          that.
+        </p>
+        <h2>Is there a easy way to test push state navigation?</h2>
+        <p>
+          There is many with PushStateTree, you can expose your <code>pushstatetree-route</code> element to the body
+          of you DOM, and query it to run methods on it. Or you can simply use hash navigation in the location bar of
+          you browser. They will work even with push state supported and enabled.
+        </p>
+        <h2>Do I need jquery to run PushStateTree?</h2>
+        <p>No.</p>
+        <h2>Do I need history shim to run PushStateTree?</h2>
+        <p>No.</p>
+        <h2>Do I need any other lib to run PushStateTree?</h2>
+        <p>
+          No.
+        </p>
+        <p>
+          PushStateTree has no dependencies at all.
+        </p>
+        <h2>Does it work with mobile browsers?</h2>
+        <p>
+          Yes it does!
+        </p>
+        <p>
+          If your mobile browser is too old to support push state, it will work with hash navigation.
+        </p>
+        <h2>Can I use PushStateTree with other Libs our Frameworks?</h2>
+        <p>
+          Yes, for most of the cases.
+        </p>
+        <p>
+          The conditional is that the lib or framework doesn't change how the <code>hashchange</code> or
+          <code>popstate</code> works.
+        </p>
+        <p>
+          This also means that you can use with Backbone, React.js, AngularJS, Polymer Project, KnockoutJS, Ext4, and
+          many others.
+        </p>
+        <h2>Is PushStateTree a controller system?</h2>
+        <p>
+          It's not, but you can use as it is.
+        </p>
+        <p>
+          If you work with MVC (or HMVC) you are familiar to the controllers have 3 stages (pre-action, action,
+          pos-action), in a regular application, the pre-action prepare your view, the action populate the data and the
+          pos-action will flush it to the client. PushStateTree allow you to do the same standard way of thinking to
+          your frontend. So you can re-use your layout from the <code>enter</code> event and destroy or store in the
+          memory when the <code>leave</code> event is triggered, so you gain lot of control in you application.
+        </p>
+        <h2>Can I do my rules decoupled to my controller and views?</h2>
+        <p>
+          Yes you can.
+        </p>
+        <p>
+          PushStateTree can be attached or detached to your application at any running time.
+        </p>
+        <h2>Can I create super weird URLs and match in the rules?</h2>
+        <p>
+          Yes you can.
+        </p>
+        <p>
+          The regular expression in the rules allow you to do however URL you want to match, you can even use JSON in
+          your URLs or draw some ANSII one line thing to your crazy fancy Single Page Application.
+        </p>
+        <h2>What I can do that Backbone router can't?</h2>
+        <p>
+          Backbone router system force's you to download all the app in the boot time, because after you run
+          <code>Backbone.history.start()</code> all the routes are generated and it's not made to add routes after
+          that.
+        </p>
+        <p>
+          Backbone router only give you the "match" possibility, what means that your controller know when to render
+          but doesn't know when to remove from the DOM, you need to re-render all your chain or one app needs to know
+          the other, to remove it-self when you leave the previous match.
+        </p>
+        <h2>I like the concept, is it hard to migrate from Backbone.router?</h2>
+        <p>
+          No, it's easy. And you can do it by parts, migrating a route each time. Make sure that PushStateTree and
+          Backbone have both pushState enable or disable option equally set, than you can use the <code>match</code>
+          event, that work exactly the same way that Backbone router callbacks does.
+        </p>
+        <h2>Is PushStateTree focus on performance?</h2>
+        <p>
+          Not at all, it uses lots of loops inside, with event listeners and DOM Elements, to be compatible with many
+          browsers and other libs (like jQuery). I hope you don't dispatch the router every time a scroll event is
+          executed, that would be insane! You can replace or push, but please don't dispatch.
+        </p>
+        <p>
+          That said, PushStateTree can make you have a even better performance in your Single Page Application that
+          other routers can't help you. The events <code>enter</code> and <code>leave</code> allow you to detach views
+          from the DOM, and when the router enter again, you can append it. By doing this, you don't need to re-render
+          the view, don't need to cleanup events all the time and re-add again. The result is a app rendering much
+          faster, and it also allow the developer to keep the last state of the App when leave and enter on it again.
+        </p>
+        <p>
+          A tip to keep a good performance is to use nested rules, when a parent rule doesn't match it doesn't try to
+          match any children rule. Keep in mind that by adding hundreds of rules in the main level, your dispatch will
+          consume a lot of process by checking each of the rules available. The PushStateTree doesn't stop in the first
+          match, it try everything that is a potential match.
+        </p>
+        <h2>Why the name PushStateTree?</h2>
+        <p>
+          The library is made to work with modern push state browser feature, and it allows to see and think in your
+          routes as a tree, it's a concept that simplify the sub-routing.
+        </p>
+      </div>
+    </div>
+  </div>
+</div>
