@@ -59,11 +59,17 @@
           <a href="apache" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
         </h2>
         <p>
-          Todo...
+          To work with Apache 2 it's possible to write in the website configuration or in the <i>.htacess</i> file, if
+          that isn't working make sure that <b>AllowOverride all</b> is configured in the <b>directory</b> option to able
+          to use ModRewrite. As the result, all files that are required in your backend but doesn't exist will be
+          redirected to the <i>index.html</i> file.
         </p>
         <div class="highlight">
           <pre>
-            //TODO...
+<code>RewriteEngine on
+RewriteCond %{REQUEST_FILENAME} !-f
+RewriteCond %{REQUEST_FILENAME} !-d
+RewriteRule (.*) /index.html [NC,L,QSA]</code>
           </pre>
         </div>
         <h2 id="nginx">
