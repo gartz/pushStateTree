@@ -437,7 +437,7 @@
           }
         } else {
           uri = root.location.pathname + root.location.search;
-          if (uri.indexOf('/' + this.basePath) === 0) {
+          if (uri.indexOf(this.basePath) === 0) {
             uri = uri.slice(this.basePath.length);
           }
         }
