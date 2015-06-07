@@ -21,24 +21,6 @@
   var $window = $(window);
   var $sidebar;
   var $anchorElements;
-
-  var onScroll = (function (pixels){
-    var lastPos = 0;
-    return function(){
-      // Firefox or Chrome
-      var pos = $('html').scrollTop() || $('body').scrollTop();
-      if (!(lastPos + pixels < pos || lastPos - pixels > pos)) return;
-      lastPos = pos;
-
-      if ($sidebar.parent().offset().top >= pos) {
-        if($sidebar.hasClass('affix-top')) return;
-        $sidebar.toggleClass('affix-top', true).toggleClass('affix', false);
-      } else {
-        if($sidebar.hasClass('affix')) return;
-        $sidebar.toggleClass('affix-top', false).toggleClass('affix', true);
-      }
-    };
-  }(10));
   
   // Load template
   $.ajax(demoPath + 'servers.html').done(function (template){
@@ -71,6 +53,8 @@
     scrollSpyRule.replaceState(null, null, uri);
   };
 
+  var firstEnter = true;
+
   $(rule).on('enter', function(){
     $('#content').append($template);
     $anchorElements = $template.find('[role=main] [id]');
@@ -87,13 +71,17 @@
       .on('activate.bs.scrollspy', scrollspy);
 
     // Listen for scroll event
-    $window.on('scroll', onScroll);
+    if (firstEnter) {
+      $($template).find('.bs-docs-sidebar').affix({
+        offset: {
+          top: $($template).find('[role=complementary]').offset().top
+        }
+      });
 
-    // Apply on enter
-    onScroll();
+      // After first type ever enter, disable the flag
+      firstEnter = false;
+    }
   }).on('leave', function(){
-    // Stop listening for scroll event
-    $window.off('scroll', onScroll);
 
     // Disable Bootstrap scrollspy
     $body
