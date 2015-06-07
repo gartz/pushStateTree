@@ -857,7 +857,7 @@
               } else {
 
                 // Add the basePath to your uri, not allowing to go by pushState outside the basePath
-                args[2] = '/' + this.basePath + args[2];
+                args[2] = this.basePath + args[2];
               }
             }
           }
