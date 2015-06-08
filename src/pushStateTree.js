@@ -863,7 +863,7 @@
           // When not external link, need to normalize the URI
 
           if (isRelative(args[2])) {
-            // Relative to the oldURI
+            // Relative to the uri
             var basePath = this.uri.match(/^(.*)\//);
             basePath = basePath ? basePath[1] + '/' : '';
             args[2] = basePath + args[2];
@@ -874,11 +874,11 @@
 
           if (!this[USE_PUSH_STATE]) {
 
-            // Don't use basePath in the location hash mode
+            // Ignore basePath when using location.hash
             args[2] = '#' + args[2];
           } else {
 
-            // Add the basePath to your uri
+            // Add the basePath to your uri, not allowing to go by pushState outside the basePath
             args[2] = this.basePath + args[2];
           }
         }
