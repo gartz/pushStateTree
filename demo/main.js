@@ -100,7 +100,7 @@ $('body').append(pushStateTree);
 load(demoPath + 'about.js');
 load(demoPath + 'servers.js');
 //load(demoPath + 'examples.js');
-load(demoPath + 'api.js');
+load(demoPath + 'faq.js');
 
 // This was loaded after, so the system needs to dispatch again
 pushStateTree.dispatch();

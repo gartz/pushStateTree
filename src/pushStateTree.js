@@ -395,6 +395,7 @@
       set: function (val) {
         val = val || '';
         basePath = val.match(/^(\/)?((.*?)\/?)(\/*)$/)[3] + '/';
+        if (basePath.length > 1) basePath = '/' + basePath;
       }
     });
 
@@ -451,7 +452,7 @@
           }
         } else {
           uri = root.location.pathname + root.location.search;
-          if (uri.indexOf('/' + this.basePath) === 0) {
+          if (uri.indexOf(this.basePath) === 0) {
             uri = uri.slice(this.basePath.length);
           }
         }

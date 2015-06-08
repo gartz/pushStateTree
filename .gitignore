@@ -65,3 +65,4 @@ npm-debug.log
 # Grunt
 .grunt
 report/
+_SpecRunner.html
