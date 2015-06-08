@@ -1,5 +1,5 @@
 /*globals PushStateTree, it, expect */
-describe('ObjectEvent should', function() {
+describe('PushStateTree should', function() {
   'use strict';
 
   it('be available on global scope', function() {
@@ -10,4 +10,8 @@ describe('ObjectEvent should', function() {
     expect(PushStateTree).toThrow();
   });
 
+  it('construct and became a HTMLElement instance', function(){
+    expect(new PushStateTree()).toEqual(jasmine.any(HTMLElement));
+    expect(new PushStateTree({})).toEqual(jasmine.any(HTMLElement));
+  });
 });
