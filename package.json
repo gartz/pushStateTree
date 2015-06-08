@@ -1,7 +1,7 @@
 {
   "name": "push-state-tree",
   "description": "A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading).",
-  "version": "0.11.6",
+  "version": "0.12.0",
   "homepage": "https://github.com/gartz/pushStateTree/",
   "author": {
     "name": "Gabriel Reitz Giannattasio <gabriel@gartz.com.br>",
@@ -20,7 +20,7 @@
       "url": "https://github.com/gartz/pushStateTree/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "pushStateTree.js",
+  "main": "push-state-tree.js",
   "engines": {
     "node": ">= 0.10.0"
   },

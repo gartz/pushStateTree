@@ -94,7 +94,7 @@
       // Export load as global
       window.load = load;
 
-      $.when(load(basePath + '/pushStateTree.js'))
+      $.when(load(basePath + '/push-state-tree.js'))
         .then(function(){
           return load(basePath + '/demo/main.js');
         })
