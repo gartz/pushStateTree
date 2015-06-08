@@ -94,7 +94,7 @@
       // Export load as global
       window.load = load;
 
-      $.when(load(basePath + '/pushStateTree.js'))
+      $.when(load(basePath + '/push-state-tree.js'))
         .then(function(){
           return load(basePath + '/demo/main.js');
         })
@@ -130,9 +130,9 @@
           </div><!--/.nav-collapse -->
         </div><!--/.container-fluid -->
       </div>
+      <a href="https://github.com/gartz/pushStateTree" class="ribbon bg-green">Fork me on GitHub</a>
 
       <div id="content"></div>
-      <a href="https://github.com/gartz/pushStateTree" class="ribbon bg-green">Fork me on GitHub</a>
     </div>
     <div id="loading" class="modal bs-example-modal-sm fade" role="dialog" aria-hidden="false">
 	    <div class="modal-dialog modal-sm">

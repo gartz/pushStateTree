@@ -19,12 +19,13 @@
   })();
 
   (function () {
+    /* global HTMLDocument */
     if (Function.prototype.bind) { return; }
 
     Function.prototype.bind = function (oThis) {
-      if (typeof this !== "function") {
+      if (typeof this !== 'function') {
         // closest thing possible to the ECMAScript 5 internal IsCallable function
-        throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
+        throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
       }
 
       var aArgs = Array.prototype.slice.call(arguments, 1),
@@ -45,7 +46,7 @@
     };
   })();
 
-  // IE9 shims
+// IE9 shims
   var HashChangeEvent = root.HashChangeEvent;
   var Event = root.Event;
 
@@ -92,7 +93,7 @@
     }
   })();
 
-  // IE 8 shims
+// IE 8 shims
   (function () {
     if (Element.prototype.addEventListener || !Object.defineProperty) { return; }
 
@@ -115,7 +116,7 @@
         this.__elemetIEid = this.__elemetIEid || '__ie__' + Math.random();
         var customEventId = type + this.__elemetIEid;
         //TODO: Bug???
-        document.documentElement[customEventId];
+        //document.documentElement[customEventId];
         var element = this;
 
         var propHandler = function (event) {
@@ -176,11 +177,11 @@
         if (type !== 'hashchange') { return; }
       }
 
-      for (var i = 0; i < this.__bindedFunctions.length; i++) {
-        if (this.__bindedFunctions[i].original === fn) {
-          bindedFn = this.__bindedFunctions[i].binded;
-          this.__bindedFunctions = this.__bindedFunctions.splice(i, 1);
-          i = this.__bindedFunctions.length;
+      for (var j = 0; j < this.__bindedFunctions.length; j++) {
+        if (this.__bindedFunctions[j].original === fn) {
+          bindedFn = this.__bindedFunctions[j].binded;
+          this.__bindedFunctions = this.__bindedFunctions.splice(j, 1);
+          j = this.__bindedFunctions.length;
         }
       }
       if (!bindedFn) { return; }
@@ -209,6 +210,7 @@
       return evt;
     };
 
+    /*jshint -W020 */
     CustomEvent = Event;
 
     HashChangeEvent = CustomEvent;
@@ -240,7 +242,7 @@
     // IE8 slice doesn't work with NodeList
     if (!modernBrowser) {
       var builtinSlice = Array.prototype.slice;
-      Array.prototype.slice = function(action, that) {
+      Array.prototype.slice = function() {
         var arr = [];
         for (var i = 0, n = this.length; i < n; i++) {
           if (i in this) {
@@ -309,6 +311,10 @@
   var MATCH = 'match';
   var OLD_MATCH = 'oldMatch';
 
+  var options = root.PushStateTree && root.PushStateTree.options || {};
+  var DEBUG = root.DEBUG || options.DEBUG;
+  var VERSION = options.VERSION || 'development';
+
   // Helpers
   function isInt(n) {
     return !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
@@ -340,6 +346,8 @@
   function PushStateTree(options) {
     options = options || {};
 
+    this.VERSION = VERSION;
+
     if (ready) {
       // Setup options
       for (var prop in options) {
@@ -352,9 +360,9 @@
     }
     ready = true;
 
-    // Allow to switch between using pushState or hash navigation mode, browser that doesn't support
-    // pushState will always be false, and use hash navigation, use backend 301 redirect when detect
-    // old browsers request, to load in you basePath and use hash to match the destine or let it ugly :)
+    // Allow switch between pushState or hash navigation modes, in browser that doesn't support
+    // pushState it will always be false. and use hash navigation enforced.
+    // use backend non permanent redirect when old browsers are detected in the request.
     if (!PushStateTree.prototype.hasPushState) {
       wrapProperty(rootElement, USE_PUSH_STATE, false);
     } else {
@@ -369,7 +377,7 @@
       PushStateTree.prototype[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
     }
 
-    // When enabled beautifyLocation will auto switch between hash to pushState if the same is supported
+    // When enabled beautifyLocation will auto switch between hash to pushState when enabled
     Object.defineProperty(rootElement, 'beautifyLocation', {
       get: function () {
         return !!PushStateTree.prototype.beautifyLocation;
@@ -391,29 +399,32 @@
       }
     });
 
-    //TODO: emcapsulate this
-    for (var prop in PushStateTree.prototype)
-      if (PushStateTree.prototype.hasOwnProperty(prop)) {
-        (function (prop) {
-          if (typeof PushStateTree.prototype[prop] === 'function') {
-            // function wrapper
-            rootElement[prop] = function () {
-              return PushStateTree.prototype[prop].apply(this, arguments);
-            };
-          } else {
-            if (typeof rootElement[prop] !== 'undefined') return;
-            // property wrapper
-            Object.defineProperty(rootElement, prop, {
-              get: function () {
-                return PushStateTree.prototype[prop];
-              },
-              set: function (val) {
-                PushStateTree.prototype[prop] = val;
-              },
-            });
+    function wrappMethodsAndPropertiesToPrototype(prop) {
+      if (typeof PushStateTree.prototype[prop] === 'function') {
+        // function wrapper
+        rootElement[prop] = function () {
+          return PushStateTree.prototype[prop].apply(this, arguments);
+        };
+      } else {
+        if (typeof rootElement[prop] !== 'undefined') return;
+        // property wrapper
+        Object.defineProperty(rootElement, prop, {
+          get: function () {
+            return PushStateTree.prototype[prop];
+          },
+          set: function (val) {
+            PushStateTree.prototype[prop] = val;
           }
-        })(prop);
+        });
       }
+    }
+
+    //TODO: emcapsulate this
+    for (var protoProperty in PushStateTree.prototype) {
+      if (PushStateTree.prototype.hasOwnProperty(protoProperty)) {
+        wrappMethodsAndPropertiesToPrototype(protoProperty);
+      }
+    }
 
     wrapProperty(rootElement, 'length', root.history.length);
     wrapProperty(rootElement, 'state', root.history.state);
@@ -433,7 +444,11 @@
 
           if (rootElement.beautifyLocation && rootElement.usePushState) {
             // when using pushState, replace the browser location to avoid ugly URLs
-            rootElement.replaceState(rootElement.state, rootElement.title, uri[0] === '/' ? uri : '/' + uri);
+            rootElement.replaceState(
+              rootElement.state,
+              rootElement.title,
+              uri[0] === '/' ? uri : '/' + uri
+            );
           }
         } else {
           uri = root.location.pathname + root.location.search;
@@ -538,7 +553,7 @@
           } else {
 
             // IE8 trigger set from the property when update the attribute, avoid recursive loop
-            if(val == ruleRegex.toString()) return;
+            if (val === ruleRegex.toString()) return;
 
             // Slice the pattern from the attribute
             var slicedPattern = (val + '').match(/^\/(.+)\/([gmi]*)|(.*)/);
@@ -597,8 +612,16 @@
       rule[MATCH] = [];
       rule[OLD_MATCH] = [];
 
-      // Replicate the methods from `router` to the rule, by transversing until find and execute the router method
-      ['assign', 'navigate', 'replace', 'dispatch', 'pushState', 'replaceState'].forEach(function(methodName){
+      // Replicate the methods from `route` to the rule, by transversing until find and execute
+      // the router method, not a fast operation, but ensure the right route to be triggered
+      [
+        'assign',
+        'navigate',
+        'replace',
+        'dispatch',
+        'pushState',
+        'replaceState'
+      ].forEach(function(methodName){
         rule[methodName] = function(){
           this.parentElement[methodName].apply(this.parentElement, arguments);
         };
@@ -658,7 +681,7 @@
       /*jshint validthis:true */
 
       // Cache the URI, in case of an event try to change it
-      var debug = this.debug;
+      var debug = this.debug === true || DEBUG;
 
       function runner(uri, oldURI) {
         Array.prototype.slice.call(this.children || this.childNodes)
@@ -750,7 +773,7 @@
               useURI: useURI,
               useOldURI: useOldURI
             });
-            console.trace && console.trace();
+            if (console.trace) console.trace();
           }
           var event = new root.CustomEvent(name, params);
           return event;
@@ -824,52 +847,56 @@
     }
   };
 
-  // Wrap history methods
-  for (var method in root.history)
-    if (typeof root.history[method] === 'function') {
-      (function () {
-        var scopeMethod = method;
-        this[method] = function () {
-          // Wrap method
+  function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
+    /*jshint validthis:true */
+    var scopeMethod = method;
+    this[method] = function () {
+      // Wrap method
 
-          // remove the method from arguments
-          var args = Array.prototype.slice.call(arguments);
+      // remove the method from arguments
+      var args = Array.prototype.slice.call(arguments);
 
-          // if has a basePath translate the not relative paths to use the basePath
-          if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
+      // if has a basePath translate the not relative paths to use the basePath
+      if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
 
-            if (!isExternal(args[2])) {
-              // When not external link, need to normalize the URI
+        if (!isExternal(args[2])) {
+          // When not external link, need to normalize the URI
 
-              if (isRelative(args[2])) {
-                // Relative to the oldURI
-                var basePath = this.uri.match(/^(.*)\//);
-                basePath = basePath ? basePath[1] + '/' : '';
-                args[2] = basePath + args[2];
-              } else {
-                // This isn't relative, will cleanup / and # from the begin and use the remain path
-                args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
-              }
-
-              if (!this[USE_PUSH_STATE]) {
-
-                // When pushState is disabled, the basePath is ignored, probably will be at the url already
-                args[2] = '#' + args[2];
-              } else {
-
-                // Add the basePath to your uri, not allowing to go by pushState outside the basePath
-                args[2] = this.basePath + args[2];
-              }
-            }
+          if (isRelative(args[2])) {
+            // Relative to the uri
+            var basePath = this.uri.match(/^(.*)\//);
+            basePath = basePath ? basePath[1] + '/' : '';
+            args[2] = basePath + args[2];
+          } else {
+            // This isn't relative, will cleanup / and # from the begin and use the remain path
+            args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
           }
 
-          root.history[scopeMethod].apply(root.history, args);
+          if (!this[USE_PUSH_STATE]) {
 
-          // Chainnable
-          return this;
-        };
-      }.bind(PushStateTree.prototype))();
+            // Ignore basePath when using location.hash
+            args[2] = '#' + args[2];
+          } else {
+
+            // Add the basePath to your uri, not allowing to go by pushState outside the basePath
+            args[2] = this.basePath + args[2];
+          }
+        }
+      }
+
+      root.history[scopeMethod].apply(root.history, args);
+
+      // Chainnable
+      return this;
+    };
+  }
+
+  // Wrap history methods
+  for (var method in root.history) {
+    if (typeof root.history[method] === 'function') {
+      preProcessUriBeforeExecuteNativeHistoryMethods.call(PushStateTree.prototype, method);
     }
+  }
 
   var readOnhashchange = false;
   var onhashchange = function () {
@@ -976,4 +1003,7 @@
 
   // Node import support
   if(typeof module !== 'undefined') module.exports = PushStateTree;
-})((function(){ return this; }()));
+})((function(){
+  /*jshint strict: false */
+  return this;
+}()));
