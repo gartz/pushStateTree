@@ -6,6 +6,33 @@
         <p>If your question isn't available here, or you have suggestions to do, please
           <a href="https://github.com/gartz/pushStateTree/issues"> open a Issue</a> in the Github repository.
         </p>
+        <h2>Does it work with SEO?</h2>
+        <p>
+          Yes it does!
+        </p>
+        <p>
+          Just keep in mind that the Search Engine Crawlers doesn't get data from XHR and Web Socket
+          however you can use <code>script</code> tag in the header to download your modules, just
+          like this demo page does. And if you want to add content that comes from a REST endpoint,
+          it will work with JSONP.
+        </p>
+        <p>
+          An hour after this page was add to Google it added to the search like this:
+          <br>
+          <img src="/demo/media/google-search.png" title="Google Search result">
+          <br>
+          And this is how Google renders the page:
+          <br>
+          <img src="/demo/media/google-render.png" title="Google rendered SPA website" class="img-responsive">
+        </p>
+        <p>
+          The most aggressive solution for SEO's is to pre-render using some backend command line
+          controlled browser, like PhantomJS, and delivery the final page to Crawlers. Depending on
+          you implementation using PushStateTree, you can use those files as cache to a super speed
+          content delivery, and when the routes are loading the static content will be replaced by
+          dynamic content. Usually that operation is fast enough to the user don't see what is going
+          on in the meanwhile (if you use React.js, you are at home with that approach).
+        </p>
         <h2>What is the minimum browser supported?</h2>
         <p>
           Internet Explorer 8 is the minimum supported browser, there are no plans to add support to older browsers.
