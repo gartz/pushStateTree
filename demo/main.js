@@ -90,6 +90,10 @@ $(document).on('click', 'a[href]', function (e) {
   e.preventDefault();
   if(href[0] == '#') href = href.slice(1);
 
+  if (href.indexOf(basePath) === 0) {
+    href = href.substring(basePath.length);
+  }
+
   pushStateTree.navigate(href);
 });
 
