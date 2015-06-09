@@ -15,7 +15,7 @@ module.exports = function(grunt) {
       name: '<%= meta.pkg.name %>',
       src: {
         main: 'src/**/*.js',
-        test: 'test/specs/**/*.js',
+        test: 'test/specs/*.js',
         helper: 'test/helpers/**/*.js',
         polyfill: [
           //'bower_components/WeakMap/WeakMap.js'
