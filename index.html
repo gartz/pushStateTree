@@ -34,6 +34,7 @@
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
 
     <script>
+      /* global $ */
     var basePath = '/pushStateTree';
     if (location.hostname.indexOf('github') === -1){
       basePath = '';
@@ -103,6 +104,10 @@
             $('#main').toggleClass('in', true);
         });
       });
+
+      $(function(){
+        $('#rootLink').attr('href', basePath + '/');
+      });
     }
     </script>
     <meta content="@github" name="twitter:site">
@@ -135,7 +140,7 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/">PushStateTree</a>
+            <a class="navbar-brand" href="/" id="rootLink">PushStateTree</a>
           </div>
           <div class="navbar-collapse collapse">
             <ul id="navbarMain" class="nav navbar-nav"></ul>

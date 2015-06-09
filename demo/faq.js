@@ -1,4 +1,4 @@
-/* global $, pushStateTree, demoPath, navbarAdd */
+/* global $, pushStateTree, demoPath, navbarAdd, basePath */
 (function($, pushStateTree){
   'use strict';
 
@@ -27,6 +27,12 @@
   // Load template, storing the promise from jquery
   $.ajax(demoPath + 'faq.html').done(function (template){
     $app = $(template);
+    if (basePath) {
+      $app.find('[src]').each(function(i, element){
+        var oldSrc = $(element).attr('src');
+        $(element).attr('src', basePath + oldSrc);
+      });
+    }
 
     $(pushStateTree)
       .append(rule)
