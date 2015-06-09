@@ -1,0 +1,11 @@
+languages:
+  Ruby: false
+  JavaScript: true
+  PHP: false
+  Python: false
+exclude_paths:
+  - "demo/*"
+  - "server.js"
+  - "test/*"
+  - "push-state-tree.js"
+  - "push-state-tree.min.js"
