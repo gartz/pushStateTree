@@ -8,6 +8,8 @@
 
 > A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading).
 
+### [Demo page](http://gartz.github.io/pushStateTree/)
+
 ## Motivation
 
 The open-source router system solutions available when I started designing this library were all working with a callback
@@ -20,8 +22,6 @@ a robust router system is required.
 PushStateTree is based in another implementation for a IPTV system for a company called Cianet in Brazil made in 2011,
 at that time the project was based on Backbone library, and further I decided to create a standalone version compatible
 with IE8, and what mimic Web Components, to allow (as optional) to expose in the DOM and make easier to debug it.
-
-### [Demo page](http://gartz.github.io/pushStateTree/)
 
 ## Quick start
 
@@ -212,9 +212,9 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
 ## Todo
 
- - Wrap location methods (like replace and assign)
  - Add option to remove first slash when using hash navigation
  - Optimize code, by removing repeated code and using wrapping techniques
+ - Add event `update` to the route element, dispatch before check rules, allow prevent the change (when prevented, replace the URI by the one before to cancel the navigation).
 
 ## Helper Tools
 
