@@ -183,6 +183,15 @@ You can create URL with hash `#` it will also work and it will dispatch the even
 
 Or you can just change the browser URL, it will dispatch the events.
 
+### Properties
+
+The properties can be accessed anytime after creating the instance, when it's on DOM some of those
+will be displayed as a element attribute, that help with the debugging your routes.
+
+ - **uri**: *String* - property and attribute, display the current URI in the URL, if outside the base path, will return empty string.
+ - **basePath**: *String* - property, that allow to get or set the basePath.
+ - **usePushState**: *Boolean* - property, that allow to get or set if should use pushState feature.
+
 ## Examples
 
 You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
@@ -213,9 +222,10 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
 ## Todo
 
- - Add option to remove first slash when using hash navigation
- - Optimize code, by removing repeated code and using wrapping techniques
+ - Add option to remove first slash when using hash navigation.
+ - Optimize code, by removing repeated code and using wrapping techniques.
  - Add event `update` to the route element, dispatch before check rules, allow prevent the change (when prevented, replace the URI by the one before to cancel the navigation).
+ - Add property on route element to detect if the browser support natively the push state feature.
 
 ## Helper Tools
 
