@@ -864,7 +864,7 @@
 
           if (isRelative(args[2])) {
             // Relative to the uri
-            var basePath = this.uri.match(/^(.*)\//);
+            var basePath = this.uri.match(/^([^?#]]*)\//);
             basePath = basePath ? basePath[1] + '/' : '';
             args[2] = basePath + args[2];
           } else {
