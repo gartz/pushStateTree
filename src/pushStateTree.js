@@ -445,7 +445,8 @@
           // Remove all begin # chars from the location when using hash
           uri = root.location.hash.match(/^(#*)?(.*\/?)/)[2];
 
-          if (rootElement.beautifyLocation && rootElement[USE_PUSH_STATE]) {
+          var usePushState = rootElement[USE_PUSH_STATE];
+          if (rootElement.beautifyLocation && rootElement.isPathValid && usePushState) {
             // when using pushState, replace the browser location to avoid ugly URLs
 
             rootElement.replaceState(
