@@ -1,8 +1,8 @@
-//! push-state-tree - v0.13.0 - 2015-07-19
+//! push-state-tree - v0.13.1 - 2015-07-19
 //* https://github.com/gartz/pushStateTree/
 //* Copyright (c) 2015 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed 
 
-var PushStateTree = {options: {VERSION: '0.13.0'}};
+var PushStateTree = {options: {VERSION: '0.13.1'}};
 (function (root) {
   'use strict';
 
@@ -450,7 +450,8 @@ var PushStateTree = {options: {VERSION: '0.13.0'}};
           // Remove all begin # chars from the location when using hash
           uri = root.location.hash.match(/^(#*)?(.*\/?)/)[2];
 
-          if (rootElement.beautifyLocation && rootElement[USE_PUSH_STATE]) {
+          var usePushState = rootElement[USE_PUSH_STATE];
+          if (rootElement.beautifyLocation && rootElement.isPathValid && usePushState) {
             // when using pushState, replace the browser location to avoid ugly URLs
 
             rootElement.replaceState(

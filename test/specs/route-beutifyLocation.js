@@ -88,4 +88,26 @@ describe('PushStateTree beutifyLocation should', function() {
     expect(location.pathname).toEqual('/abc');
   });
 
+  it('not apply beautifyLocation when the basePath is not fulfilled', function(){
+    history.pushState(null, null, '/invalidBasePath/');
+    var pst = new PushStateTree({
+      beautifyLocation: true,
+      basePath: '/test/'
+    });
+    location.hash = '/abc';
+    expect(pst.uri).toEqual('abc');
+    expect(location.hash).toEqual('#/abc');
+  });
+
+  it('apply beautifyLocation when the basePath is fulfilled', function(){
+    history.pushState(null, null, '/test/');
+    var pst = new PushStateTree({
+      beautifyLocation: true,
+      basePath: '/test/'
+    });
+    location.hash = '/abc';
+    expect(pst.uri).toEqual('abc');
+    expect(location.hash).toEqual('');
+  });
+
 });
