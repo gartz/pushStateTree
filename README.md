@@ -8,6 +8,8 @@
 
 > A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading).
 
+### [Demo page](http://gartz.github.io/pushStateTree/)
+
 ## Motivation
 
 The open-source router system solutions available when I started designing this library were all working with a callback
@@ -20,8 +22,6 @@ a robust router system is required.
 PushStateTree is based in another implementation for a IPTV system for a company called Cianet in Brazil made in 2011,
 at that time the project was based on Backbone library, and further I decided to create a standalone version compatible
 with IE8, and what mimic Web Components, to allow (as optional) to expose in the DOM and make easier to debug it.
-
-### [Demo page](http://gartz.github.io/pushStateTree/)
 
 ## Quick start
 
@@ -144,8 +144,9 @@ Importante note: *match* will not dispatch when *leave*, because it doesn't matc
 
 Options you can pass in the constructor params.
 
- - *usePushState*: Boolean, default is true, if you disable it will use a hash `#` in your pushState/replaceState urls.
- - *beautifyLocation*: Boolean, default is true, this will replace URL with hash to the pushState corresponding url.
+ - **usePushState**: Boolean, default is true, if you disable it will use a hash `#` in your pushState/replaceState urls.
+ - **beautifyLocation**: Boolean, default is true, this will replace URL with hash to the pushState corresponding url.
+ - **basePath**: String, indicates what is the base path to be considered when reading a route or navigating to a base URI (the ones that begin with a slash "/").
 
 If you chose to support old browsers, make sur your backend detect the browser support to pushState, if it doesn't the feature is auto-disabled, so a good aproach is to redirect the request in the backend to a URL with hash, example: `www.exemple.com/my/route/to/app` if browser don't support pushState redirect to `www.exemple.com/#my/route/to/app`.
 
@@ -182,6 +183,15 @@ You can create URL with hash `#` it will also work and it will dispatch the even
 
 Or you can just change the browser URL, it will dispatch the events.
 
+### Properties
+
+The properties can be accessed anytime after creating the instance, when it's on DOM some of those
+will be displayed as a element attribute, that help with the debugging your routes.
+
+ - **uri**: *String* - property and attribute, display the current URI in the URL, if outside the base path, will return empty string.
+ - **basePath**: *String* - property, that allow to get or set the basePath.
+ - **usePushState**: *Boolean* - property, that allow to get or set if should use pushState feature.
+
 ## Examples
 
 You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
@@ -212,9 +222,10 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 
 ## Todo
 
- - Wrap location methods (like replace and assign)
- - Add option to remove first slash when using hash navigation
- - Optimize code, by removing repeated code and using wrapping techniques
+ - Add option to remove first slash when using hash navigation.
+ - Optimize code, by removing repeated code and using wrapping techniques.
+ - Add event `update` to the route element, dispatch before check rules, allow prevent the change (when prevented, replace the URI by the one before to cancel the navigation).
+ - Add property on route element to detect if the browser support natively the push state feature.
 
 ## Helper Tools
 
