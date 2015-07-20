@@ -340,12 +340,14 @@
     return (/^[^#/]/).test(uri);
   }
 
+  var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
+
   function PushStateTree(options) {
     options = options || {};
     options[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
 
     // Force the instance to always return a HTMLElement
-    if (!(this instanceof HTMLElement)) {
+    if (!(this instanceof elementPrototype)) {
       return PushStateTree.apply(document.createElement('pushstatetree-route'), arguments);
     }
 
@@ -381,10 +383,11 @@
       get: function () {
         return !!PushStateTree.prototype.beautifyLocation;
       },
-      set: function (val) {
-        PushStateTree.prototype.beautifyLocation = !!val;
+      set: function (value) {
+        PushStateTree.prototype.beautifyLocation = value === true;
       }
     });
+    rootElement.beautifyLocation = options.beautifyLocation;
 
     var basePath;
     Object.defineProperty(rootElement, 'basePath', {
@@ -444,6 +447,7 @@
 
           if (rootElement.beautifyLocation && rootElement[USE_PUSH_STATE]) {
             // when using pushState, replace the browser location to avoid ugly URLs
+
             rootElement.replaceState(
               rootElement.state,
               rootElement.title,
@@ -452,7 +456,7 @@
           }
         } else {
           uri = root.location.pathname + root.location.search;
-          if (uri.indexOf(this.basePath) === 0) {
+          if (this.isPathValid) {
             uri = uri.slice(this.basePath.length);
           }
         }
@@ -469,6 +473,13 @@
         return uri;
       },
       configurable: true
+    });
+
+    Object.defineProperty(rootElement, 'isPathValid', {
+      get: function () {
+        var uri = root.location.pathname + root.location.search;
+        return !this.basePath || (uri).indexOf(this.basePath) === 0;
+      }
     });
 
     rootElement.eventStack = {
@@ -709,6 +720,9 @@
 
       // Cache the URI, in case of an event try to change it
       var debug = this.debug === true || DEBUG;
+
+      // Abort if the basePath isn't valid for this router
+      if (!this.isPathValid) return;
 
       function runner(uri, oldURI) {
         Array.prototype.slice.call(this.children || this.childNodes)

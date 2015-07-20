@@ -1,10 +1,34 @@
-/*globals PushStateTree, it, expect, beforeEach */
+/*globals PushStateTree, it, expect, beforeEach, beforeAll */
 describe('PushStateTree should', function() {
   'use strict';
+
+  var events = {
+    popstate: [],
+    hashchange: [],
+    DOMContentLoaded: [],
+    readystatechange: [],
+    load: []
+  };
+
+  beforeAll(function(){
+    var addEventListener = window.addEventListener;
+    window.addEventListener = function(name, callback){
+      events[name].push(callback);
+      addEventListener.apply(window, arguments);
+    };
+  });
 
   beforeEach(function(){
     // Reset the URI before begin the tests
     history.pushState(null, null, '/');
+    for (var eventName in events)
+      if (events.hasOwnProperty(eventName)) {
+        var eventList = events[eventName];
+        while (eventList.length) {
+          var callback = eventList.pop();
+          window.removeEventListener(eventName, callback);
+        }
+      }
   });
 
   it('be available on global scope', function() {
@@ -24,11 +48,6 @@ describe('PushStateTree should', function() {
   it('auto enable push state if browser support it', function(){
     var pst = new PushStateTree();
     expect(pst.usePushState).toBeTruthy();
-  });
-
-  it('auto enable beautifyLocation feature', function(){
-    var pst = new PushStateTree();
-    expect(pst.beautifyLocation).toBeTruthy();
   });
 
   it('allow to disable push state if it constructor has a false option', function(){
@@ -67,15 +86,6 @@ describe('PushStateTree should', function() {
     expect(pst2.usePushState).toBeTruthy();
   });
 
-  it('allow to change the beautifyLocation flag after start running', function(){
-    var pst = new PushStateTree();
-    expect(pst.beautifyLocation).toBeTruthy();
-    pst.beautifyLocation = false;
-    expect(pst.beautifyLocation).toBeFalsy();
-    pst.beautifyLocation = true;
-    expect(pst.beautifyLocation).toBeTruthy();
-  });
-
   it('allow to set the base path', function(){
     var pst = new PushStateTree({
       basePath: '/test/'
@@ -107,50 +117,6 @@ describe('PushStateTree should', function() {
   it('get the current URI', function(){
     var pst = new PushStateTree();
     expect(pst.uri).toEqual(location.pathname.slice(1));
-  });
-
-  it('prioritise the hash to provide the URI', function(){
-    var pst = new PushStateTree({
-      beautifyLocation: false
-    });
-    location.hash = '#test';
-    expect(pst.uri).toEqual('test');
-  });
-
-  it('remove the first slash from the URI in the regular URL', function(){
-    var pst = new PushStateTree({
-      beautifyLocation: false
-    });
-    history.pushState(null, null, '/test');
-    expect(location.pathname).toEqual('/test');
-    expect(pst.uri).toEqual('test');
-  });
-
-  it('remove the first slash from the URI in the location.hash', function(){
-    var pst = new PushStateTree({
-      beautifyLocation: false
-    });
-    location.hash = '/test';
-    expect(location.hash).toEqual('#/test');
-    expect(pst.uri).toEqual('test');
-  });
-
-  it('redirect from the hash to path when beautifyLocation is enabled', function(){
-    var pst = new PushStateTree({
-      beautifyLocation: true
-    });
-
-    // Reset URL
-    var randomURI = Math.random() + '';
-    history.pushState(null, null, '/' + randomURI);
-    expect(pst.uri).toEqual(randomURI);
-    expect(location.pathname).toEqual('/' + randomURI);
-
-    location.hash = '/abc';
-    expect(pst.uri).toEqual('abc');
-    expect(location.hash).toEqual('');
-
-    expect(location.pathname).toEqual('/abc');
   });
 
   it('use the non relative root as basePath if not specified', function(){

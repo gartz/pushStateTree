@@ -1,8 +1,8 @@
-//! push-state-tree - v0.12.0 - 2015-06-07
+//! push-state-tree - v0.13.0 - 2015-07-19
 //* https://github.com/gartz/pushStateTree/
 //* Copyright (c) 2015 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed 
 
-var PushStateTree = {options: {VERSION: '0.12.0'}};
+var PushStateTree = {options: {VERSION: '0.13.0'}};
 (function (root) {
   'use strict';
 
@@ -307,6 +307,7 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
   // Constants for uglifiers
 
   var USE_PUSH_STATE = 'usePushState';
+  var HAS_PUSH_STATE = 'hasPushState';
   var HASHCHANGE = 'hashchange';
   var POPSTATE = 'popstate';
   var LEAVE = 'leave';
@@ -344,42 +345,42 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
     return (/^[^#/]/).test(uri);
   }
 
-  //TODO: the container reference must be configurable to work with web components
-  var rootElement = document.createElement('pushstatetree-route');
-  var ready = false;
+  var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
 
   function PushStateTree(options) {
     options = options || {};
+    options[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
 
+    // Force the instance to always return a HTMLElement
+    if (!(this instanceof elementPrototype)) {
+      return PushStateTree.apply(document.createElement('pushstatetree-route'), arguments);
+    }
+
+    var rootElement = this;
     this.VERSION = VERSION;
 
-    if (ready) {
-      // Setup options
-      for (var prop in options) {
-        if (options.hasOwnProperty(prop)) {
-          rootElement[prop] = options[prop];
-        }
+    // Setup options
+    for (var prop in options) {
+      if (options.hasOwnProperty(prop)) {
+        rootElement[prop] = options[prop];
       }
-
-      return rootElement;
     }
-    ready = true;
 
     // Allow switch between pushState or hash navigation modes, in browser that doesn't support
     // pushState it will always be false. and use hash navigation enforced.
     // use backend non permanent redirect when old browsers are detected in the request.
-    if (!PushStateTree.prototype.hasPushState) {
+    if (!PushStateTree.prototype[HAS_PUSH_STATE]) {
       wrapProperty(rootElement, USE_PUSH_STATE, false);
     } else {
+      var usePushState = options[USE_PUSH_STATE];
       Object.defineProperty(rootElement, USE_PUSH_STATE, {
         get: function () {
-          return PushStateTree.prototype[USE_PUSH_STATE];
+          return usePushState;
         },
         set: function (val) {
-          PushStateTree.prototype[USE_PUSH_STATE] = val !== false;
+          usePushState = val !== false;
         }
       });
-      PushStateTree.prototype[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
     }
 
     // When enabled beautifyLocation will auto switch between hash to pushState when enabled
@@ -387,22 +388,24 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
       get: function () {
         return !!PushStateTree.prototype.beautifyLocation;
       },
-      set: function (val) {
-        PushStateTree.prototype.beautifyLocation = !!val;
+      set: function (value) {
+        PushStateTree.prototype.beautifyLocation = value === true;
       }
     });
+    rootElement.beautifyLocation = options.beautifyLocation;
 
     var basePath;
     Object.defineProperty(rootElement, 'basePath', {
       get: function () {
         return basePath;
       },
-      set: function (val) {
-        val = val || '';
-        basePath = val.match(/^(\/)?((.*?)\/?)(\/*)$/)[3] + '/';
+      set: function (value) {
+        value = value || '';
+        basePath = value.match(/^(\/)?((.*?)\/?)(\/*)$/)[3] + '/';
         if (basePath.length > 1) basePath = '/' + basePath;
       }
     });
+    rootElement.basePath = options.basePath;
 
     function wrappMethodsAndPropertiesToPrototype(prop) {
       if (typeof PushStateTree.prototype[prop] === 'function') {
@@ -447,8 +450,9 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
           // Remove all begin # chars from the location when using hash
           uri = root.location.hash.match(/^(#*)?(.*\/?)/)[2];
 
-          if (rootElement.beautifyLocation && rootElement.usePushState) {
+          if (rootElement.beautifyLocation && rootElement[USE_PUSH_STATE]) {
             // when using pushState, replace the browser location to avoid ugly URLs
+
             rootElement.replaceState(
               rootElement.state,
               rootElement.title,
@@ -457,7 +461,7 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
           }
         } else {
           uri = root.location.pathname + root.location.search;
-          if (uri.indexOf(this.basePath) === 0) {
+          if (this.isPathValid) {
             uri = uri.slice(this.basePath.length);
           }
         }
@@ -474,6 +478,13 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
         return uri;
       },
       configurable: true
+    });
+
+    Object.defineProperty(rootElement, 'isPathValid', {
+      get: function () {
+        var uri = root.location.pathname + root.location.search;
+        return !this.basePath || (uri).indexOf(this.basePath) === 0;
+      }
     });
 
     rootElement.eventStack = {
@@ -496,6 +507,33 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
         this.dispatch();
       }
     }.bind(rootElement));
+
+    var readOnhashchange = false;
+    var onhashchange = function () {
+      // Workaround IE8
+      if (readOnhashchange) return;
+
+      // Don't dispatch, because already have dispatched in popstate event
+      if (oldURI === rootElement.uri) return;
+
+      var eventURI = rootElement.uri;
+      var eventState = rootElement.state;
+      rootElement.rulesDispatcher();
+
+      oldURI = eventURI;
+      oldState = eventState;
+
+      // If there is holding dispatch in the event, do it now
+      if (holdingDispatch) {
+        this.dispatch();
+      }
+    }.bind(rootElement);
+
+    rootElement.avoidHashchangeHandler = function () {
+      // Avoid triggering hashchange event
+      root.removeEventListener(HASHCHANGE, onhashchange);
+      readOnhashchange = true;
+    };
 
     root.addEventListener(HASHCHANGE, onhashchange);
 
@@ -527,7 +565,7 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
       }
     }.bind(rootElement));
 
-    return new PushStateTree(options);
+    return this;
   }
 
   var oldState = null;
@@ -688,6 +726,9 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
       // Cache the URI, in case of an event try to change it
       var debug = this.debug === true || DEBUG;
 
+      // Abort if the basePath isn't valid for this router
+      if (!this.isPathValid) return;
+
       function runner(uri, oldURI) {
         Array.prototype.slice.call(this.children || this.childNodes)
           .forEach(recursiveDispatcher.bind(this, uri, oldURI));
@@ -770,7 +811,7 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
           params.detail[OLD_MATCH] = oldMatch || [];
           params.cancelable = true;
 
-          if (debug && console){
+          if (debug && typeof console === 'object'){
             console.log({
               name: name,
               ruleElement: ruleElement,
@@ -868,8 +909,8 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
           // When not external link, need to normalize the URI
 
           if (isRelative(args[2])) {
-            // Relative to the oldURI
-            var basePath = this.uri.match(/^(.*)\//);
+            // Relative to the uri
+            var basePath = this.uri.match(/^([^?#]]*)\//);
             basePath = basePath ? basePath[1] + '/' : '';
             args[2] = basePath + args[2];
           } else {
@@ -879,11 +920,11 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
 
           if (!this[USE_PUSH_STATE]) {
 
-            // Don't use basePath in the location hash mode
+            // Ignore basePath when using location.hash
             args[2] = '#' + args[2];
           } else {
 
-            // Add the basePath to your uri
+            // Add the basePath to your uri, not allowing to go by pushState outside the basePath
             args[2] = this.basePath + args[2];
           }
         }
@@ -903,35 +944,8 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
     }
   }
 
-  var readOnhashchange = false;
-  var onhashchange = function () {
-    // Workaround IE8
-    if (readOnhashchange) return;
-
-    // Don't dispatch, because already have dispatched in popstate event
-    if (oldURI === rootElement.uri) return;
-
-    var eventURI = rootElement.uri;
-    var eventState = rootElement.state;
-    rootElement.rulesDispatcher();
-
-    oldURI = eventURI;
-    oldState = eventState;
-
-    // If there is holding dispatch in the event, do it now
-    if (holdingDispatch) {
-      this.dispatch();
-    }
-  }.bind(rootElement);
-
-  function avoidTriggering() {
-    // Avoid triggering hashchange event
-    root.removeEventListener(HASHCHANGE, onhashchange);
-    readOnhashchange = true;
-  }
-
-  PushStateTree.prototype.hasPushState = root.history && !!root.history.pushState;
-  if (!PushStateTree.prototype.hasPushState) {
+  PushStateTree.prototype[HAS_PUSH_STATE] = root.history && !!root.history.pushState;
+  if (!PushStateTree.prototype[HAS_PUSH_STATE]) {
     PushStateTree.prototype[USE_PUSH_STATE] = false;
   }
 
@@ -944,7 +958,7 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
       if (lastTitle !== null) {
         document.title = lastTitle;
       }
-      avoidTriggering();
+      this.avoidHashchangeHandler();
 
       // Replace hash url
       if (isExternal(uri)) {
@@ -977,7 +991,7 @@ var PushStateTree = {options: {VERSION: '0.12.0'}};
       if (lastTitle !== null) {
         document.title = lastTitle;
       }
-      avoidTriggering();
+      this.avoidHashchangeHandler();
 
       // Replace the url
       if (isExternal(uri)) {
