@@ -1,7 +1,7 @@
 {
   "name": "push-state-tree",
   "description": "A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading).",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "homepage": "https://github.com/gartz/pushStateTree/",
   "author": {
     "name": "Gabriel Reitz Giannattasio <gabriel@gartz.com.br>",
@@ -29,13 +29,13 @@
     "test": "grunt test"
   },
   "devDependencies": {
-    "assemble": "~0.4.37",
+    "assemble": "~0.4.42",
     "codeclimate-test-reporter": "0.0.4",
     "grunt": "~0.4.5",
     "grunt-contrib-clean": "~0.6.0",
     "grunt-contrib-concat": "~0.5.1",
     "grunt-contrib-connect": "~0.10.1",
-    "grunt-contrib-jasmine": "~0.8.2",
+    "grunt-contrib-jasmine": "~0.9.0",
     "grunt-contrib-jshint": "~0.11.2",
     "grunt-contrib-nodeunit": "~0.4.1",
     "grunt-contrib-qunit": "~0.7.0",
@@ -45,12 +45,12 @@
     "grunt-coveralls": "^1.0.0",
     "grunt-json-generator": "~0.1.0",
     "grunt-merge-json": "~0.9.4",
-    "grunt-template-jasmine-istanbul": "~0.3.1",
+    "grunt-template-jasmine-istanbul": "~0.3.4",
     "grunt-update-json": "~0.2.1",
-    "jshint-junit-reporter": "0.3.0",
-    "jshint-stylish": "~2.0.0",
+    "jshint-junit-reporter": "0.2.2",
+    "jshint-stylish": "~2.0.1",
     "load-grunt-tasks": "~3.2.0",
-    "node-static": "^0.7.6"
+    "node-static": "^0.7.7"
   },
   "keywords": [
     "route",
