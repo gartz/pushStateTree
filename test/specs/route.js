@@ -1,4 +1,4 @@
-/*globals PushStateTree, it, expect */
+/*globals PushStateTree, it, expect, beforeEach */
 describe('PushStateTree should', function() {
   'use strict';
 
@@ -11,8 +11,9 @@ describe('PushStateTree should', function() {
     expect(PushStateTree).toBeDefined();
   });
 
-  it('throw an error if not using "new" operator', function() {
-    expect(PushStateTree).toThrow();
+  it('instances without "new" operator', function() {
+    /* jshint newcap: false*/
+    expect(PushStateTree()).toEqual(jasmine.any(HTMLElement));
   });
 
   it('construct and became a HTMLElement instance', function(){
@@ -37,13 +38,33 @@ describe('PushStateTree should', function() {
     expect(pst.usePushState).toBeFalsy();
   });
 
-  it('allow to change the usePushState flag after start running', function(){
+  it('allow to enable push state if it constructor has a true option', function(){
+    var pst = new PushStateTree({
+      usePushState: true
+    });
+    expect(pst.usePushState).toBeTruthy();
+  });
+
+  it('usePushState be true by default', function(){
     var pst = new PushStateTree();
     expect(pst.usePushState).toBeTruthy();
+  });
+
+  it('allow to change the usePushState flag after start running', function(){
+    var pst = new PushStateTree();
     pst.usePushState = false;
     expect(pst.usePushState).toBeFalsy();
     pst.usePushState = true;
     expect(pst.usePushState).toBeTruthy();
+  });
+
+  it('usePushState change for each instance', function(){
+    var pst1 = new PushStateTree({
+      usePushState: false
+    });
+    var pst2 = new PushStateTree();
+    expect(pst1.usePushState).toBeFalsy();
+    expect(pst2.usePushState).toBeTruthy();
   });
 
   it('allow to change the beautifyLocation flag after start running', function(){
@@ -109,7 +130,7 @@ describe('PushStateTree should', function() {
     var pst = new PushStateTree({
       beautifyLocation: false
     });
-    location.hash = '#/test';
+    location.hash = '/test';
     expect(location.hash).toEqual('#/test');
     expect(pst.uri).toEqual('test');
   });
