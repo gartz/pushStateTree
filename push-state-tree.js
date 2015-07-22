@@ -1,8 +1,8 @@
-//! push-state-tree - v0.13.1 - 2015-07-19
+//! push-state-tree - v0.13.2 - 2015-07-21
 //* https://github.com/gartz/pushStateTree/
 //* Copyright (c) 2015 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed 
 
-var PushStateTree = {options: {VERSION: '0.13.1'}};
+var PushStateTree = {options: {VERSION: '0.13.2'}};
 (function (root) {
   'use strict';
 
@@ -911,7 +911,7 @@ var PushStateTree = {options: {VERSION: '0.13.1'}};
 
           if (isRelative(args[2])) {
             // Relative to the uri
-            var basePath = this.uri.match(/^([^?#]]*)\//);
+            var basePath = this.uri.match(/^([^?#]*)\//);
             basePath = basePath ? basePath[1] + '/' : '';
             args[2] = basePath + args[2];
           } else {
