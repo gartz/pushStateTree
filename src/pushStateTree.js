@@ -340,6 +340,22 @@
     return (/^[^#/]/).test(uri);
   }
 
+  function resolveRelativePath(path) {
+    // Resolve relative paths manually for browsers using hash navigation
+
+    var parts = path.split('/');
+    var i = 1;
+    while (i < parts.length) {
+      // if current part is `..` and previous part is different, remove both of them
+      if (parts[i] === '..' && i > 0 && parts[i-1] !== '..') {
+        parts.splice(i - 1, 2);
+        i -= 2;
+      }
+      i++;
+    }
+    return parts.join('/').replace(/\/\.\//g, '/');
+  }
+
   var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
 
   function PushStateTree(options) {
@@ -381,13 +397,13 @@
     // When enabled beautifyLocation will auto switch between hash to pushState when enabled
     Object.defineProperty(rootElement, 'beautifyLocation', {
       get: function () {
-        return !!PushStateTree.prototype.beautifyLocation;
+        return PushStateTree.prototype.beautifyLocation && usePushState;
       },
       set: function (value) {
         PushStateTree.prototype.beautifyLocation = value === true;
       }
     });
-    rootElement.beautifyLocation = options.beautifyLocation;
+    rootElement.beautifyLocation = options.beautifyLocation && rootElement.usePushState;
 
     var basePath;
     Object.defineProperty(rootElement, 'basePath', {
@@ -916,8 +932,10 @@
 
           if (!this[USE_PUSH_STATE]) {
 
-            // Ignore basePath when using location.hash
-            args[2] = '#' + args[2];
+            // Ignore basePath when using location.hash and resolve relative path and keep
+            // the current location.pathname, some browsers history API might apply the new pathname
+            // with the hash content if not explicit
+            args[2] = location.pathname + '#' + resolveRelativePath(args[2]);
           } else {
 
             // Add the basePath to your uri, not allowing to go by pushState outside the basePath
@@ -969,6 +987,7 @@
 
       if (isRelative(uri)) {
         uri = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + uri;
+        uri = resolveRelativePath(uri);
       }
 
       root.location.hash = uri;
@@ -1001,6 +1020,7 @@
       if (isRelative(uri)) {
         var relativePos = root.location.hash.lastIndexOf('/') + 1;
         uri = root.location.hash.slice(1, relativePos) + uri;
+        uri = resolveRelativePath(uri);
       }
 
       // Always use hash navigation
