@@ -10,6 +10,18 @@
 
 ### [Demo page](http://gartz.github.io/pushStateTree/)
 
+## Features
+
+ - Use event listeners for a total control of each rule in the router
+ - Allow multiple routers with encapsulated base-path
+ - Allow any regular expression in the rules
+ - Allow on-fly rule add or remove
+ - It's very convenient to create lazy module loading
+ - Work with all modern browsers and some old ones (IE7 or older aren't supported)
+ - Use DOM methods to find and change Rules elements (compatible with jQuery)
+ - Allow use pushState and/or location.history hash navigation
+ - Allow auto switch between hash links to pushState when available on the browser
+
 ## Motivation
 
 The open-source router system solutions available when I started designing this library were all working with a callback
@@ -22,6 +34,11 @@ a robust router system is required.
 PushStateTree is based in another implementation for a IPTV system for a company called Cianet in Brazil made in 2011,
 at that time the project was based on Backbone library, and further I decided to create a standalone version compatible
 with IE8, and what mimic Web Components, to allow (as optional) to expose in the DOM and make easier to debug it.
+
+## Cases
+
+ - Visually Marketplace: https://marketplace.visual.ly on August OF 2015 Visually launched their new Marketplace focus on the best performance that Single Page Applications can archive.
+ - Cianet IPTV: http://cianet.ind.br since 2011 the company use a internal version that was used to inspire the open-source version of PushStateTree.
 
 ## Quick start
 
@@ -202,16 +219,6 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - Use npm to install dev dependencies `npm install --dev`
  - Use npm to start a dev server `npm start`
  - Open you browser in the URL: [http://localhost:3000/](http://localhost:3000/)
-
-## Features
-
- - Use event listeners for a total control of each rule in the router
- - Allow any regular expression in the rules
- - Allow on-fly rule add or remove
- - It's very convenient to create lazy module loading
- - Work with all modern browsers and some old ones (IE7 or older aren't supported)
- - Use DOM methods to find and change Rules elements (compatible with jQuery)
- - Allow use pushState and/or location.history hash navigation
 
 ## Goals
 
