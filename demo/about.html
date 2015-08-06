@@ -8,8 +8,27 @@
   and will let you create modules with all of their own businness inside, without need to know other
   pages to keep integrity.
   </p>
-  <h2>It's all about events...</h2>
-  <p>Every rule you create will heve their own events, <strong>enter</strong>, <strong>change</strong>, <strong>leave</strong>
-  and other, will let you handle with all you need to know and be ready to change your DOM.
+  <h2>It gives you full control of the URL changes</h2>
+  <p>You can have multiple routers, each router can have rules, what also support sub-rules.</p>
+  <p>
+    Each rule will give events that you can listen to compose your application and ensure that
+    components related to each rule will be fulfilled in the right sequence order.
   </p>
+  <p>
+    Every rule you create will trigger the events:
+    <ul>
+      <li><strong>enter</strong>: When the rule is match for the first time or after a "leave".</li>
+      <li><strong>change</strong>: When the rule is match after a "enter".</li>
+      <li><strong>match</strong>: Everytime a location change is dispatch and the rule match.</li>
+      <li><strong>leave</strong>: When the rule doesn't match but the previous location was matching the rule.</li>
+      <li><strong>update</strong>: Everytime a event is dispatched.</li>
+    </ul>
+  </p>
+  <h2>Live use-cases</h2>
+  <ul>
+    <li>
+      <a href="https://marketplace.visual.ly/" target="_blank">Visually Marketplace</a>: a marketing
+      projects marketplace designed to be a fast SPA using PushStateTree.
+    </li>
+  </ul>
 </div>
