@@ -359,6 +359,7 @@
       .replace(/^\/$/, '');
   }
 
+  // Add compatibility with old IE browsers
   var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
 
   function PushStateTree(options) {
