@@ -1,5 +1,5 @@
 /*globals PushStateTree, it, expect, beforeEach, beforeAll */
-describe('PushStateTree should', function() {
+describe('PushStateTree hash-navigation should', function() {
   'use strict';
 
   var events = {
