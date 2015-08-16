@@ -415,9 +415,10 @@
         return basePath;
       },
       set: function (value) {
-        value = value || '';
-        basePath = value.match(/^(\/)?((.*?)\/?)(\/*)$/)[3] + '/';
-        if (basePath.length > 1) basePath = '/' + basePath;
+        basePath = value || '';
+        if (basePath[0] !== '/') {
+          basePath = '/' + basePath;
+        }
       }
     });
     rootElement.basePath = options.basePath;
