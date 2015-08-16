@@ -353,7 +353,10 @@
       }
       i++;
     }
-    return parts.join('/').replace(/\/\.\//g, '/');
+    return parts
+      .join('/')
+      .replace(/\/\.\/|\.\/|\.\.\//g, '/')
+      .replace(/^\/$/, '');
   }
 
   var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;

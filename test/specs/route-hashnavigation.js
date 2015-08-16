@@ -46,6 +46,24 @@ describe('PushStateTree should', function() {
     expect(pst.uri).toEqual('test');
   });
 
+  it('increment the history length when using navigate method', function(){
+    var pst = new PushStateTree({
+      usePushState: false
+    });
+    var currentLength = history.length;
+    pst.navigate('test');
+    expect(history.length).toEqual(currentLength + 1);
+  });
+
+  it('not increment the history length when using replace method', function(){
+    var pst = new PushStateTree({
+      usePushState: false
+    });
+    var currentLength = history.length;
+    pst.replace('test');
+    expect(history.length).toEqual(currentLength);
+  });
+
   it('change the hash address when pushstate is disabled', function(){
     var pst = new PushStateTree({
       usePushState: false
