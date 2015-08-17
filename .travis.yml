@@ -12,3 +12,4 @@ script:
   - grunt coveralls
 after_script:
   - codeclimate < report/coverage/lcov/lcov.info
+sudo: false
