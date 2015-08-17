@@ -100,10 +100,10 @@
           return load(basePath + '/demo/main.js');
         })
         .done(function (){
-          $('#loading').modal('hide').on('hidden.bs.modal', function(){
+          $('#loading').on('hidden.bs.modal', function(){
             $('#main').toggleClass('in', true);
-        });
-      });
+          }).modal('hide');
+	  });
 
       $(function(){
         $('#rootLink').attr('href', basePath + '/');

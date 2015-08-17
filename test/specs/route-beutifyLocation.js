@@ -110,4 +110,14 @@ describe('PushStateTree beutifyLocation should', function() {
     expect(location.hash).toEqual('');
   });
 
+  it('no change if usePushState is false', function(){
+    var pst = new PushStateTree({
+      beautifyLocation: true,
+      usePushState: false
+    });
+    pst.navigate('test2');
+    expect(pst.uri).toEqual('test2');
+    expect(location.hash).toEqual('#test2');
+  });
+
 });
