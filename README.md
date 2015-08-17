@@ -3,7 +3,7 @@
 [![NPM version](https://badge.fury.io/js/push-state-tree.png)](http://badge.fury.io/js/push-state-tree)
 [![Build Status](https://travis-ci.org/gartz/pushStateTree.svg?branch=master)](https://travis-ci.org/gartz/pushStateTree)
 [![Dependency Status](https://gemnasium.com/gartz/pushStateTree.svg)](https://gemnasium.com/gartz/pushStateTree)
-[![Coverage Status](https://coveralls.io/repos/gartz/pushStateTree/badge.svg)](https://coveralls.io/r/gartz/pushStateTree)
+[![Coverage Status](https://coveralls.io/repos/gartz/pushStateTree/badge.svg?branch=master&service=github)](https://coveralls.io/github/gartz/pushStateTree?branch=master)
 [![Code Climate](https://codeclimate.com/github/gartz/pushStateTree/badges/gpa.svg)](https://codeclimate.com/github/gartz/pushStateTree)
 
 > A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading).
