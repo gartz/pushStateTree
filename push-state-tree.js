@@ -1,8 +1,8 @@
-//! push-state-tree - v0.13.3 - 2015-07-28
+//! push-state-tree - v0.14.0 - 2015-08-17
 //* https://github.com/gartz/pushStateTree/
 //* Copyright (c) 2015 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed 
 
-var PushStateTree = {options: {VERSION: '0.13.3'}};
+var PushStateTree = {options: {VERSION: '0.14.0'}};
 (function (root) {
   'use strict';
 
@@ -358,9 +358,13 @@ var PushStateTree = {options: {VERSION: '0.13.3'}};
       }
       i++;
     }
-    return parts.join('/').replace(/\/\.\//g, '/');
+    return parts
+      .join('/')
+      .replace(/\/\.\/|\.\/|\.\.\//g, '/')
+      .replace(/^\/$/, '');
   }
 
+  // Add compatibility with old IE browsers
   var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
 
   function PushStateTree(options) {
@@ -416,9 +420,10 @@ var PushStateTree = {options: {VERSION: '0.13.3'}};
         return basePath;
       },
       set: function (value) {
-        value = value || '';
-        basePath = value.match(/^(\/)?((.*?)\/?)(\/*)$/)[3] + '/';
-        if (basePath.length > 1) basePath = '/' + basePath;
+        basePath = value || '';
+        if (basePath[0] !== '/') {
+          basePath = '/' + basePath;
+        }
       }
     });
     rootElement.basePath = options.basePath;
