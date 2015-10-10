@@ -208,6 +208,7 @@ will be displayed as a element attribute, that help with the debugging your rout
  - **uri**: *String* - property and attribute, display the current URI in the URL, if outside the base path, will return empty string.
  - **basePath**: *String* - property, that allow to get or set the basePath.
  - **usePushState**: *Boolean* - property, that allow to get or set if should use pushState feature.
+ - **isPathValid**: *Boolean* - property, that return true when the URL match the basePath of the router.
 
 ## Examples
 
