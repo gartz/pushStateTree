@@ -294,8 +294,14 @@ module.exports = function(grunt) {
         'merge-json',
         'jshint',
         'connect:test',
-        'jasmine:coverage'
+        'jasmine:coverage',
+        'karma:unit'
       ]
+    },
+    karma: {
+      unit: {
+        configFile: 'karma.conf.js'
+      }
     }
   });
 
@@ -306,6 +312,8 @@ module.exports = function(grunt) {
   grunt.registerTask('test', [
     'Run tests and code-coverage then print the summary.'
   ].join(), [
+    'connect',
+    'jasmine',
     'jshint',
     'clean:test',
     'connect:test',
@@ -333,4 +341,7 @@ module.exports = function(grunt) {
     'uglify'
   ]);
 
+  grunt.loadNpmTasks('grunt-karma');
+
+  grunt.registerTask('karma-test', ['karma']);
 };
