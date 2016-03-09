@@ -198,7 +198,7 @@ module.exports = function(grunt) {
         trailing: true,
         maxparams: 5, // if you need more then 3 use an object param
         maxdepth: 8,
-        maxlen: 100,
+        maxlen: 120,
         boss: true,
         browser: true,
         evil: false,
@@ -226,7 +226,8 @@ module.exports = function(grunt) {
             expect: true,
             beforeEach: true,
             spyOn: true,
-            jasmine: true
+            jasmine: true,
+            PushStateTree: true
           }
         }
       }

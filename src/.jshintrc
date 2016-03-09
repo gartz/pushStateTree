@@ -21,7 +21,7 @@
     "trailing": true,
     "maxparams": 5,
     "maxdepth": 8,
-    "maxlen": 100,
+    "maxlen": 120,
     "boss": true,
     "browser": true,
     "evil": false,

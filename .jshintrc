@@ -21,7 +21,7 @@
 	"trailing": true,
 	"maxparams": 4,
 	"maxdepth": 6,
-	"maxlen": 100,
+	"maxlen": 120,
 	"boss": true,
 	"browser": true,
 	"evil": false,
@@ -35,6 +35,7 @@
 		"expect": true,
 		"beforeEach": true,
 		"spyOn": true,
-		"jasmine": true
+		"jasmine": true,
+		"PushStateTree": true
 	}
 }
