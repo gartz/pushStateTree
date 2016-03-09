@@ -1,6 +1,6 @@
-//! push-state-tree - v0.14.0 - 2015-08-17
+//! push-state-tree - v0.14.0 - 2016-02-26
 //* https://github.com/gartz/pushStateTree/
-//* Copyright (c) 2015 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed 
+//* Copyright (c) 2016 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed 
 
 var PushStateTree = {options: {VERSION: '0.14.0'}};
 (function (root) {

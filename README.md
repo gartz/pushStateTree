@@ -1,9 +1,8 @@
 # pushStateTree 
-[![Analytics](https://ga-beacon.appspot.com/UA-24619548-7/pushStateTree/readme)](https://github.com/igrigorik/ga-beacon)
 [![NPM version](https://badge.fury.io/js/push-state-tree.png)](http://badge.fury.io/js/push-state-tree)
 [![Build Status](https://travis-ci.org/gartz/pushStateTree.svg?branch=master)](https://travis-ci.org/gartz/pushStateTree)
 [![Dependency Status](https://gemnasium.com/gartz/pushStateTree.svg)](https://gemnasium.com/gartz/pushStateTree)
-[![Coverage Status](https://coveralls.io/repos/gartz/pushStateTree/badge.svg)](https://coveralls.io/r/gartz/pushStateTree)
+[![Coverage Status](https://coveralls.io/repos/gartz/pushStateTree/badge.svg?branch=master&service=github)](https://coveralls.io/github/gartz/pushStateTree?branch=master)
 [![Code Climate](https://codeclimate.com/github/gartz/pushStateTree/badges/gpa.svg)](https://codeclimate.com/github/gartz/pushStateTree)
 
 > A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading).
@@ -208,6 +207,7 @@ will be displayed as a element attribute, that help with the debugging your rout
  - **uri**: *String* - property and attribute, display the current URI in the URL, if outside the base path, will return empty string.
  - **basePath**: *String* - property, that allow to get or set the basePath.
  - **usePushState**: *Boolean* - property, that allow to get or set if should use pushState feature.
+ - **isPathValid**: *Boolean* - property, that return true when the URL match the basePath of the router.
 
 ## Examples
 
