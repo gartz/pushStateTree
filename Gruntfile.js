@@ -340,8 +340,6 @@ module.exports = function(grunt) {
     'concat',
     'uglify'
   ]);
-
-  grunt.loadNpmTasks('grunt-karma');
-
+  
   grunt.registerTask('karma-test', ['karma']);
 };

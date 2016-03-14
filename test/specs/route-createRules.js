@@ -1,34 +1,61 @@
+var customMatchers = {
+  toBeInstanceOf: function(util, customEqualityTesters) {
+    return {
+      compare: function(actual, expected) {
+        var result = {};
+        result.pass = actual instanceof expected;
+        if (!result.pass) {
+          return "Expected " + actual.constructor.name + notText + " is instance of " + expectedInstance.name;
+        }
+        return result;
+      }
+    };
+  }
+}
 
 describe('PushStateTree createRule', function() {
   'use strict';
+  beforeEach(function() {
+  	jasmine.addMatchers(customMatchers);
+  });
 
   describe('when rule /^servers(\/)?(.*)/', function() {
     var pst;
     var rule;
+    var regexRule = /^servers(\/)?(.*)/;
+    var idRule = 'servers';
     beforeEach(function() {
       pst = new PushStateTree();
       rule = pst.createRule({
-        id: 'servers',
-        rule: /^servers(\/)?(.*)/
+        id: idRule,
+        rule: regexRule
       });
     });
-    it('should create the html node rule', function() {
-      expect(rule.outerHTML).toEqual('<pushstatetree-rule id="servers" rule="/^servers(\\/)?(.*)/"></pushstatetree-rule>');
+
+    it('should create the html node', function() {
+      expect(rule).toBeInstanceOf(HTMLElement);
+    });
+
+    it('should add the id attribute to the node', function() {
+      expect(rule.id).toEqual(idRule);
     });
 
     it('should create a get function which returns the regex rule', function() {
-      expect(rule.rule).toEqual(/^servers(\/)?(.*)/);
+      expect(rule.rule).toEqual(regexRule);
     });
 
     describe('when a set rule function is created', function() {
-      it('should it should change regex value ', function() {
+
+      it('should change regex value ', function() {
         rule.rule = /^faq(\/)?(.*)/;
         expect(rule.rule).toEqual(/^faq(\/)?(.*)/);
       });
+
       it('should convert string into regex format', function() {
         rule.rule = '^faq(\\/)?(.*)';
         expect(rule.rule).toEqual(/^faq(\/)?(.*)/);
       });
+
       it('should avoid recursive loop', function() {
         spyOn(rule, 'setAttribute');
         rule.rule = '/^servers(\\/)?(.*)/';
