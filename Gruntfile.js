@@ -105,7 +105,6 @@ module.exports = function(grunt) {
       ],
       tasks: [
         'update_json',
-        'jshint',
         'karma:unit:run'
       ]
     },
@@ -114,6 +113,7 @@ module.exports = function(grunt) {
         configFile: 'karma.conf.js'
       },
       unit: {
+        browsers: ['PhantomJS', 'Chrome', 'Firefox'],
         background: true,
         singleRun: false
       },
