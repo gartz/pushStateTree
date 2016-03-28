@@ -15,18 +15,14 @@ module.exports = function(grunt) {
       name: '<%= meta.pkg.name %>',
       src: {
         main: 'src/**/*.js',
-        test: 'test/specs/*.js',
-        helper: 'test/helpers/**/*.js',
-        polyfill: [
-          //'bower_components/WeakMap/WeakMap.js'
-        ]
+        test: 'test/**/*.js'
       },
+      build: 'build',
+      coverage: '<%= meta.build %>/coverage',
+
+      //TODO: Move dist to build
       dist: '<%= meta.pkg.name %>.min.js',
-      report: {
-        base: 'report',
-        coverage: '<%= meta.report.base %>/coverage',
-        junit: '<%= meta.report.base %>/junit'
-      },
+
       banner: '//! <%= meta.pkg.title || meta.name %> - v<%= meta.pkg.version %> - ' +
       '<%= grunt.template.today("yyyy-mm-dd") %>\n' +
       '//<%= meta.pkg.homepage ? "* " + meta.pkg.homepage + "\\n" : "" %>' +
@@ -34,33 +30,9 @@ module.exports = function(grunt) {
       ' Licensed <%= meta.pkg.license %>\n\n' +
       'var PushStateTree = {options: {VERSION: \'<%= meta.pkg.version %>\'}};\n'
     },
-    connect: {
-      report: {
-        options: {
-          open: {
-            target: 'http://127.0.0.1:3000',
-            appName: 'google-chrome',
-            callback: function() {
-              grunt.log.writeln('Your browser is open with the report server url.');
-              grunt.log.writeln('To close this server press CTRL+C.');
-            }
-          },
-          keepalive: true,
-          base: '.',
-          port: 3000,
-          useAvailablePort: true
-        }
-      },
-      test : {
-        options: {
-          base: '.',
-          port: '?'
-        }
-      }
-    },
     clean: {
       test: [
-        '<%= meta.report.base %>'
+        '<%= meta.coverage %>'
       ],
       concat: [
         '<%= concat.dist.dest %>'
@@ -89,154 +61,13 @@ module.exports = function(grunt) {
         }
       }
     },
-    jasmine: {
-      src: '<%= meta.src.main %>',
-      options: {
-        specs: '<%= meta.src.test %>',
-        helpers: '<%= meta.src.helper %>',
-        vendor: '<%= meta.src.polyfill %>',
-        junit: {
-          path: '<%= meta.report.junit %>'
-        }
-      },
-      coverage: {
-        src: '<%= jasmine.src %>',
-        options: {
-          host: 'http://127.0.0.1:<%= connect.test.options.port %>/',
-          template: require('grunt-template-jasmine-istanbul'),
-          templateOptions: {
-            coverage: '<%= meta.report.coverage %>/coverage.json',
-            report: [
-              {
-                type: 'html',
-                options: {
-                  dir: '<%= meta.report.coverage %>/html'
-                }
-              },
-              {
-                type: 'cobertura',
-                options: {
-                  dir: '<%= meta.report.coverage %>/cobertura'
-                }
-              },
-              {
-                type: 'lcov',
-                options: {
-                  dir: '<%= meta.report.coverage %>/lcov'
-                }
-              },
-              {
-                type: 'text-summary'
-              }
-            ]
-          }
-        }
-      },
-      reportUnit: {
-        src: '<%= jasmine.src %>',
-        options: {
-          host: 'http://127.0.0.1:<%= connect.test.options.port %>/',
-          outfile: '<%= meta.report.base %>/jasmine.html',
-          keepRunner: true,
-          junit: {
-            path: '<%= jasmine.options.junit.path %>'
-          }
-        }
-      },
-      summary: {
-        src: '<%= jasmine.src %>',
-        options: {
-          host: 'http://127.0.0.1:<%= connect.test.options.port %>/',
-          template: require('grunt-template-jasmine-istanbul'),
-          templateOptions: {
-            coverage: '<%= meta.report.coverage %>/coverage.json',
-            report: [
-              {
-                type: 'text-summary'
-              }
-            ]
-          }
-        }
-      }
-    },
     coveralls: {
       options: {
-        // dont fail if coveralls fails
+        // don't fail if coveralls fails
         force: true
       },
       mainTarget: {
-        src: '<%= meta.report.coverage %>/lcov/lcov.info'
-      }
-    },
-    jshint: {
-      files: [
-        '<%= meta.src.main %>',
-      ],
-      options: {
-        // if you are using CI, this options would be good to be enabled
-        //reporter: require('jshint-junit-reporter'),
-        //reporterOutput: '<%= meta.report.base %>/jshint.junit.xml',
-        camelcase: true,
-        curly: false,
-        eqeqeq: true,
-        es3: false,
-        forin: true,
-        freeze: false,
-        immed: false,
-        indent: 2,
-        latedef: true,
-        newcap: true,
-        noarg: true,
-        noempty: true,
-        nonbsp: true,
-        nonew: false,
-        plusplus: false,
-        quotmark: 'single',
-        undef: true,
-        unused: true,
-        strict: true,
-        trailing: true,
-        maxparams: 5, // if you need more then 3 use an object param
-        maxdepth: 8,
-        maxlen: 120,
-        boss: true,
-        browser: true,
-        evil: false,
-        globals: {
-          jQuery: false,
-          console: false,
-          module: false
-        }
-      },
-      test: {
-        src: [
-          'Gruntfile.js',
-          '<%= meta.src.test %>'
-        ],
-        options: {
-          strict: false,
-          maxparams: 4,
-          maxdepth: 6,
-          globals: {
-            jQuery: true,
-            module: true,
-            require: true,
-            describe: true,
-            it: true,
-            expect: true,
-            beforeEach: true,
-            spyOn: true,
-            jasmine: true,
-            PushStateTree: true
-          }
-        }
-      }
-    },
-    rename: {
-      jasmine: {
-        files: [
-          {src: ['_SpecRunner.html'], dest: '<%= meta.report.base %>/jasmine.html'},
-        ]
+        src: '<%= meta.coverage %>/lcov.info'
       }
     },
     'update_json': {
@@ -264,44 +95,30 @@ module.exports = function(grunt) {
           'development': 'devDependencies',
           'license': null
         }
-      },
-    },
-    'merge-json': {
-      jshint: {
-        src: ['src/.jshintrc', '.jshintrc'],
-        dest: '.jshintrc'
       }
     },
-    'json_generator': {
-      jshintTest: {
-        dest: '.jshintrc', // Destination file
-        options: '<%= jshint.test.options %>'
-      },
-      jshintSrc: {
-        dest: 'src/.jshintrc', // Destination file
-        options: '<%= jshint.options %>'
-      }
-    },
-    watch: {
+    watchTask: {
       files: [
         '<%= meta.src.main %>',
         '<%= meta.src.test %>',
-        '<%= meta.src.helper %>',
         'Gruntfile.js'
       ],
       tasks: [
         'update_json',
-        'json_generator',
-        'merge-json',
         'jshint',
-        'connect:test',
-        'jasmine:coverage',
-        'karma:unit'
+        'karma:unit:run'
       ]
     },
     karma: {
-      unit: {
+      options: {
         configFile: 'karma.conf.js'
+      },
+      unit: {
+        background: true,
+        singleRun: false
+      },
+      continuous: {
+        singleRun: true
       }
     }
   });
@@ -310,37 +127,23 @@ module.exports = function(grunt) {
     pattern: ['grunt-*', '!grunt-template-jasmine-istanbul']
   });
 
-  grunt.registerTask('test', [
-    'Run tests and code-coverage then print the summary.'
-  ].join(), [
-    'connect',
-    'jasmine',
-    'jshint',
-    'clean:test',
-    'connect:test',
-    'jasmine:coverage'
+  grunt.task.renameTask('watch', 'watchTask');
+
+  grunt.registerTask('watch', 'Run a watch that test the code on every change', [
+    'karma:unit:start',
+    'watchTask'
   ]);
 
-  grunt.registerTask('report', [
-    'Open a web-server with coverage report. ',
-    'Will open google-chrome if available.'
-  ].join(), [
+  grunt.registerTask('test', 'Run tests and code-coverage then print the summary.', [
     'clean:test',
-    'connect:test',
-    'jasmine:reportUnit',
-    'jasmine:coverage',
-    'connect:report'
+    'karma:continuous'
   ]);
 
   grunt.registerTask('default', [
     'update_json',
-    'json_generator',
-    'merge-json',
     'clean',
     'test',
     'concat',
     'uglify'
   ]);
-  
-  grunt.registerTask('karma-test', ['karma']);
 };
