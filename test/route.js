@@ -11,7 +11,7 @@ describe('PushStateTree should', function() {
     load: []
   };
 
-  beforeAll(function(){
+  before(function(){
     var addEventListener = window.addEventListener;
     window.addEventListener = function(name, callback){
       events[name].push(callback);
@@ -33,49 +33,49 @@ describe('PushStateTree should', function() {
   });
 
   it('be available on global scope', function() {
-    expect(PushStateTree).toBeDefined();
+    expect(PushStateTree).to.be.defined;
   });
 
   it('instances without "new" operator', function() {
     /* jshint newcap: false*/
-    expect(PushStateTree()).to.equal(jasmine.any(HTMLElement));
+    expect(PushStateTree()).to.be.instanceof(HTMLElement);
   });
 
   it('construct and became a HTMLElement instance', function(){
-    expect(new PushStateTree()).to.equal(jasmine.any(HTMLElement));
-    expect(new PushStateTree({})).to.equal(jasmine.any(HTMLElement));
+    expect(new PushStateTree()).to.be.instanceof(HTMLElement);
+    expect(new PushStateTree({})).to.be.instanceof(HTMLElement);
   });
 
   it('auto enable push state if browser support it', function(){
     var pst = new PushStateTree();
-    expect(pst.usePushState).toBeTruthy();
+    expect(pst.usePushState).to.be.true;
   });
 
   it('allow to disable push state if it constructor has a false option', function(){
     var pst = new PushStateTree({
       usePushState: false
     });
-    expect(pst.usePushState).toBeFalsy();
+    expect(pst.usePushState).to.be.false;
   });
 
   it('allow to enable push state if it constructor has a true option', function(){
     var pst = new PushStateTree({
       usePushState: true
     });
-    expect(pst.usePushState).toBeTruthy();
+    expect(pst.usePushState).to.be.true;
   });
 
   it('usePushState be true by default', function(){
     var pst = new PushStateTree();
-    expect(pst.usePushState).toBeTruthy();
+    expect(pst.usePushState).to.be.true;
   });
 
   it('allow to change the usePushState flag after start running', function(){
     var pst = new PushStateTree();
     pst.usePushState = false;
-    expect(pst.usePushState).toBeFalsy();
+    expect(pst.usePushState).to.be.false;
     pst.usePushState = true;
-    expect(pst.usePushState).toBeTruthy();
+    expect(pst.usePushState).to.be.true;
   });
 
   it('usePushState change for each instance', function(){
@@ -83,8 +83,8 @@ describe('PushStateTree should', function() {
       usePushState: false
     });
     var pst2 = new PushStateTree();
-    expect(pst1.usePushState).toBeFalsy();
-    expect(pst2.usePushState).toBeTruthy();
+    expect(pst1.usePushState).to.be.false;
+    expect(pst2.usePushState).to.be.true;
   });
 
   it('get the current URI', function(){

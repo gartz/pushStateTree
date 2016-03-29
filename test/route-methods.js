@@ -11,7 +11,7 @@ describe('PushStateTree methods should', function() {
     load: []
   };
 
-  beforeAll(function(){
+  before(function(){
     var addEventListener = window.addEventListener;
     window.addEventListener = function(name, callback){
       events[name].push(callback);

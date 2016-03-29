@@ -11,7 +11,7 @@ describe('PushStateTree hash-navigation should', function() {
     load: []
   };
 
-  beforeAll(function(){
+  before(function(){
     var addEventListener = window.addEventListener;
     window.addEventListener = function(name, callback){
       events[name].push(callback);
@@ -36,7 +36,7 @@ describe('PushStateTree hash-navigation should', function() {
     var pst = new PushStateTree({
       usePushState: false
     });
-    expect(pst.usePushState).toBeFalsy();
+    expect(pst.usePushState).to.be.false;
   });
 
   it('detect the hash address', function(){
