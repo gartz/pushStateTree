@@ -5,12 +5,11 @@ node_js:
 addons:
   code_climate:
     repo_token: 418a1b87b0824002644b73e147820942b4259522011e2d14ff65ebdee6542872
-before_install: npm install -g grunt-cli
 install: npm install
 before_script:
-  - grunt
+  - npm test
 script:
-  - grunt coveralls
+  - cat ./build/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 after_script:
   - codeclimate < report/coverage/lcov/lcov.info
 sudo: false

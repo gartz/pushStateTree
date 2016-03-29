@@ -25,6 +25,7 @@
 	"boss": true,
 	"browser": true,
 	"evil": false,
+	"esnext": true,
 	"globals": {
 		"jQuery": true,
 		"console": false,
@@ -36,6 +37,7 @@
 		"beforeEach": true,
 		"spyOn": true,
 		"jasmine": true,
-		"PushStateTree": true
+		"PushStateTree": true,
+		"VERSION": true
 	}
 }

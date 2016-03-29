@@ -1,4 +1,5 @@
-/*globals PushStateTree, it, expect, beforeEach, beforeAll */
+var PushStateTree = require('../src/pushStateTree');
+
 describe('PushStateTree hash-navigation should', function() {
   'use strict';
 

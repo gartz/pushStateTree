@@ -314,7 +314,6 @@
 
   var options = root.PushStateTree && root.PushStateTree.options || {};
   var DEBUG = root.DEBUG || options.DEBUG;
-  var VERSION = options.VERSION || 'development';
 
   // Helpers
   function isInt(n) {
