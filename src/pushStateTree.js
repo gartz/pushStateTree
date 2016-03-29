@@ -1034,4 +1034,4 @@ if (!PushStateTree.prototype.replaceState) {
 root.PushStateTree = PushStateTree;
 
 // Node import support
-if(typeof module !== 'undefined') module.exports = PushStateTree;
+module.exports = PushStateTree;

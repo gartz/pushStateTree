@@ -18,9 +18,11 @@ let argv = yargs.argv;
 
 const BASE_PATH = path.resolve(__dirname);
 
-const BANNER = `! ${pkg.title} - v${pkg.version} - ${moment().format('YYYY-MM-DD')}
-* ${pkg.homepage}
-* Copyright (c) ${moment().format('YYYY')} ${pkg.author.name}; Licensed ${pkg.licenses.type}`;
+const BANNER = `/*! ${pkg.title} - v${pkg.version} - ${moment().format('YYYY-MM-DD')}
+ * ${pkg.homepage}
+ * Copyright (c) ${moment().format('YYYY')} ${pkg.author.name}; Licensed ${pkg.licenses.type}
+ */
+if(typeof module === 'undefined')var module={};module.exports=`;
 
 let config = {
   entry: !argv.publish ? { 'push-state-tree': './src/pushStateTree' } : {
@@ -63,7 +65,7 @@ let config = {
       DEBUG: false
     }),
 
-    new webpack.BannerPlugin(BANNER, {entryOnly: true}),
+    new webpack.BannerPlugin(BANNER, {raw: true, entryOnly: true}),
 
     new webpack.optimize.UglifyJsPlugin({
       test: /\.min\.js$/,
