@@ -22,8 +22,7 @@ describe('PushStateTree beutifyLocation should', function() {
   beforeEach(function(){
     // Reset the URI before begin the tests
     history.pushState(null, null, '/');
-    for (var eventName in events)
-    if (events.hasOwnProperty(eventName)) {
+    for (var eventName in events) if (events.hasOwnProperty(eventName)) {
       var eventList = events[eventName];
       while (eventList.length) {
         var callback = eventList.pop();

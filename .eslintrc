@@ -5,7 +5,8 @@
 	"env": {
 		"browser": true,
 		"node": true,
-		"es6": true
+		"es6": true,
+    "amd": true
 	},
 	"parserOptions": {
 		"sourceType": "module",
@@ -33,13 +34,6 @@
 		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
 	},
 	"globals": {
-    "VERSION": true,
-    "describe": true,
-    "beforeAll": true,
-    "beforeEach": true,
-    "it": true,
-    "expect": true,
-    "jasmine": true,
-    "spyOn": true
+    "VERSION": true
 	}
 }
