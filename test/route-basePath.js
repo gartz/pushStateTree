@@ -36,49 +36,49 @@ describe('PushStateTree basePath should', function() {
     var pst = new PushStateTree({
       basePath: '/test/'
     });
-    expect(pst.basePath).toEqual('/test/');
+    expect(pst.basePath).to.equal('/test/');
   });
 
   it('normalize basePath folder', function(){
     expect((new PushStateTree({
       basePath: 'folder/'
-    })).basePath).toEqual('/folder/');
+    })).basePath).to.equal('/folder/');
     expect((new PushStateTree({
       basePath: 'folder/sub-folder/'
-    })).basePath).toEqual('/folder/sub-folder/');
+    })).basePath).to.equal('/folder/sub-folder/');
   });
 
   it('normalize basePath file', function(){
     expect((new PushStateTree({
       basePath: 'file'
-    })).basePath).toEqual('/file');
+    })).basePath).to.equal('/file');
     expect((new PushStateTree({
       basePath: '/file'
-    })).basePath).toEqual('/file');
+    })).basePath).to.equal('/file');
     expect((new PushStateTree({
       basePath: 'folder/file'
-    })).basePath).toEqual('/folder/file');
+    })).basePath).to.equal('/folder/file');
     expect((new PushStateTree({
       basePath: '/folder/file'
-    })).basePath).toEqual('/folder/file');
+    })).basePath).to.equal('/folder/file');
     expect((new PushStateTree({
       basePath: 'folder/file.ext'
-    })).basePath).toEqual('/folder/file.ext');
+    })).basePath).to.equal('/folder/file.ext');
     expect((new PushStateTree({
       basePath: '/folder/file.ext'
-    })).basePath).toEqual('/folder/file.ext');
+    })).basePath).to.equal('/folder/file.ext');
     expect((new PushStateTree({
       basePath: 'folder/file.ext?param=value'
-    })).basePath).toEqual('/folder/file.ext?param=value');
+    })).basePath).to.equal('/folder/file.ext?param=value');
     expect((new PushStateTree({
       basePath: '/folder/file.ext?param=value'
-    })).basePath).toEqual('/folder/file.ext?param=value');
+    })).basePath).to.equal('/folder/file.ext?param=value');
   });
 
   it('use the non relative root as basePath if not specified', function(){
     history.pushState(null, null, '/abc/123/');
     var pst = new PushStateTree();
-    expect(pst.basePath).toEqual('/');
+    expect(pst.basePath).to.equal('/');
   });
 
   it('not share the basePath between route instances', function(){
@@ -88,8 +88,8 @@ describe('PushStateTree basePath should', function() {
     var pst2 = new PushStateTree({
       basePath: '2/'
     });
-    expect(pst1.basePath).toEqual('/1/');
-    expect(pst2.basePath).toEqual('/2/');
+    expect(pst1.basePath).to.equal('/1/');
+    expect(pst2.basePath).to.equal('/2/');
   });
 
 });
