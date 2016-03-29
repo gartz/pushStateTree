@@ -8,9 +8,9 @@ addons:
 before_install: npm install -g grunt-cli
 install: npm install
 before_script:
-  - grunt
+  - npm test
 script:
-  - grunt coveralls
+  - cat ./build/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
 after_script:
   - codeclimate < report/coverage/lcov/lcov.info
 sudo: false

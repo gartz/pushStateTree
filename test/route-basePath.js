@@ -1,4 +1,5 @@
-/*globals PushStateTree, it, expect, beforeEach, beforeAll */
+const PushStateTree = require('../src/pushStateTree');
+
 describe('PushStateTree basePath should', function() {
   'use strict';
 

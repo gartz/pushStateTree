@@ -1,3 +1,5 @@
+const PushStateTree = require('../src/pushStateTree');
+
 var customMatchers = {
   toBeInstanceOf: function(util, customEqualityTesters) {
     return {
