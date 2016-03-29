@@ -1,41 +1,56 @@
 {
-	"extends": [
+  "extends": [
     "eslint:recommended"
   ],
-	"env": {
-		"browser": true,
-		"node": true,
-		"es6": true,
+  "env": {
+    "browser": true,
+    "node": true,
+    "es6": true,
     "amd": true
-	},
-	"parserOptions": {
-		"sourceType": "module",
-		"ecmaVersion": 6
-	},
-	"rules": {
-		"strict": "off",
-		"quotes": ["error", "single"],
-    "no-unused-vars": ["error", { "caughtErrorsIgnorePattern": "^ignore" }],
-		"no-console": "error",
-		"no-debugger": "error",
-		"no-constant-condition": "error",
-		"no-caller": "error",
-		"guard-for-in": "error",
-		"no-eval": "error",
-		"no-extra-bind": "error",
-		"no-implicit-globals": "error",
-		"no-implied-eval": "error",
-		"no-iterator": "error",
-		"no-lone-blocks": "error",
-		"no-loop-func": "error",
-		"yoda": "error",
-		"indent": ["error", 2, {
-			"SwitchCase": 1
-		}],
-		"no-mixed-spaces-and-tabs": ["error", "smart-tabs"]
-	},
-	"globals": {
+  },
+  "parserOptions": {
+    "sourceType": "module",
+    "ecmaVersion": 6
+  },
+  "rules": {
+    "strict": "off",
+    "quotes": [
+      "error",
+      "single"
+    ],
+    "no-unused-vars": [
+      "error",
+      {
+        "caughtErrorsIgnorePattern": "^ignore"
+      }
+    ],
+    "no-console": "error",
+    "no-debugger": "error",
+    "no-constant-condition": "error",
+    "no-caller": "error",
+    "guard-for-in": "error",
+    "no-eval": "error",
+    "no-extra-bind": "error",
+    "no-implicit-globals": "error",
+    "no-implied-eval": "error",
+    "no-iterator": "error",
+    "no-lone-blocks": "error",
+    "no-loop-func": "error",
+    "yoda": "error",
+    "indent": [
+      "error",
+      2,
+      {
+        "SwitchCase": 1
+      }
+    ],
+    "no-mixed-spaces-and-tabs": [
+      "error",
+      "smart-tabs"
+    ]
+  },
+  "globals": {
     "VERSION": true,
     "DEBUG": true
-	}
+  }
 }
