@@ -1,4 +1,4 @@
-/*globals PushStateTree, it, expect, beforeEach, beforeAll */
+/*globals PushStateTree, it, expect, beforeEach, before */
 describe('PushStateTree basePath should', function() {
   'use strict';
 
@@ -10,7 +10,7 @@ describe('PushStateTree basePath should', function() {
     load: []
   };
 
-  beforeAll(function(){
+  before(function(){
     var addEventListener = window.addEventListener;
     window.addEventListener = function(name, callback){
       events[name].push(callback);

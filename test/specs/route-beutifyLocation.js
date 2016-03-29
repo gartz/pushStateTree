@@ -1,4 +1,4 @@
-/*globals PushStateTree, it, expect, beforeEach, beforeAll */
+/*globals PushStateTree, it, expect, beforeEach, before */
 describe('PushStateTree beutifyLocation should', function() {
   'use strict';
 
@@ -10,7 +10,7 @@ describe('PushStateTree beutifyLocation should', function() {
     load: []
   };
 
-  beforeAll(function(){
+  before(function(){
     var addEventListener = window.addEventListener;
     window.addEventListener = function(name, callback){
       events[name].push(callback);
@@ -33,15 +33,15 @@ describe('PushStateTree beutifyLocation should', function() {
 
   it('not enable beautifyLocation feature by default', function(){
     var pst = new PushStateTree();
-    expect(pst.beautifyLocation).toBeFalsy();
+    expect(pst.beautifyLocation).to.be.false;
   });
 
   it('allow to change the beautifyLocation flag after start running', function(){
     var pst = new PushStateTree();
     pst.beautifyLocation = false;
-    expect(pst.beautifyLocation).toBeFalsy();
+    expect(pst.beautifyLocation).to.be.false;
     pst.beautifyLocation = true;
-    expect(pst.beautifyLocation).toBeTruthy();
+    expect(pst.beautifyLocation).to.be.true;
   });
 
   it('prioritise the hash to provide the URI', function(){

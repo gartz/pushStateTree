@@ -5,7 +5,7 @@ module.exports = function (config) {
     basePath: '.',
 
     // frameworks to use
-    frameworks: ['jasmine'],
+    frameworks: ['mocha', 'chai-spies', 'chai'],
 
     // list of files / patterns to load in the browser
     files: [

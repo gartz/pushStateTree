@@ -30,6 +30,8 @@
   },
   "devDependencies": {
     "assemble": "~0.4.42",
+    "chai": "^3.5.0",
+    "chai-spies": "^0.7.1",
     "codeclimate-test-reporter": "0.3.1",
     "grunt": "~0.4.5",
     "grunt-contrib-clean": "~1.0.0",
@@ -44,16 +46,18 @@
     "grunt-qunit-junit": "^0.3.1",
     "grunt-template-jasmine-istanbul": "~0.4.0",
     "grunt-update-json": "~0.2.1",
-    "jasmine-core": "^2.4.1",
     "jshint-junit-reporter": "0.2.2",
     "jshint-stylish": "~2.1.0",
     "karma": "^0.13.22",
+    "karma-chai": "^0.1.0",
+    "karma-chai-spies": "^0.1.4",
     "karma-chrome-launcher": "^0.2.2",
     "karma-coverage": "^0.5.5",
-    "karma-jasmine": "^0.3.7",
+    "karma-mocha": "^0.2.2",
     "karma-phantomjs-launcher": "^1.0.0",
     "karma-script-launcher": "^0.1.0",
     "load-grunt-tasks": "~3.4.1",
+    "mocha": "^2.4.5",
     "node-static": "^0.7.7",
     "phantomjs-prebuilt": "^2.1.4"
   },
@@ -82,5 +86,6 @@
     "shim",
     "navigator",
     "navigation"
-  ]
+  ],
+  "dependencies": {}
 }
