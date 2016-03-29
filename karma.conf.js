@@ -72,6 +72,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
+      'src/**/*.js',
       'test/**/*.js'
     ],
 
@@ -114,8 +115,8 @@ module.exports = function (config) {
         { type: 'cobertura', subdir: '.', file: 'cobertura.txt' },
         { type: 'lcovonly', subdir: '.', file: 'lcov.info' },
         { type: 'teamcity', subdir: '.', file: 'teamcity.txt' },
-        { type: 'text', subdir: '.', file: 'text.txt' },
-        { type: 'text-summary', subdir: '.', file: 'text-summary.txt' }
+        { type: 'text' },
+        { type: 'text-summary' }
       ]
     },
 
