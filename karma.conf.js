@@ -102,9 +102,12 @@ module.exports = function (config) {
     },
 
     webpackMiddleware: {
+      quiet: true,
       noInfo: true,
       stats: {
-        colors: true
+        colors: true,
+        modules: false,
+        reasons: false
       }
     },
 
