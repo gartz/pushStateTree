@@ -31,13 +31,30 @@
     "preversion": "karma start && webpack --publish",
     "test": "karma start"
   },
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "plugins": [
+      "transform-runtime",
+      [
+        "transform-strict-mode",
+        {
+          "strict": true
+        }
+      ]
+    ]
+  },
   "devDependencies": {
     "babel-core": "^6.7.4",
     "babel-loader": "^6.2.4",
+    "babel-plugin-transform-runtime": "^6.6.0",
+    "babel-plugin-transform-strict-mode": "^6.6.5",
     "codeclimate-test-reporter": "0.3.1",
     "coveralls": "^2.11.9",
     "eslint": "^2.5.3",
     "eslint-loader": "^1.3.0",
+    "eslint-plugin-jasmine": "^1.6.0",
     "istanbul-instrumenter-loader": "^0.2.0",
     "jasmine-core": "^2.4.1",
     "karma": "^0.13.22",

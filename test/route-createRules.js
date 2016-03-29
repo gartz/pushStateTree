@@ -1,24 +1,24 @@
 var PushStateTree = require('../src/pushStateTree');
 
 var customMatchers = {
-  toBeInstanceOf: function(util, customEqualityTesters) {
+  toBeInstanceOf: function(expectedInstance) {
     return {
       compare: function(actual, expected) {
         var result = {};
         result.pass = actual instanceof expected;
         if (!result.pass) {
-          return "Expected " + actual.constructor.name + notText + " is instance of " + expectedInstance.name;
+          return `Expected ${actual.constructor.name} is instance of ${expectedInstance.name}`;
         }
         return result;
       }
     };
   }
-}
+};
 
 describe('PushStateTree createRule', function() {
   'use strict';
   beforeEach(function() {
-  	jasmine.addMatchers(customMatchers);
+    jasmine.addMatchers(customMatchers);
   });
 
   describe('when rule /^servers(\/)?(.*)/', function() {
