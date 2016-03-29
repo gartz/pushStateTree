@@ -49,7 +49,7 @@ describe('PushStateTree beutifyLocation should', function() {
       beautifyLocation: false
     });
     location.hash = '#test';
-    expect(pst.uri).toEqual('test');
+    expect(pst.uri).to.equal('test');
   });
 
   it('remove the first slash from the URI in the regular URL', function(){
@@ -57,8 +57,8 @@ describe('PushStateTree beutifyLocation should', function() {
       beautifyLocation: false
     });
     history.pushState(null, null, '/test');
-    expect(location.pathname).toEqual('/test');
-    expect(pst.uri).toEqual('test');
+    expect(location.pathname).to.equal('/test');
+    expect(pst.uri).to.equal('test');
   });
 
   it('remove the first slash from the URI in the location.hash', function(){
@@ -66,8 +66,8 @@ describe('PushStateTree beutifyLocation should', function() {
       beautifyLocation: false
     });
     location.hash = '/test';
-    expect(location.hash).toEqual('#/test');
-    expect(pst.uri).toEqual('test');
+    expect(location.hash).to.equal('#/test');
+    expect(pst.uri).to.equal('test');
   });
 
   it('redirect from the hash to path when beautifyLocation is enabled', function(){
@@ -78,14 +78,14 @@ describe('PushStateTree beutifyLocation should', function() {
     // Reset URL
     var randomURI = Math.random() + '';
     history.pushState(null, null, '/' + randomURI);
-    expect(pst.uri).toEqual(randomURI);
-    expect(location.pathname).toEqual('/' + randomURI);
+    expect(pst.uri).to.equal(randomURI);
+    expect(location.pathname).to.equal('/' + randomURI);
 
     location.hash = '/abc';
-    expect(pst.uri).toEqual('abc');
-    expect(location.hash).toEqual('');
+    expect(pst.uri).to.equal('abc');
+    expect(location.hash).to.equal('');
 
-    expect(location.pathname).toEqual('/abc');
+    expect(location.pathname).to.equal('/abc');
   });
 
   it('not apply beautifyLocation when the basePath is not fulfilled', function(){
@@ -95,8 +95,8 @@ describe('PushStateTree beutifyLocation should', function() {
       basePath: '/test/'
     });
     location.hash = '/abc';
-    expect(pst.uri).toEqual('abc');
-    expect(location.hash).toEqual('#/abc');
+    expect(pst.uri).to.equal('abc');
+    expect(location.hash).to.equal('#/abc');
   });
 
   it('apply beautifyLocation when the basePath is fulfilled', function(){
@@ -106,8 +106,8 @@ describe('PushStateTree beutifyLocation should', function() {
       basePath: '/test/'
     });
     location.hash = '/abc';
-    expect(pst.uri).toEqual('abc');
-    expect(location.hash).toEqual('');
+    expect(pst.uri).to.equal('abc');
+    expect(location.hash).to.equal('');
   });
 
   it('no change if usePushState is false', function(){
@@ -116,8 +116,8 @@ describe('PushStateTree beutifyLocation should', function() {
       usePushState: false
     });
     pst.navigate('test2');
-    expect(pst.uri).toEqual('test2');
-    expect(location.hash).toEqual('#test2');
+    expect(pst.uri).to.equal('test2');
+    expect(location.hash).to.equal('#test2');
   });
 
 });

@@ -37,12 +37,12 @@ describe('PushStateTree should', function() {
 
   it('instances without "new" operator', function() {
     /* jshint newcap: false*/
-    expect(PushStateTree()).toEqual(jasmine.any(HTMLElement));
+    expect(PushStateTree()).to.equal(jasmine.any(HTMLElement));
   });
 
   it('construct and became a HTMLElement instance', function(){
-    expect(new PushStateTree()).toEqual(jasmine.any(HTMLElement));
-    expect(new PushStateTree({})).toEqual(jasmine.any(HTMLElement));
+    expect(new PushStateTree()).to.equal(jasmine.any(HTMLElement));
+    expect(new PushStateTree({})).to.equal(jasmine.any(HTMLElement));
   });
 
   it('auto enable push state if browser support it', function(){
@@ -88,7 +88,7 @@ describe('PushStateTree should', function() {
 
   it('get the current URI', function(){
     var pst = new PushStateTree();
-    expect(pst.uri).toEqual(location.pathname.slice(1));
+    expect(pst.uri).to.equal(location.pathname.slice(1));
   });
 
 });

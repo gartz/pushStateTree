@@ -37,23 +37,23 @@ describe('PushStateTree createRule', function() {
     });
 
     it('should add the id attribute to the node', function() {
-      expect(rule.id).toEqual(idRule);
+      expect(rule.id).to.equal(idRule);
     });
 
     it('should create a get function which returns the regex rule', function() {
-      expect(rule.rule).toEqual(regexRule);
+      expect(rule.rule).to.equal(regexRule);
     });
 
     describe('when a set rule function is created', function() {
 
       it('should change regex value ', function() {
         rule.rule = /^faq(\/)?(.*)/;
-        expect(rule.rule).toEqual(/^faq(\/)?(.*)/);
+        expect(rule.rule).to.equal(/^faq(\/)?(.*)/);
       });
 
       it('should convert string into regex format', function() {
         rule.rule = '^faq(\\/)?(.*)';
-        expect(rule.rule).toEqual(/^faq(\/)?(.*)/);
+        expect(rule.rule).to.equal(/^faq(\/)?(.*)/);
       });
 
       it('should avoid recursive loop', function() {

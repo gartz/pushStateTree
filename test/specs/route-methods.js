@@ -49,7 +49,7 @@ describe('PushStateTree methods should', function() {
       'replace',
       'navigate'
     ].forEach(function(method){
-      expect(methods).toContain(method);
+      expect(methods).to.contain(method);
     });
   });
 
