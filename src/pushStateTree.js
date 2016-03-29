@@ -72,7 +72,7 @@ var Event = root.Event;
     HashChangeEvent = root.CustomEvent;
   }
 
-  if (!!isIE) {
+  if (isIE) {
     Event = CustomEvent;
   }
 
@@ -308,9 +308,6 @@ var ENTER = 'enter';
 var CHANGE = 'change';
 var MATCH = 'match';
 var OLD_MATCH = 'oldMatch';
-
-var options = root.PushStateTree && root.PushStateTree.options || {};
-var DEBUG = root.DEBUG || options.DEBUG;
 
 // Helpers
 function isInt(n) {
@@ -564,23 +561,24 @@ function PushStateTree(options) {
     dispatchHashChange();
 
     if (isIE) {
-      root.setInterval(function () {
-        if (rootElement.uri !== oldURI) {
+      root.setInterval(() => {
+        if (this.uri !== oldURI) {
           dispatchHashChange();
           return;
         }
         if (readOnhashchange) {
           readOnhashchange = false;
-          oldURI = rootElement.uri;
+          oldURI = this.uri;
           root.addEventListener(HASHCHANGE, onhashchange);
         }
-      }.bind(rootElement), 50);
+      }, 50);
     }
   }.bind(rootElement));
 
   return this;
 }
 
+/*eslint no-unused-vars: ["error", { "varsIgnorePattern": "oldState" }]*/
 var oldState = null;
 var oldURI = null;
 var eventsQueue = [];
@@ -652,7 +650,7 @@ PushStateTree.prototype = {
       },
       set: function (val) {
         match = val instanceof Array ? val : [];
-      },
+      }
     });
 
     var oldMatch = [];
@@ -662,7 +660,7 @@ PushStateTree.prototype = {
       },
       set: function (val) {
         oldMatch = val instanceof Array ? val : [];
-      },
+      }
     });
 
     rule[MATCH] = [];
@@ -735,9 +733,6 @@ PushStateTree.prototype = {
   rulesDispatcher: function () {
     // Will dispatch the right events in each rule
     /*jshint validthis:true */
-
-    // Cache the URI, in case of an event try to change it
-    var debug = this.debug === true || DEBUG;
 
     // Abort if the basePath isn't valid for this router
     if (!this.isPathValid) return;
@@ -824,7 +819,8 @@ PushStateTree.prototype = {
         params.detail[OLD_MATCH] = oldMatch || [];
         params.cancelable = true;
 
-        if (debug && typeof console === 'object'){
+        if (DEBUG) {
+          /*eslint no-console: "off" */
           console.log({
             name: name,
             ruleElement: ruleElement,
