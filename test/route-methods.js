@@ -1,4 +1,4 @@
-const PushStateTree = require('../src/pushStateTree');
+var PushStateTree = require('../src/pushStateTree');
 
 describe('PushStateTree methods should', function() {
   'use strict';

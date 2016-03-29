@@ -72,7 +72,6 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'src/**/*.js',
       'test/**/*.js'
     ],
 
@@ -86,11 +85,18 @@ module.exports = function (config) {
       // source files, that you wanna generate coverage for
       // do not include tests or libraries
       // (these files will be instrumented by Istanbul)
-      'src/**/*.js': ['coverage'],
+      'src/pushStateTree.js': ['coverage', 'webpack', 'sourcemap'],
       'test/**/*.js': ['webpack', 'sourcemap']
     },
 
     webpack: {
+      module: Object.assign(webpackConfig.module, {
+        postLoaders: [{
+          test: /\.js/,
+          exclude: /(test|node_modules|bower_components)/,
+          loader: 'istanbul-instrumenter'
+        }]
+      }),
       plugins: webpackConfig.plugins,
       devtool: 'inline-source-map'
     },

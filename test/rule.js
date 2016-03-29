@@ -1,1 +1,1 @@
-const PushStateTree = require('../src/pushStateTree');
+var PushStateTree = require('../src/pushStateTree');
