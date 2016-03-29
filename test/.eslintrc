@@ -1,0 +1,13 @@
+{
+  "plugins": [
+    "mocha"
+  ],
+	"env": {
+    "mocha": true
+	},
+	"globals": {
+    "VERSION": true,
+    "expect": true,
+    "chai": true
+	}
+}

@@ -59,7 +59,8 @@ let config = {
   plugins: [
     // Allow global definition to setup environment conditional where minification can remove pieces of code
     new webpack.DefinePlugin({
-      VERSION: JSON.stringify(pkg.version || '')
+      VERSION: JSON.stringify(pkg.version || ''),
+      DEBUG: false
     }),
 
     new webpack.BannerPlugin(BANNER, {entryOnly: true}),

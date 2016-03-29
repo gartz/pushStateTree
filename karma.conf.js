@@ -25,7 +25,9 @@ yargs.options({
 
 let argv = yargs.argv;
 
-if (argv.watch) {
+const WATCH = argv.watch;
+
+if (WATCH) {
   let port = argv['dev-port'] || 8080;
 
   const webpackDevConfig = Object.assign({
@@ -98,12 +100,17 @@ module.exports = function (config) {
         }]
       }),
       plugins: webpackConfig.plugins,
-      devtool: 'inline-source-map'
+      devtool: 'inline-source-map',
+      bail: !WATCH
     },
 
     webpackMiddleware: {
+      noInfo: true,
       stats: {
-        colors: true
+        colors: true,
+        chunks: false,
+        modules: false,
+        reasons: false
       }
     },
 

@@ -1,7 +1,6 @@
 var PushStateTree = require('../src/pushStateTree');
 
 describe('PushStateTree methods should', function() {
-  'use strict';
 
   var events = {
     popstate: [],
