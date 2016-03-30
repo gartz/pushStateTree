@@ -1,3 +1,8 @@
+#version {
+  float: right;
+  font-size: 9px;
+}
+
 body {
     position: relative;
     height: 100%;
