@@ -14,7 +14,7 @@
   });
   
   // Add menu option in the first load
-  navbarAdd('Servers', '/servers/', 3);
+  var $navLink = navbarAdd('Servers', '/servers/', 3);
 
   var $template;
   var $body = $('body');
@@ -56,6 +56,8 @@
   var firstEnter = true;
 
   $(rule).on('enter', function(){
+    $navLink.toggleClass('active', true);
+
     $('#content').append($template);
     $anchorElements = $template.find('[role=main] [id]');
     $sidebar = $template.find('.bs-docs-sidebar');
@@ -82,6 +84,7 @@
       firstEnter = false;
     }
   }).on('leave', function(){
+    $navLink.toggleClass('active', false);
 
     // Disable Bootstrap scrollspy
     $body

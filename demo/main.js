@@ -58,6 +58,7 @@ function navbarAdd(text, link, order){
     .closest('li')
     .before($navbarAnchor);
   }
+  return $navbarAnchor;
 }
 
 // Load CSS
