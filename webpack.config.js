@@ -28,7 +28,7 @@ let config = {
     'push-state-tree.min': './src/pushStateTree'
   },
   output: {
-    path: BASE_PATH,
+    path: path.join(BASE_PATH, 'build'),
     filename: '[name].js',
     library: 'PushStateTree',
     libraryTarget: 'umd',
