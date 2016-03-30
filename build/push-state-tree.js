@@ -1,9 +1,19 @@
 /*!
- * ! PushStateTree - v0.15.0 - 2016-03-30
- * * https://github.com/gartz/pushStateTree/
- * * Copyright (c) 2016 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed undefined
+ * PushStateTree - v0.15.0 - 2016-03-30
+ *  https://github.com/gartz/pushStateTree/
+ *  Copyright (c) 2016 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed undefined
  */
-/******/ (function(modules) { // webpackBootstrap
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory();
+	else if(typeof define === 'function' && define.amd)
+		define([], factory);
+	else if(typeof exports === 'object')
+		exports["PushStateTree"] = factory();
+	else
+		root["PushStateTree"] = factory();
+})(this, function() {
+return /******/ (function(modules) { // webpackBootstrap
 /******/ 	// The module cache
 /******/ 	var installedModules = {};
 
@@ -1086,10 +1096,8 @@
 	  };
 	}
 
-	root.PushStateTree = PushStateTree;
-
 	// Node import support
-	if (true) module.exports = PushStateTree;
+	module.exports = PushStateTree;
 	/* WEBPACK VAR INJECTION */}.call(exports, (function() { return this; }())))
 
 /***/ },
@@ -1126,4 +1134,6 @@
 	};
 
 /***/ }
-/******/ ]);
+/******/ ])
+});
+;

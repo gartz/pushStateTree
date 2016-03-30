@@ -1,0 +1,19 @@
+{
+  "nextFreeModuleId": 4,
+  "modules": {
+    "byIdentifier": {
+      "node_modules/babel-loader/index.js!node_modules/eslint-loader/index.js!src/pushStateTree.js": 0,
+      "node_modules/babel-runtime/core-js/object/define-property.js": 1,
+      "node_modules/core-js/library/fn/object/define-property.js": 2,
+      "node_modules/core-js/library/modules/$.js": 3
+    }
+  },
+  "nextFreeChunkId": 2,
+  "chunks": {
+    "byName": {
+      "push-state-tree": 0,
+      "push-state-tree.min": 1
+    },
+    "byBlocks": {}
+  }
+}
