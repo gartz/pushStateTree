@@ -18,11 +18,9 @@ let argv = yargs.argv;
 
 const BASE_PATH = path.resolve(__dirname);
 
-const BANNER = `/*! ${pkg.title} - v${pkg.version} - ${moment().format('YYYY-MM-DD')}
- * ${pkg.homepage}
- * Copyright (c) ${moment().format('YYYY')} ${pkg.author.name}; Licensed ${pkg.licenses.type}
- */
-if(typeof module === 'undefined')var module={};module.exports=`;
+const BANNER = `${pkg.title} - v${pkg.version} - ${moment().format('YYYY-MM-DD')}
+ ${pkg.homepage}
+ Copyright (c) ${moment().format('YYYY')} ${pkg.author.name}; Licensed ${pkg.licenses.type}`;
 
 let config = {
   entry: !argv.publish ? { 'push-state-tree': './src/pushStateTree' } : {
@@ -32,6 +30,9 @@ let config = {
   output: {
     path: BASE_PATH,
     filename: '[name].js',
+    library: 'PushStateTree',
+    libraryTarget: 'umd',
+    umdNamedDefine: false,
     devtoolModuleFilenameTemplate: 'webpack://pushstatetree.source/[resource-path]?[hash]'
   },
 
@@ -65,7 +66,7 @@ let config = {
       DEBUG: false
     }),
 
-    new webpack.BannerPlugin(BANNER, {raw: true, entryOnly: true}),
+    new webpack.BannerPlugin(BANNER, {entryOnly: true}),
 
     new webpack.optimize.UglifyJsPlugin({
       test: /\.min\.js$/,

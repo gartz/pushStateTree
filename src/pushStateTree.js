@@ -1031,7 +1031,5 @@ if (!PushStateTree.prototype.replaceState) {
   };
 }
 
-root.PushStateTree = PushStateTree;
-
 // Node import support
 module.exports = PushStateTree;
