@@ -131,7 +131,7 @@ myRuleElement4.rule = /(test)\//;      // "test/", "test"</code>
         <figure class="highlight">
           <pre>
             <code>// Testing address: http://localhost/abc:def/
-                                     //      0        1      2
+                                     //     0        1      2
 parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", "def"
 childrenRule_0.parentGroup = 0;      // Same as empty parentGroup "abc:def/"
 childrenRule_0.rule = /(.+)/;        // "abc:def/", "abc:def/"
@@ -141,7 +141,7 @@ childrenRule_2.parentGroup = 2;      // Listen for "def"
 childrenRule_2.rule = /(.+)/;        // "def", "def"
 
 // Testing address: http://localhost/abc:/
-                                     //      0        1    2
+                                     //     0        1    2
 parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", ""
 childrenRule.parentGroup = 2;        // Listen for "" (the parent accept empty there)
 childrenRule.rule = /(.+)/;          // not match (because the + sign)
@@ -200,7 +200,7 @@ childrenRule.rule = /.+/;            // "ghi/"</code>
         </p>
         <p>
           The full list of events in call priority:
-          <span class="label label-warning">any</span> [
+          <span class="label label-warning">update</span> [
           <span class="label label-danger">leave</span> >
           <span class="label label-success">match</span> (
           <span class="label label-primary">enter</span> >
@@ -252,12 +252,12 @@ childrenRule.rule = /.+/;            // "ghi/"</code>
           Match does the same kind of callback other routers usually do, like
           Backbone and SailsJS.
         </p>
-        <h3 id="rule-event-any">
-          any
-          <a href="rule-event-any" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        <h3 id="rule-event-update">
+          update
+          <a href="rule-event-update" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
         </h3>
         <p>
-          Called on any event.
+          Called before any other event.
         </p>
 
         <h2 id="rule-methods">
