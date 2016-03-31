@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage lines-valid="481"  lines-covered="219"  line-rate="0.45530000000000004"  branches-valid="280"  branches-covered="96"  branch-rate="0.3429"  timestamp="1459389615185" complexity="0" version="0.1">
+<coverage lines-valid="481"  lines-covered="219"  line-rate="0.45530000000000004"  branches-valid="280"  branches-covered="96"  branch-rate="0.3429"  timestamp="1459389944054" complexity="0" version="0.1">
 <sources>
 	<source>/Users/gartz/Projects/pushStateTree</source>
 </sources>
