@@ -37,28 +37,60 @@ function trottle(func, wait) {
 }
 
 //TODO: Optimize this function, not priority
-function navbarAdd(text, link, order){
+function navbarAdd(text, link, order, rule){
   // Create and add menu option in the right priority order
 
   order = order || 1;
   var $navbarAnchor = $('<li><a></a></li>');
-  $navbarAnchor.find('a')
+  $navbarAnchor
     .data('order', order)
+    .find('a')
     .attr('href', location.origin + basePath + link)
     .text(text);
   var $navbarMain = $('#navbarMain');
-  var $anchors = $navbarMain.find('a[data-order]');
-  if ($anchors.length === 0){
-    $navbarMain.append($navbarAnchor);
-  } else {
-    $anchors.filter(function() {
-      return $(this).data('order') > order;
+  var $anchors = $navbarMain.children();
+  $navbarMain.append($navbarAnchor);
+  $anchors.filter(
+    function () {
+      return +$(this).data('order') > order;
     })
     .first()
-    .closest('li')
-    .before($navbarAnchor);
+    .before($navbarAnchor)
+  ;
+
+  if (rule) {
+    $(rule)
+      .on('enter', function() {
+        $navbarAnchor.toggleClass('active', true);
+      }).on('leave', function() {
+        $navbarAnchor.toggleClass('active', false);
+      })
+    ;
   }
+
   return $navbarAnchor;
+}
+
+function setupTemplate(rule, src) {
+  // Load template, storing the promise from jquery
+  var r = {};
+  r.request = $.ajax(demoPath + src).done(function (template) {
+    r.$template = $(template);
+    if (basePath) {
+      r.$template.find('[src]').each(function(i, element){
+        var oldSrc = $(element).attr('src');
+        $(element).attr('src', basePath + oldSrc);
+      });
+    }
+  });
+  r.$rule = $(rule)
+    .on('enter', function () {
+      $('#content').append(r.$template);
+    })
+    .on('leave', function () {
+      r.$template.remove();
+    });
+  return r;
 }
 
 // Load CSS
@@ -104,7 +136,7 @@ $('body').append(pushStateTree);
 
 load(demoPath + 'about.js');
 load(demoPath + 'servers.js');
-//load(demoPath + 'examples.js');
+load(demoPath + 'api.js');
 load(demoPath + 'faq.js');
 
 // This was loaded after, so the system needs to dispatch again

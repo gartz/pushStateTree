@@ -1,17 +1,62 @@
-<div class="jumbotron">
-  <h1>API</h1>
-  <p>Learn how simple PushStateTree is</p>
-  <h2>Events</h2>
-  <p>
-    <div><a href="/api/events" id="eventListToggler">Toggle events list</a></div>
-    <div id="eventsList" class="fade out">
-      <ul>
-        <li>enter</li>
-        <li>update</li>
-        <li>leave</li>
-        <li>match</li>
-        <li>any</li>
-      </ul>
+<div class="container bs-docs-container">
+  <div class="row">
+    <div class="col-md-9" role="main">
+      <div class="bs-docs-section">
+        <h1 id="basics" class="page-header">
+          Events
+        </h1>
+        <p>
+          When you create a rule in PushStateTree, this rule will trigger
+          events when it's inside a router or another rule, those events
+          create a flow where you can use execute callbacks.
+        </p>
+        <p>
+          The initial rule flow is:
+          <span class="label label-primary">enter</span> >
+          <span class="label label-info">change</span> >
+          <span class="label label-danger">leave</span>.
+        </p>
+        <p>
+          After the initial flow happen the flows will be always:
+          <span class="label label-danger">leave</span> >
+          <span class="label label-primary">enter</span> >
+          <span class="label label-info">change</span>.
+        </p>
+        <p>
+          The full list of events in call priority:
+          <span class="label label-warning">any</span> [
+          <span class="label label-danger">leave</span> >
+          <span class="label label-success">match</span> (
+          <span class="label label-primary">enter</span> >
+          <span class="label label-info">change</span> ) ].
+        </p>
+        <h2>enter</h2>
+        <p>
+          Called when you match a rule once it wasn't triggered before.
+        </p>
+        <h2>change</h2>
+        <p>
+          Called if the rule match, but already executed enter.
+        </p>
+        <h2>leave</h2>
+        <p>
+          If the previous match this rule but the current doesn't, leave
+          will be called.
+        </p>
+        <h2>match</h2>
+        <p>
+          Called if enter or change are called.<br>
+          * Match event is called on every dispatch, even if the URL doesn't change.
+        </p>
+        <p>
+          Match does the same kind of callback other routers usually do, like
+          Backbone and SailsJS.
+        </p>
+        <h2>any</h2>
+        <p>
+          Called on any event.
+        </p>
+      </div>
     </div>
-  </p>
+  </div>
 </div>
