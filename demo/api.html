@@ -87,6 +87,35 @@ pushStateTree.appendChild(myRuleElement);</code>
           If the parente element is a <code>Rule</code> the content will be the partial URL used by the parent rule, or
           if the property <code>parentGroup</code> is set, it will use the maching group from the parent rule.
         </p>
+        <p>
+          In the next example, each string representing the match will be value of a group starting from 0.
+        </p>
+        <figure class="highlight">
+          <pre>
+            <code>// Testing address: http://localhost/abc:def/
+myRuleElement1.rule = /.+/;          // "abc:def/"
+myRuleElement2.rule = /abc:(.*)\//;  // "abc:def/", "def"
+myRuleElement3.rule = /(.+):(.+)\//; // "abc:def/", "abc", "def"
+myRuleElement4.rule = /(test)/;      // not match
+
+// Testing address: http://localhost/abc:/
+myRuleElement1.rule = /.+/;          // "abc:/"
+myRuleElement2.rule = /abc:(.*)\//;  // "abc:/", "" (it matches, because allow empty value here
+myRuleElement3.rule = /(.+):(.+)\//; // not match (the second group doesn't allow empty value)
+myRuleElement4.rule = /(test)/;      // not match
+
+// Testing address: http://localhost/test/
+myRuleElement1.rule = /.+/;          // "test/"
+myRuleElement2.rule = /abc:(.*)\//;  // not match
+myRuleElement3.rule = /(.+):(.+)\//; // not match
+myRuleElement4.rule = /(test)\//;      // "test/", "test"</code>
+          </pre>
+        </figure>
+        <p>
+          To match anything you need to add the rule <code>/.*/</code> and it will match anything, this rule is useful
+          when you want to track events on everypage, like using Google Analytics in your Single Page Application.
+        </p>
+
         <h3 id="rule-property-parentGroup">
           parentGroup = {Number}
           <a href="rule-property-parentGroup" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
@@ -94,6 +123,58 @@ pushStateTree.appendChild(myRuleElement);</code>
         <p>
           It only applies if the <code>rule</code> is children of another <code>rule</code>, and it will match with the
           group in the parent rule regular expression.
+        </p>
+        <p>
+          By default <code>parentGroup</code> is <code>0</code>, witch means it will match the full string in the parent
+          rule, but you can change this value to one that match the Regular Expression group of the parent rule.
+        </p>
+        <figure class="highlight">
+          <pre>
+            <code>// Testing address: http://localhost/abc:def/
+                                     //      0        1      2
+parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", "def"
+childrenRule_0.parentGroup = 0;      // Same as empty parentGroup "abc:def/"
+childrenRule_0.rule = /(.+)/;        // "abc:def/", "abc:def/"
+childrenRule_1.parentGroup = 1;      // Listen for "abc"
+childrenRule_1.rule = /(.+)/;        // "abc", "abc"
+childrenRule_2.parentGroup = 2;      // Listen for "def"
+childrenRule_2.rule = /(.+)/;        // "def", "def"
+
+// Testing address: http://localhost/abc:/
+                                     //      0        1    2
+parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", ""
+childrenRule.parentGroup = 2;        // Listen for "" (the parent accept empty there)
+childrenRule.rule = /(.+)/;          // not match (because the + sign)
+
+// Testing address: http://localhost/abc:def/ghi/
+                                     //     0         1      2      3
+parentRule.rule = /(.+):(.*)\/(.+)/; // "abc:def/", "abc", "def", "ghi/"
+childrenRule.parentGroup = 3;        // Listen for "ghi/"
+childrenRule.rule = /.+/;            // "ghi/"</code>
+          </pre>
+        </figure>
+        <p>
+          If you're not very familiar with Regular Expressions, <a href="https://regex101.com/#javascript"
+                                                                   target="_blank">https://regex101.com/#javascript</a>
+          is a great tool to test your expressions, so copy the part of URL that you want to match, and others that you
+          don't want match, and create your rule, them you'll be ready to use-it.
+        </p>
+        <p>
+          With PushStateTree you can create a tree with as many levels you need for your project. You can add the
+          rules on fly, even children one's. So you can load entry points of your application with logic data relative
+          to the partial being rendered by your SPA, them you can load the other entry points with your own strategy.
+          <ul>
+            <li>
+              <strong>Pre-cache strategy</strong>: Render the current entry point and start loading other entry points in the background.
+            </li>
+            <li>
+              <strong>On-fly strategy</strong>: It loads the current URL, if the user click in a URL that is out of the current rule, it
+              will download the entry point package, apply the logic and trigger the route.
+            </li>
+          </ul>
+          Those are two examples that you can implement in your SPA using PushStateTree. A good way to archive great
+          results it's to adopt <a href="https://webpack.github.io/" target="_blank">Webpack Module Bundler</a> to pack
+          your bundle in entry points.
         </p>
 
         <h2 id="rule-events">
