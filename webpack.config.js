@@ -38,7 +38,7 @@ let config = {
   },
 
   // Records are needed for HMR and it's used by the PHP to change layout file address
-  recordsOutputPath: path.join(BASE_PATH, 'build/records.json'),
+  recordsPath: path.join(BASE_PATH, 'build/records.json'),
   resolve: {
     root: path.join(BASE_PATH, 'src')
   },
@@ -67,14 +67,16 @@ let config = {
       DEBUG: !PUBLISH
     }),
 
-    new webpack.BannerPlugin(BANNER, {entryOnly: true}),
-
-    new webpack.optimize.UglifyJsPlugin({
-      test: /\.min\.js$/,
-      sourceMap: true
-    })
+    new webpack.BannerPlugin(BANNER, {entryOnly: true})
   ],
   devtool: 'hidden-source-map'
 };
+
+if (PUBLISH) {
+  config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+    test: /\.min\.js$/,
+    sourceMap: true
+  }));
+}
 
 module.exports = config;
