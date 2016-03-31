@@ -21,7 +21,7 @@
       "url": "https://github.com/gartz/pushStateTree/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "push-state-tree.js",
+  "main": "build/push-state-tree.js",
   "engines": {
     "node": ">= 5.5.0"
   },
