@@ -12,9 +12,9 @@ yargs.options({
     type: 'boolean',
     describe: 'Start a dev-server on port 8080 and karma server on port 9876'
   },
-  'fast': {
+  'fast-build': {
     type: 'boolean',
-    describe: 'Use faster source-map techniques'
+    describe: 'Use faster source-map techniques, more info at https://webpack.github.io/docs/configuration.html#devtool'
   },
   'dev-port': {
     type: 'numeric',
@@ -30,7 +30,10 @@ yargs.options({
 let argv = yargs.argv;
 
 const WATCH = argv.watch;
-const FAST = argv.fast;
+
+// Fast-build option make the DEVTOOL use a faster source-map technique, however it is harder to breakpoint in runtime
+// so it's disabled by default, more info at https://webpack.github.io/docs/configuration.html#devtool
+const devtool = argv['fast-build'] ? 'cheap-module-eval-source-map' : 'inline-source-map';
 
 if (WATCH) {
   let port = argv['dev-port'] || 8080;
@@ -38,8 +41,8 @@ if (WATCH) {
   const webpackDevConfig = Object.assign({
     resolve: {}
   }, webpackConfig, {
-    devtool: FAST ? 'cheap-module-eval-source-map' : 'inline-source-map',
-    debug: true
+    debug: true,
+    devtool
   });
 
   webpackDevConfig.output.pathinfo = true;
@@ -121,8 +124,8 @@ module.exports = function (config) {
         }]
       }),
       plugins: webpackConfig.plugins,
-      devtool: FAST ? 'cheap-module-eval-source-map' : 'inline-source-map',
-      bail: !WATCH
+      bail: !WATCH,
+      devtool
     },
 
     webpackMiddleware: {
