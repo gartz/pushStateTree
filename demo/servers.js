@@ -14,11 +14,10 @@
   });
   
   // Add menu option in the first load
-  var $navbarAnchor = navbarAdd('Servers', '/servers/', 2, rule);
+  navbarAdd('Servers', '/servers/', 2, rule);
 
   var $template;
   var $body = $('body');
-  var $anchorElements;
   var $sidebar;
   
   // Load template
@@ -67,7 +66,6 @@
 
   $(rule).on('enter', function(){
     $('#content').append($template);
-    $anchorElements = $template.find('[role=main] [id]');
 
     // Enable Bootstrap scrollspy
     $body

@@ -1,10 +1,105 @@
 <div class="container bs-docs-container">
   <div class="row">
     <div class="col-md-9" role="main">
+
       <div class="bs-docs-section">
-        <h1 id="basics" class="page-header">
-          Events
+        <h1 id="rules" class="page-header">
+          Rules
+          <a href="rules" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
         </h1>
+        <p>
+          Rules are objects that contain a regular expression to match the URL, it might be directly related to the
+          router object or being child of another rule.
+        </p>
+        <p>
+          When a URL change or is manually triggered, the rules are executed in order to check all changes that will
+          occur on the change of the current URL. Those changes create a queue of events to be executed that respect
+          the event priority order.
+        </p>
+        <p>
+          Rules also contains all trigger methods from the <code>router</code> instance where they're in.
+        </p>
+        <p>
+          It's possible to create rules from router instances, after create the rule, you must append it inside a router
+          or another rule to it became enabled, example:
+        </p>
+        <figure class="highlight">
+          <pre>
+            <code>var pushStateTree = new PushStateTree();
+
+// Create a Rule element
+var myRuleELement = pushStateTree.createRule({
+  id: 'myFirstRule',
+  rule: /.+/
+});
+
+// Append to pushStateTree to enable
+pushStateTree.appendChild(myRuleElement);</code>
+          </pre>
+        </figure>
+        <p>
+          To disable a rule, you need to remove it from the router or the other rule where it is, if you remove a rule
+          that contains children rules, all the children rules will also be disabled.
+        </p>
+        <figure class="highlight">
+          <pre>
+            <code>// Remove from pushStateTree to disable
+pushStateTree.removeChild(myRuleElement);</code>
+          </pre>
+        </figure>
+
+        <h2 id="rule-properties">
+          Properties
+          <a href="rule-properties" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h2>
+        <p>
+          You can define the properties passing a literal object with options to the method <code>createRule</code> from
+          the router instance, or you can set those properties in the rule instance after it's created.
+        </p>
+        <figure class="highlight">
+          <pre>
+            <code>var pushStateTree = new PushStateTree();
+
+// Create a empty Rule element
+var myRuleELement = pushStateTree.createRule();
+
+// Set properties:
+myRuleELement.id = 'myFirstRule';
+myRuleELement.rule: /.+/;
+
+// Append to pushStateTree to enable
+pushStateTree.appendChild(myRuleElement);</code>
+          </pre>
+        </figure>
+        <h3 id="rule-property-rule">
+          rule = {Regular Expression}
+          <a href="rule-property-rule" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          This property must contain a Regular Expression that will evaluate the rule element. The context used to match
+          will depend on the parent element.
+        </p>
+        <p>
+          If the parente element is a <code>Router</code> the content will be the full URL not including the
+          <code>basePath</code>.
+        </p>
+        <p>
+          If the parente element is a <code>Rule</code> the content will be the partial URL used by the parent rule, or
+          if the property <code>parentGroup</code> is set, it will use the maching group from the parent rule.
+        </p>
+        <h3 id="rule-property-parentGroup">
+          parentGroup = {Number}
+          <a href="rule-property-parentGroup" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          It only applies if the <code>rule</code> is children of another <code>rule</code>, and it will match with the
+          group in the parent rule regular expression.
+        </p>
+
+        <h2 id="rule-events">
+          Events
+          <a href="rule-events" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h2>
         <p>
           When you create a rule in PushStateTree, this rule will trigger
           events when it's inside a router or another rule, those events
@@ -30,20 +125,44 @@
           <span class="label label-primary">enter</span> >
           <span class="label label-info">change</span> ) ].
         </p>
-        <h2>enter</h2>
+        <h3 id="rule-event-enter">
+          enter
+          <a href="rule-event-enter" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
         <p>
           Called when you match a rule once it wasn't triggered before.
         </p>
-        <h2>change</h2>
+        <p>
+          This event is good to append elements on DOM, children rules can rely that parent enter are executed in order
+          before children event is triggered, this way you can compose your elements in the DOM knowing that they're
+          ready to be used.
+        </p>
+        <figure class="highlight">
+          <pre>
+            <code>myRuleELement.addEventListener(function () {
+  console.log('EVENT: enter from: ', this.id);
+});</code>
+          </pre>
+        </figure>
+        <h3 id="rule-event-change">
+          change
+          <a href="rule-event-change" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
         <p>
           Called if the rule match, but already executed enter.
         </p>
-        <h2>leave</h2>
+        <h3 id="rule-event-leave">
+          leave
+          <a href="rule-event-leave" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
         <p>
           If the previous match this rule but the current doesn't, leave
           will be called.
         </p>
-        <h2>match</h2>
+        <h3 id="rule-event-match">
+          match
+          <a href="rule-event-match" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
         <p>
           Called if enter or change are called.<br>
           * Match event is called on every dispatch, even if the URL doesn't change.
@@ -52,11 +171,53 @@
           Match does the same kind of callback other routers usually do, like
           Backbone and SailsJS.
         </p>
-        <h2>any</h2>
+        <h3 id="rule-event-any">
+          any
+          <a href="rule-event-any" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
         <p>
           Called on any event.
         </p>
+
+        <h2 id="rule-methods">
+          Methods
+          <a href="rule-methods" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h2>
+        <p>
+          The rules contain all <code>HTMLElement</code> methods, to add events you can use native methods like
+          <code>addEventListener</code> or wrap the instance in a JQuery library to use <code>on</code> method.
+        </p>
+        <p>
+          It also contain all the trigger events from the current router, even if the rule is children of another rule.
+        </p>
+
+      </div>
+
+    </div>
+
+    <!-- start Right Menu -->
+    <div class="col-md-3" role="complementary">
+      <div class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix-top">
+        <ul class="nav bs-docs-sidenav" role="tablist">
+
+          <li>
+            <a href="#rules">Rules</a>
+            <ul class="nav">
+              <li>
+                <a href="#rule-properties">Properties</a>
+              </li>
+              <li>
+                <a href="#rule-events">Events</a>
+              </li>
+              <li>
+                <a href="#rule-methods">Methods</a>
+              </li>
+            </ul>
+          </li>
+
+        </ul>
       </div>
     </div>
+    <!-- end of Right Menu -->
   </div>
 </div>
