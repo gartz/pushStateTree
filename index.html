@@ -102,6 +102,7 @@
         .done(function (){
           $('#loading').on('hidden.bs.modal', function(){
             $('#main').toggleClass('in', true);
+            $('#version').text(pushStateTree.VERSION);
           }).modal('hide');
 	  });
 
@@ -140,7 +141,10 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/" id="rootLink">PushStateTree</a>
+            <a class="navbar-brand" href="/" id="rootLink">
+              PushStateTree
+              <span id="version" class="badge"></span>
+            </a>
           </div>
           <div class="navbar-collapse collapse">
             <ul id="navbarMain" class="nav navbar-nav"></ul>
