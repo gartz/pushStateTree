@@ -14,18 +14,32 @@
   });
   
   // Add menu option in the first load
-  navbarAdd('Servers', '/servers/', 2, rule);
+  var $navbarAnchor = navbarAdd('Servers', '/servers/', 2, rule);
 
   var $template;
   var $body = $('body');
-  var $window = $(window);
-  var $sidebar;
   var $anchorElements;
+  var $sidebar;
   
   // Load template
-  $.ajax(demoPath + 'servers.html').done(function (template){
+  $.ajax(demoPath + 'servers.html').then(function (template){
     $template = $(template);
-  }).done(function(){
+  }).then(function () {
+    var $roleComplementary = $($template).find('[role=complementary]');
+    $sidebar = $template.find('.bs-docs-sidebar');
+
+    // Fix window resize checkPosition for the sidebar
+    $(window).resize(trottle(function () {
+      $sidebar.affix('checkPosition');
+    }, 150));
+
+    // Listen for scroll event
+    $sidebar.affix({
+      offset: {
+        top: function () { return $roleComplementary.offset().top; }
+      }
+    });
+  }).then(function () {
     // Add the rules after the HTML is loaded, and then dispatch the url changing check
     $(rule)
       .append(scrollSpyRule)
@@ -33,9 +47,8 @@
       .get(0).dispatch();
   });
 
-  var scrollspy = function(event){
-
-    // Avoid multiple re
+  var scrollspy = function (event) {
+    // Rewrite the browser URL for the current element on the spy area
     if($(event.target).find('.active').length > 0) return;
     var $anchor = $(event.target).find('a[href]');
     if (!$anchor || $anchor.length === 0) return;
@@ -48,48 +61,26 @@
     // Remove the # begin to make the links relative
     uri = uri.match(/^(#*)?(.*)/)[2];
 
-
     // Replace the URL, but don't dispatch (because the animation for match it)
     scrollSpyRule.replaceState(null, null, uri);
   };
 
-  var firstEnter = true;
-
   $(rule).on('enter', function(){
     $('#content').append($template);
     $anchorElements = $template.find('[role=main] [id]');
-    $sidebar = $template.find('.bs-docs-sidebar');
 
     // Enable Bootstrap scrollspy
     $body
-      .attr({
-        'data-spy': 'scroll',
-        'data-target': '.bs-docs-sidebar',
-        'data-offset': '0'
-      })
-      .scrollspy('refresh')
-      .on('activate.bs.scrollspy', scrollspy);
-
-    // Listen for scroll event
-    if (firstEnter) {
-      $($template).find('.bs-docs-sidebar').affix({
-        offset: {
-          top: $($template).find('[role=complementary]').offset().top
-        }
+      .on('activate.bs.scrollspy', scrollspy)
+      .scrollspy({
+        target: '.bs-docs-sidebar',
+        offset: 0
       });
 
-      // After first type ever enter, disable the flag
-      firstEnter = false;
-    }
   }).on('leave', function(){
+
     // Disable Bootstrap scrollspy
     $body
-      .attr({
-        'data-spy': '',
-        'data-target': '',
-        'data-offset': ''
-      })
-      .scrollspy('refresh')
       .off('activate.bs.scrollspy', scrollspy);
 
     $template.remove && $template.remove();
