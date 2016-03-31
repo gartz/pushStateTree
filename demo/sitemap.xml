@@ -12,13 +12,18 @@
         <changefreq>daily</changefreq>
     </url>
     <url>
-        <loc>http://gartz.github.io/pushStateTree/servers/</loc>
-        <lastmod>2016-02-09T14:57:35+00:00</lastmod>
+        <loc>http://gartz.github.io/pushStateTree/#api/</loc>
+        <lastmod>2016-03-30T14:57:35+00:00</lastmod>
         <changefreq>daily</changefreq>
     </url>
     <url>
-        <loc>http://gartz.github.io/pushStateTree/faq/</loc>
-        <lastmod>2016-02-09T14:57:35+00:00</lastmod>
+        <loc>http://gartz.github.io/pushStateTree/#servers/</loc>
+        <lastmod>2016-03-09T14:57:35+00:00</lastmod>
+        <changefreq>daily</changefreq>
+    </url>
+    <url>
+        <loc>http://gartz.github.io/pushStateTree/#faq/</loc>
+        <lastmod>2016-03-09T14:57:35+00:00</lastmod>
         <changefreq>daily</changefreq>
     </url>
 </urlset>
