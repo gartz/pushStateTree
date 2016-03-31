@@ -31,14 +31,30 @@ if (WATCH) {
   let port = argv['dev-port'] || 8080;
 
   const webpackDevConfig = Object.assign({
-    cache: true,
-    devtool: 'hidden-source-map'
-  }, webpackConfig);
+    resolve: {}
+  }, webpackConfig, {
+    devtool: 'inline-source-map'
+  });
+
+  webpackDevConfig.output.pathinfo = true;
+  webpackDevConfig.resolve.alias = {
+    'push-state-tree': path.resolve(__dirname, webpackDevConfig.entry['push-state-tree'])
+  };
 
   webpackDevConfig.entry['push-state-tree'] = [
-    webpackConfig.entry['push-state-tree'],
+    // Keep default lib
+    webpackDevConfig.entry['push-state-tree'],
+    // Add wrapper to export PushStateTree as global for the Demo
+    path.resolve(__dirname, 'demo/devserver.js'),
+    // Add inline webpack-dev-server client
     `webpack-dev-server/client?http://localhost:${port}/`
   ];
+
+  // For development server testing, it should not be a library, a devserver.js is including and assign the global
+  // PushStateTree for the logic in the Demo work
+  delete webpackDevConfig.output.library;
+  delete webpackDevConfig.output.libraryTarget;
+  delete webpackDevConfig.output.umdNamedDefine;
 
   var compiler = webpack(webpackDevConfig);
   var server = new webpackDevServer(compiler, {
@@ -47,7 +63,7 @@ if (WATCH) {
     noInfo: true,
     inline: true,
     stats: { colors: true },
-    headers: { 'X-SourceMap': '/push-state-tree.js.map' }
+    publicPath: '/build/'
   });
   server.listen(port, err => {
     if (err) throw err;

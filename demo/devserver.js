@@ -1,0 +1,1 @@
+window.PushStateTree = require('push-state-tree');
