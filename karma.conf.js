@@ -51,9 +51,7 @@ if (WATCH) {
     // Add inline webpack-dev-server client
     `webpack-dev-server/client?http://localhost:${port}/`,
     // Keep default lib
-    webpackDevConfig.entry['push-state-tree'],
-    // Add wrapper to export PushStateTree as global for the Demo
-    path.resolve(__dirname, 'demo/devserver.js')
+    'expose?PushStateTree!' + webpackDevConfig.entry['push-state-tree']
   ];
 
   // For development server testing, it should not be a library, a devserver.js is including and assign the global
