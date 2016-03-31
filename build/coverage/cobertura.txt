@@ -1,13 +1,13 @@
 <?xml version="1.0" ?>
 <!DOCTYPE coverage SYSTEM "http://cobertura.sourceforge.net/xml/coverage-04.dtd">
-<coverage lines-valid="482"  lines-covered="220"  line-rate="0.45640000000000003"  branches-valid="282"  branches-covered="97"  branch-rate="0.344"  timestamp="1459378367680" complexity="0" version="0.1">
+<coverage lines-valid="481"  lines-covered="219"  line-rate="0.45530000000000004"  branches-valid="280"  branches-covered="96"  branch-rate="0.3429"  timestamp="1459389543015" complexity="0" version="0.1">
 <sources>
 	<source>/Users/gartz/Projects/pushStateTree</source>
 </sources>
 <packages>
-	<package name="src"  line-rate="0.45640000000000003"  branch-rate="0.344" >
+	<package name="src"  line-rate="0.45530000000000004"  branch-rate="0.3429" >
 	<classes>
-		<class name="pushStateTree.js"  filename="src/pushStateTree.js"  line-rate="0.45640000000000003"  branch-rate="0.344" >
+		<class name="pushStateTree.js"  filename="src/pushStateTree.js"  line-rate="0.45530000000000004"  branch-rate="0.3429" >
 		<methods>
 			<method name="_interopRequireDefault"  hits="6"  signature="()V" >
 				<lines><line number="7"  hits="6" /></lines>
@@ -710,8 +710,7 @@
 			<line number="1031"  hits="0"  branch="false" />
 			<line number="1032"  hits="0"  branch="false" />
 			<line number="1034"  hits="0"  branch="false" />
-			<line number="1038"  hits="6"  branch="false" />
-			<line number="1041"  hits="6"  branch="true"  condition-coverage="50% (1/2)" />
+			<line number="1039"  hits="6"  branch="false" />
 		</lines>
 		</class>
 	</classes>
