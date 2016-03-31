@@ -131,7 +131,7 @@ myRuleElement4.rule = /(test)\//;    // "test/", "test"</code>
         <figure class="highlight">
           <pre>
             <code>// Testing address: http://localhost/abc:def/
-                                     //     0        1      2
+                                     //     0         1      2
 parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", "def"
 childrenRule_0.parentGroup = 0;      // Same as empty parentGroup "abc:def/"
 childrenRule_0.rule = /(.+)/;        // "abc:def/", "abc:def/"
@@ -141,7 +141,7 @@ childrenRule_2.parentGroup = 2;      // Listen for "def"
 childrenRule_2.rule = /(.+)/;        // "def", "def"
 
 // Testing address: http://localhost/abc:/
-                                     //     0        1    2
+                                     //     0         1    2
 parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", ""
 childrenRule.parentGroup = 2;        // Listen for "" (the parent accept empty there)
 childrenRule.rule = /(.+)/;          // not match (because the + sign)
