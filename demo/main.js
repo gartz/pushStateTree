@@ -36,7 +36,6 @@ function trottle(func, wait) {
   };
 }
 
-//TODO: Optimize this function, not priority
 function navbarAdd(text, link, order, rule){
   // Create and add menu option in the right priority order
 
