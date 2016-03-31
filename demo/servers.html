@@ -147,6 +147,23 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && preg_match('/(.*)/', $_SERVER['REQUE
 }</code>
           </pre>
         </div>
+
+        <h2 id="webpack-dev-server">
+          Webpack Dev Server
+          <a href="webpack-dev-server" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h2>
+        <p>
+          If you're developing a SPA using <a href="https://webpack.github.io/" target="_blank">webpack</a>, you can use
+          the <a href="https://webpack.github.io/docs/webpack-dev-server.html" target="_blank">webpack-dev-server</a> to
+          host your application while developing it. Create your <code>index.html</code> file, them enable the option
+          <code>historyApiFallback</code>.
+        </p>
+        <p>
+          The PushStateTree library is build using webpack since version 0.15.0, when you execute the command
+          <code>npm start</code> it will run a Webpack Dev Server in port 8080 by default and allow you to run this demo
+          locally.
+        </p>
+
       </div>
     </div>
     <div class="col-md-3" role="complementary">
@@ -174,6 +191,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET' && preg_match('/(.*)/', $_SERVER['REQUE
               </li>
               <li>
                 <a href="#php">PHP</a>
+              </li>
+              <li>
+                <a href="#webpack-dev-server">Webpack Dev Server</a>
               </li>
             </ul>
           </li>

@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <title>PushStateTree Demo</title>
-    <meta name="description" content="">
+    <meta name="description" content="pushStateTree - A standalone powerful library to manage browser routing with nested level that supports pushState and history api's, complex match expressions and on-fly rules change (convenient to lazy module loading).">
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <style>
@@ -102,6 +102,7 @@
         .done(function (){
           $('#loading').on('hidden.bs.modal', function(){
             $('#main').toggleClass('in', true);
+            $('#version').text(pushStateTree.VERSION);
           }).modal('hide');
 	  });
 
@@ -113,7 +114,7 @@
     <meta content="@github" name="twitter:site">
     <meta content="summary" name="twitter:card">
     <meta content="gartz/pushStateTree" name="twitter:title">
-    <meta content="pushStateTree - A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading)." name="twitter:description">
+    <meta content="pushStateTree - A standalone powerful library to manage browser routing with nested level that supports pushState and history api's, complex match expressions and on-fly rules change (convenient to lazy module loading)." name="twitter:description">
     <meta content="https://avatars2.githubusercontent.com/u/99608?v=3&amp;s=400" name="twitter:image:src">
     <meta content="GitHub" property="og:site_name">
     <meta content="object" property="og:type">
@@ -140,7 +141,10 @@
               <span class="icon-bar"></span>
               <span class="icon-bar"></span>
             </button>
-            <a class="navbar-brand" href="/" id="rootLink">PushStateTree</a>
+            <a class="navbar-brand" href="/" id="rootLink">
+              PushStateTree
+              <span id="version" class="badge"></span>
+            </a>
           </div>
           <div class="navbar-collapse collapse">
             <ul id="navbarMain" class="nav navbar-nav"></ul>

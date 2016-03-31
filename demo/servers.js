@@ -14,7 +14,7 @@
   });
   
   // Add menu option in the first load
-  navbarAdd('Servers', '/servers/', 3);
+  navbarAdd('Servers', '/servers/', 2, rule);
 
   var $template;
   var $body = $('body');
@@ -82,7 +82,6 @@
       firstEnter = false;
     }
   }).on('leave', function(){
-
     // Disable Bootstrap scrollspy
     $body
       .attr({
