@@ -1,7 +1,7 @@
 /*!
- * PushStateTree - v0.15.0 - 2016-03-30
+ * PushStateTree - v0.15.0 - 2016-03-31
  *  https://github.com/gartz/pushStateTree/
- *  Copyright (c) 2016 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed undefined
+ *  Copyright (c) 2016 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed MIT
  */
 (function webpackUniversalModuleDefinition(root, factory) {
 	if(typeof exports === 'object' && typeof module === 'object')
