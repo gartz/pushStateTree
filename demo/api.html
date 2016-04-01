@@ -21,7 +21,19 @@
         <p>
           When a URL change or is manually triggered, the rules are executed in order to check all changes that will
           occur on the change of the current URL. Those changes create a queue of events to be executed that respect
-          the event priority order.
+          the event priority order, when a rule that doesn't match contain children, those children tree will dispatch
+          `leave` without executing the regexp on rules that were in match state previously.
+        </p>
+        <p>
+          Grouping rules as children of a rule is effective on performance. A good example is to create a rule for each
+          entry point or page, and all the dependencies rules as child, by doing that, when the user go alway from such
+          page, the rules that belong to it as child won't execute regular expression execution and the performance of
+          page switch will be faster.
+        </p>
+        <p>
+          The performance on executing rules are usually very good. You might want to micro-optimize if you target on
+          low performance mobile devices or if you Single Page Application is huge with hundreds of rules. Most of the
+          time, if you keep your `enter` events lightweight, it will be faster them reloading pages.
         </p>
         <p>
           A <code>rule</code> instance is also a <code>HTMLElement</code>, witch means that it will have the same
