@@ -192,17 +192,28 @@ childrenRule.rule = /.+/;            // "ghi/"</code></pre>
           different groups. It's a good practice to have one instance to watch a group and every rule that apply to such
           group be children of the rule.
         </p>
-        <pre class="prettyprint lang-html"><xmp><pushstatetree-rule id="myRule" rule="/page/(.*)/">
-  <pushstatetree-rule id="subpageRule" rule="/(subpageA|subpageB)\/(.*)/" parentGroup="1">
-    <pushstatetree-rule id="numberRule" rule="/([0-9]*)/" parentGroup="2">
-
+        <p>
+          The URL <code>/games/desktop/battlefield-1942</code> will be applied over some rules to exemplify how to use a
+          tree of rules.
+        </p>
+        <pre class="prettyprint lang-html"><xmp><pushstatetree-rule id="gamesPage" rule="/games/(.*)/"
+                    uri="games/desktop/battlefield-1942">
+  <pushstatetree-rule id="highPerformanceOnly" rule="/(desktop|console)\/(.*)/"
+                      parentGroup="1"
+                      uri="desktop/battlefield-1942"
+                      parentGroup1="desktop"
+                      parentGroup2="battlefield-1942">
+    <pushstatetree-rule id="numberRule" rule="/([a-zA-Z0-9_-]*)/"
+                        parentGroup="2"
+                        uri="battlefield-1942">
     </pushstatetree-rule>
-    <pushstatetree-rule id="helpPluginA" rule="/(.+)/">
-
+    <pushstatetree-rule id="helpPluginA" rule="/(.+)/"
+                        uri="desktop/battlefield-1942">
     </pushstatetree-rule>
   </pushstatetree-rule>
-  <pushstatetree-rule id="helpPluginB" rule="/(.+)/" parentGroup="1">
-
+  <pushstatetree-rule id="helpPluginB" rule="/(.+)/"
+                      parentGroup="1"
+                      uri="desktop/battlefield-1942">
   </pushstatetree-rule>
 </pushstatetree-rule></xmp></pre>
         <p>
