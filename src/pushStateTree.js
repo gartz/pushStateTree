@@ -23,17 +23,16 @@ require('./customEvent.shim');
 require('./eventTarget.shim');
 
 // Constants for uglifiers
-
-var USE_PUSH_STATE = 'usePushState';
-var HAS_PUSH_STATE = 'hasPushState';
-var HASHCHANGE = 'hashchange';
-var POPSTATE = 'popstate';
-var LEAVE = 'leave';
-var UPDATE = 'update';
-var ENTER = 'enter';
-var CHANGE = 'change';
-var MATCH = 'match';
-var OLD_MATCH = 'oldMatch';
+const USE_PUSH_STATE = 'usePushState';
+const HAS_PUSH_STATE = 'hasPushState';
+const HASHCHANGE = 'hashchange';
+const POPSTATE = 'popstate';
+const LEAVE = 'leave';
+const UPDATE = 'update';
+const ENTER = 'enter';
+const CHANGE = 'change';
+const MATCH = 'match';
+const OLD_MATCH = 'oldMatch';
 
 // Helpers
 function isInt(n) {
