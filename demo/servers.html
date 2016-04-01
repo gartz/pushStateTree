@@ -103,9 +103,7 @@ RewriteRule (.*) /index.html [NC,L,QSA]</code>
           Usually Nodejs is used in development mode, it can be used in production nowadays and in this package we have
           a example that uses <b>node-static</b> as a dependency with the follow code:
         </p>
-        <div class="highlight">
-          <pre>
-<code class="language-js" data-lang="js">var static = require('node-static');
+        <pre class="prettyprint lang-js"><code>var static = require('node-static');
 
 var fileServer = new static.Server('./');
 
@@ -119,9 +117,7 @@ require('http').createServer(function (request, response) {
   }).resume();
 }).listen(3000, function (){
   console.log('http://localhost:3000');
-});</code>
-          </pre>
-        </div>
+});</code></pre>
         <h2 id="php">
           PHP
           <a href="php" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
@@ -138,17 +134,13 @@ require('http').createServer(function (request, response) {
           conditional in the example is useless, but..) it means you can do custom regular expressions to only match a
           certain basePath, example <code>/^(\/)?app(\/|$)/</code> will only work inside the basePath <code>/app</code>.
         </p>
-        <div class="highlight">
-          <pre>
-<code>// Get the global definitions and check for the SPA route
+        <pre class="prettyprint lang-php"><code>// Get the global definitions and check for the SPA route
 if ($_SERVER['REQUEST_METHOD'] === 'GET' && preg_match('/(.*)/', $_SERVER['REQUEST_URI'])) {
   require_once './spa-index.php';
 
   // You shall not pass!
   die();
-}</code>
-          </pre>
-        </div>
+}</code></pre>
 
         <h2 id="webpack-dev-server">
           Webpack Dev Server

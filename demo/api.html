@@ -3,6 +3,13 @@
     <div class="col-md-9" role="main">
 
       <div class="bs-docs-section">
+        <h1 id="routers" class="page-header">
+          Routers
+          <a href="routers" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h1>
+      </div>
+
+      <div class="bs-docs-section">
         <h1 id="rules" class="page-header">
           Rules
           <a href="rules" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
@@ -21,7 +28,10 @@
           structure, methods and properties of a <code>HTMLElement</code>, using browser native event listeners,
           allowing be appended into other elements or have elements inside it.
         </p>
-        <pre class="prettyprint lang-html"><xmp><pushstatetree-rule id="myRuleID" rule="/regular_expression/" parent="0"></pushstatetree-rule></xmp></pre>
+        <pre class="prettyprint lang-html"><xmp><pushstatetree-rule id="myRuleID" rule="/regular_expression/">
+  <pushstatetree-rule id="myParentRule" rule="/regular_expression/" parentGroup="1">
+  </pushstatetree-rule>
+</pushstatetree-rule></xmp></pre>
         <p>
           Rules also contains all trigger methods from the <code>router</code> instance where they're in.
         </p>
@@ -29,9 +39,7 @@
           It's possible to create rules from router instances, after create the rule, you must append it inside a router
           or another rule to it became enabled, example:
         </p>
-        <pre class="prettyprint lang-js">
-          <code>
-var pushStateTree = new PushStateTree();
+        <pre class="prettyprint lang-js"><code>var pushStateTree = new PushStateTree();
 
 // Create a Rule element
 var myRuleELement = pushStateTree.createRule({
@@ -40,17 +48,13 @@ var myRuleELement = pushStateTree.createRule({
 });
 
 // Append to pushStateTree to enable
-pushStateTree.appendChild(myRuleElement);</code>
-          </pre>
+pushStateTree.appendChild(myRuleElement);</code></pre>
         <p>
           To disable a rule, you need to remove it from the router or the other rule where it is, if you remove a rule
           that contains children rules, all the children rules will also be disabled.
         </p>
-          <pre class="prettyprint lang-js">
-            <code>
-// Remove from pushStateTree to disable
-pushStateTree.removeChild(myRuleElement);</code>
-          </pre>
+          <pre class="prettyprint lang-js"><code>// Remove from pushStateTree to disable
+pushStateTree.removeChild(myRuleElement);</code></pre>
 
         <h2 id="rule-properties">
           Properties
@@ -60,9 +64,7 @@ pushStateTree.removeChild(myRuleElement);</code>
           You can define the properties passing a literal object with options to the method <code>createRule</code> from
           the router instance, or you can set those properties in the rule instance after it's created.
         </p>
-        <pre class="prettyprint lang-js">
-          <code>
-var pushStateTree = new PushStateTree();
+        <pre class="prettyprint lang-js"><code>var pushStateTree = new PushStateTree();
 
 // Create a empty Rule element
 var myRuleELement = pushStateTree.createRule();
@@ -72,8 +74,7 @@ myRuleELement.id = 'myFirstRule';
 myRuleELement.rule: /.+/;
 
 // Append to pushStateTree to enable
-pushStateTree.appendChild(myRuleElement);</code>
-        </pre>
+pushStateTree.appendChild(myRuleElement);</code></pre>
         <h3 id="rule-property-rule">
           rule = {Regular Expression}
           <a href="rule-property-rule" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
@@ -93,9 +94,7 @@ pushStateTree.appendChild(myRuleElement);</code>
         <p>
           In the next example, each string representing the match will be value of a group starting from 0.
         </p>
-        <pre class="prettyprint lang-js">
-          <code>
-// Testing address: http://localhost/abc:def/
+        <pre class="prettyprint lang-js"><code>// Testing address: http://localhost/abc:def/
 myRuleElement1.rule = /.+/;          // "abc:def/"
 myRuleElement2.rule = /abc:(.*)\//;  // "abc:def/", "def"
 myRuleElement3.rule = /(.+):(.+)\//; // "abc:def/", "abc", "def"
@@ -111,8 +110,7 @@ myRuleElement4.rule = /(test)/;      // not match
 myRuleElement1.rule = /.+/;          // "test/"
 myRuleElement2.rule = /abc:(.*)\//;  // not match
 myRuleElement3.rule = /(.+):(.+)\//; // not match
-myRuleElement4.rule = /(test)\//;    // "test/", "test"</code>
-        </pre>
+myRuleElement4.rule = /(test)\//;    // "test/", "test"</code></pre>
         <p>
           To match anything you need to add the rule <code>/.*/</code> and it will match anything, this rule is useful
           when you want to track events on everypage, like using Google Analytics in your Single Page Application.
@@ -130,9 +128,7 @@ myRuleElement4.rule = /(test)\//;    // "test/", "test"</code>
           By default <code>parentGroup</code> is <code>0</code>, witch means it will match the full string in the parent
           rule, but you can change this value to one that match the Regular Expression group of the parent rule.
         </p>
-        <pre class="prettyprint lang-js">
-          <code>
-// Testing address: http://localhost/abc:def/
+        <pre class="prettyprint lang-js"><code>// Testing address: http://localhost/abc:def/
                                      //     0         1      2
 parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", "def"
 childrenRule_0.parentGroup = 0;      // Same as empty parentGroup "abc:def/"
@@ -152,8 +148,7 @@ childrenRule.rule = /(.+)/;          // not match (because the + sign)
                                      //     0         1      2      3
 parentRule.rule = /(.+):(.*)\/(.+)/; // "abc:def/", "abc", "def", "ghi/"
 childrenRule.parentGroup = 3;        // Listen for "ghi/"
-childrenRule.rule = /.+/;            // "ghi/"</code>
-        </pre>
+childrenRule.rule = /.+/;            // "ghi/"</code></pre>
         <p>
           If you're not very familiar with Regular Expressions, <a href="https://regex101.com/#javascript"
                                                                    target="_blank">https://regex101.com/#javascript</a>
@@ -177,6 +172,35 @@ childrenRule.rule = /.+/;            // "ghi/"</code>
           results it's to adopt <a href="https://webpack.github.io/" target="_blank">Webpack Module Bundler</a> to pack
           your bundle in entry points.
         </p>
+        <p>
+          When you set a <code>parentGroup</code> you can have as many as siblings watching the same group or
+          different groups. It's a good practice to have one instance to watch a group and every rule that apply to such
+          group be children of the rule.
+        </p>
+        <pre class="prettyprint lang-html"><xmp><pushstatetree-rule id="myRule" rule="/page/(.*)/">
+  <pushstatetree-rule id="subpageRule" rule="/(subpageA|subpageB)\/(.*)/" parentGroup="1">
+    <pushstatetree-rule id="numberRule" rule="/([0-9]*)/" parentGroup="2">
+
+    </pushstatetree-rule>
+    <pushstatetree-rule id="helpPluginA" rule="/(.+)/">
+
+    </pushstatetree-rule>
+  </pushstatetree-rule>
+  <pushstatetree-rule id="helpPluginB" rule="/(.+)/" parentGroup="1">
+
+  </pushstatetree-rule>
+</pushstatetree-rule></xmp></pre>
+        <p>
+          In the example above, the <code>helpPluginA</code> is same as <code>helpPluginB</code>, because the first one
+          is inside the <code>subpageRule</code> and it will get <code>parentGroup="0"</code> as default, what includes
+          the text that isn't in the group 1.
+        </p>
+        <p>
+          The instance <code>helpPluginA</code> doesn't include the full URL because it's parent is listening for a
+          group of <code>myRule</code> instance, by default it children will have access to the same match string if
+          the <code>parentGroup</code> property is missing.
+        </p>
+
 
         <h2 id="rule-events">
           Events
@@ -219,17 +243,14 @@ childrenRule.rule = /.+/;            // "ghi/"</code>
           before children event is triggered, this way you can compose your elements in the DOM knowing that they're
           ready to be used.
         </p>
-        <pre class="prettyprint lang-js">
-          <code>
-myRuleELement.addEventListener('enter', function () {
+        <pre class="prettyprint lang-js"><code>myRuleELement.addEventListener('enter', function () {
   console.log('EVENT: enter from: ', this.id);
 });
 
 // Example with jQuery:
 $(myRuleELement).on('enter', function () {
   console.log('EVENT: enter from: ', this.id);
-});</code>
-        </pre>
+});</code></pre>
         <h3 id="rule-event-change">
           change
           <a href="rule-event-change" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
@@ -285,6 +306,10 @@ $(myRuleELement).on('enter', function () {
     <div class="col-md-3" role="complementary">
       <div class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix-top">
         <ul class="nav bs-docs-sidenav" role="tablist">
+
+          <li>
+            <a href="#routers">Routers</a>
+          </li>
 
           <li>
             <a href="#rules">Rules</a>
