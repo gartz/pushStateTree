@@ -63,7 +63,6 @@ npm-debug.log
 .settings
 
 .travis.yml
-.codeclimate.yml
 .editorconfig
 demo/
 index.html
