@@ -59,6 +59,12 @@ function navbarAdd(text, link, order, rule){
 
   if (rule) {
     $(rule)
+      // Force all templates to be inside a folder url
+      .on('match', function () {
+        if (this.uri.indexOf('/') === -1) {
+          this.replace(this.uri + '/');
+        }
+      })
       .on('enter', function() {
         $navbarAnchor.toggleClass('active', true);
       }).on('leave', function() {

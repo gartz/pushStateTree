@@ -8,5 +8,4 @@ exclude_paths:
   - "karma.config.js"
   - "webpack.config.js"
   - "test/*"
-  - "push-state-tree.js"
-  - "push-state-tree.min.js"
+  - "build/*"

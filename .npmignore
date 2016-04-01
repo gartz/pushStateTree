@@ -62,8 +62,9 @@ npm-debug.log
 .c9revisions
 .settings
 
-
-# Grunt
-.grunt
-report/
-_SpecRunner.html
+.travis.yml
+.editorconfig
+demo/
+index.html
+favicon.ico
+build/coverage/
