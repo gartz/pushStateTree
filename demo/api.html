@@ -104,7 +104,10 @@ pushStateTree.appendChild(myRuleElement);</code></pre>
           if the property <code>parentGroup</code> is set, it will use the maching group from the parent rule.
         </p>
         <p>
-          In the next example, each string representing the match will be value of a group starting from 0.
+          In the next example, each string representing the match will be value of a group 0, because they don't contain
+          a <code>parentGroup</code>, read the
+          <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match"
+             target="_blank">MDN article</a> about match strings using Regular Expression.
         </p>
         <pre class="prettyprint lang-js"><code>// Testing address: http://localhost/abc:def/
 myRuleElement1.rule = /.+/;          // "abc:def/"
