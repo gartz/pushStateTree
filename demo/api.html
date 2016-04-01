@@ -235,7 +235,7 @@ childrenRule.rule = /.+/;            // "ghi/"</code></pre>
         <p>
           When you create a rule in PushStateTree, this rule will trigger
           events when it's inside a router or another rule, those events
-          create a flow where you can use execute callbacks.
+          create a flow where you can use callbacks.
         </p>
         <p>
           The initial rule flow is:
@@ -262,7 +262,9 @@ childrenRule.rule = /.+/;            // "ghi/"</code></pre>
           <a href="rule-event-enter" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
         </h3>
         <p>
-          Called when you match a rule once it wasn't triggered before.
+          Called when your URL change and the rule matches it for the first time or after <code>leave</code> event has
+          being triggered in the same rule. URL changes that keep matching the same rule will not trigger
+          <code>enter</code> multiple times.
         </p>
         <p>
           This event is good to append elements on DOM, children rules can rely that parent enter are executed in order
