@@ -62,4 +62,10 @@ npm-debug.log
 .c9revisions
 .settings
 
-build/
+.travis.yml
+.codeclimate.yml
+.editorconfig
+demo/
+index.html
+favicon.ico
+build/coverage/
