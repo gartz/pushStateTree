@@ -28,7 +28,6 @@
   "scripts": {
     "start": "karma start --watch",
     "quick-start": "karma start --watch --fast-build",
-    "prepublish": "npm run build",
     "preversion": "npm run build",
     "build": "karma start && webpack --publish",
     "test": "karma start"
