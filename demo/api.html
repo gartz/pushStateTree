@@ -113,13 +113,13 @@ pushStateTree.appendChild(myRuleElement);</code></pre>
 myRuleElement1.rule = /.+/;          // "abc:def/"
 myRuleElement2.rule = /abc:(.*)\//;  // "abc:def/", "def"
 myRuleElement3.rule = /(.+):(.+)\//; // "abc:def/", "abc", "def"
-myRuleElement4.rule = /(test)/;      // no match
+myRuleElement4.rule = /(test)\//;    // no match
 
 // Testing address: http://localhost/abc:/
 myRuleElement1.rule = /.+/;          // "abc:/"
 myRuleElement2.rule = /abc:(.*)\//;  // "abc:/", ""
 myRuleElement3.rule = /(.+):(.+)\//; // no match
-myRuleElement4.rule = /(test)/;      // no match
+myRuleElement4.rule = /(test)\//;    // no match
 
 // Testing address: http://localhost/test/
 myRuleElement1.rule = /.+/;          // "test/"
