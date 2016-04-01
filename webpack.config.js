@@ -63,6 +63,7 @@ let config = {
   plugins: [
     // Allow global definition to setup environment conditional where minification can remove pieces of code
     new webpack.DefinePlugin({
+      //PST_NO_OLD_IE: false, // Do not release with this option set
       VERSION: JSON.stringify(pkg.version || ''),
       DEBUG: !PUBLISH
     }),
