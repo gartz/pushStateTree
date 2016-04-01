@@ -87,6 +87,7 @@ myRuleELement.rule: /.+/;
 
 // Append to pushStateTree to enable
 pushStateTree.appendChild(myRuleElement);</code></pre>
+
         <h3 id="rule-property-rule">
           rule = {Regular Expression}
           <a href="rule-property-rule" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
@@ -227,6 +228,18 @@ childrenRule.rule = /.+/;            // "ghi/"</code></pre>
           the <code>parentGroup</code> property is missing.
         </p>
 
+        <h3 id="rule-property-uri">
+          uri (Read Only){String|null}
+          <a href="rule-property-uri" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          It contains a string with the partial URI that match with the regular expression in the rule. If the rule
+          doesn't match, it will be <code>null</code>. When it's a child rule that rely on a parent group, it will
+          contain the result match of the parent group instead the full URI.
+        </p>
+        <p>
+          A good way to use the <code>uri</code> is to get the property from the route context of an event callback.
+        </p>
 
         <h2 id="rule-events">
           Events
@@ -246,16 +259,21 @@ childrenRule.rule = /.+/;            // "ghi/"</code></pre>
         <p>
           After the initial flow happen the flows will be always:
           <span class="label label-danger">leave</span> >
+          <span class="label label-info">change</span> >
           <span class="label label-primary">enter</span> >
-          <span class="label label-info">change</span>.
+          <span class="label label-success">match</span>.
         </p>
         <p>
           The full list of events in call priority:
-          <span class="label label-warning">update</span> [
-          <span class="label label-danger">leave</span> >
-          <span class="label label-success">match</span> (
-          <span class="label label-primary">enter</span> >
-          <span class="label label-info">change</span> ) ].
+          (<span class="label label-warning">update</span>+<span class="label label-danger">leave</span>) >
+          (<span class="label label-warning">update</span>+<span class="label label-info">change</span>) >
+          (*<span class="label label-warning">update</span>+<span class="label label-success">match</span>) >
+          (<span class="label label-warning">update</span>+<span class="label label-primary">enter</span>).
+        </p>
+        <p>
+          * The <span class="label label-success">match</span> and <span class="label label-warning">update</span> that
+          refers to it, can be triggered multiple times in the same URL by calling the method <code>dispatch()</code>.
+          Any other event will only be dispatch if there were a change in the URI what it rely-on.
         </p>
         <h3 id="rule-event-enter">
           enter
@@ -271,14 +289,54 @@ childrenRule.rule = /.+/;            // "ghi/"</code></pre>
           before children event is triggered, this way you can compose your elements in the DOM knowing that they're
           ready to be used.
         </p>
-        <pre class="prettyprint lang-js"><code>myRuleELement.addEventListener('enter', function () {
-  console.log('EVENT: enter from: ', this.id);
-});
+        <p>
+          This example uses jQuery to manipulate DOM and Events, however you can use vanilla JavaScript to add/remove
+          event listeners by using <code>addEventListener</code> and <code>removeEventListener</code> instead of jQuery
+          methods to use it.
+        </p>
+        <pre class="prettyprint lang-js"><code>// Use the runtime code to render a template
+var $pageTemplate = $('<div>My Page<div id="content"></div></div>');
 
-// Example with jQuery:
-$(myRuleELement).on('enter', function () {
-  console.log('EVENT: enter from: ', this.id);
+// Use `enter` listener to append this template to the body.
+$(myRule).on('enter', function () {
+  $('body').append($pageTemplate);
 });</code></pre>
+        <p>
+          In this example we are using the runtime code to render a template, rendering templates is a heavy operation
+          and doing this way we will render this template only once. Listening for `enter` we will append the rendered
+          template to the DOM.
+        </p>
+        <p>
+          This way we setup references to be used by other events, like our <code>$pageTemplate</code> that can be
+          manipulated by events without need to query the DOM for it.
+        </p>
+
+        <h3 id="rule-event-match">
+          match
+          <a href="rule-event-match" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          Called when URL change match the current rule. In the execution order, this is the last event called. It also
+          have another difference from the others. While other events only happen if the URL that they're listen changes
+          this event will be dispatched multiple times if the method <code>dispatch()</code> is called even without any
+          URL change.
+        </p>
+        <p>
+          It's useful to apply lightweight changes in the DOM, redirect URLs and other minimal operations.
+        </p>
+        <p>
+          Match does the same kind of callback other routers usually do, like Backbone and SailsJS. If you're migrating
+          from one of those libs, probably your current project will use this event for most of your routes, them you
+          can optimize it adding the other routes to your app.
+        </p>
+        <pre class="prettyprint lang-js"><code>// Use the runtime code to cache selectors
+$content = $pageTemplate.find('#content');
+
+// Use `match` listener to change the content of the page.
+$(myRule).on('match', function () {
+  $content.text('Welcome to the address ' + this.uri);
+});</code></pre>
+
         <h3 id="rule-event-change">
           change
           <a href="rule-event-change" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
@@ -293,18 +351,6 @@ $(myRuleELement).on('enter', function () {
         <p>
           If the previous match this rule but the current doesn't, leave
           will be called.
-        </p>
-        <h3 id="rule-event-match">
-          match
-          <a href="rule-event-match" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
-        </h3>
-        <p>
-          Called if enter or change are called.<br>
-          * Match event is called on every dispatch, even if the URL doesn't change.
-        </p>
-        <p>
-          Match does the same kind of callback other routers usually do, like
-          Backbone and SailsJS.
         </p>
         <h3 id="rule-event-update">
           update
