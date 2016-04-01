@@ -113,18 +113,18 @@ pushStateTree.appendChild(myRuleElement);</code></pre>
 myRuleElement1.rule = /.+/;          // "abc:def/"
 myRuleElement2.rule = /abc:(.*)\//;  // "abc:def/", "def"
 myRuleElement3.rule = /(.+):(.+)\//; // "abc:def/", "abc", "def"
-myRuleElement4.rule = /(test)/;      // not match
+myRuleElement4.rule = /(test)/;      // no match
 
 // Testing address: http://localhost/abc:/
 myRuleElement1.rule = /.+/;          // "abc:/"
 myRuleElement2.rule = /abc:(.*)\//;  // "abc:/", ""
-myRuleElement3.rule = /(.+):(.+)\//; // not match
-myRuleElement4.rule = /(test)/;      // not match
+myRuleElement3.rule = /(.+):(.+)\//; // no match
+myRuleElement4.rule = /(test)/;      // no match
 
 // Testing address: http://localhost/test/
 myRuleElement1.rule = /.+/;          // "test/"
-myRuleElement2.rule = /abc:(.*)\//;  // not match
-myRuleElement3.rule = /(.+):(.+)\//; // not match
+myRuleElement2.rule = /abc:(.*)\//;  // no match
+myRuleElement3.rule = /(.+):(.+)\//; // no match
 myRuleElement4.rule = /(test)\//;    // "test/", "test"</code></pre>
         <p>
           To match anything you need to add the rule <code>/.*/</code> and it will match anything, this rule is useful
@@ -157,7 +157,7 @@ childrenRule_2.rule = /(.+)/;        // "def", "def"
                                      //     0         1    2
 parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", ""
 childrenRule.parentGroup = 2;        // Listen for ""
-childrenRule.rule = /(.+)/;          // not match (because the + sign)
+childrenRule.rule = /(.+)/;          // no match (because the + sign)
 
 // Testing address: http://localhost/abc:def/ghi/
                                      //     0         1      2      3
