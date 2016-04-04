@@ -80,5 +80,10 @@ describe('PushStateTree createRule', function() {
       rule.parentGroup = null;
       expect(rule.parentGroup).to.be.null;
     });
+
+    it('should set 0 to parentGroup', function() {
+      rule.parentGroup = 0;
+      expect(rule.parentGroup).to.be.equal(0);
+    });
   });
 });
