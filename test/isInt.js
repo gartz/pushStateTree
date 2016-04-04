@@ -27,8 +27,10 @@ describe('PushStateTree isInt', function() {
     expect(PushStateTree.isInt()).to.be.false;
   });
 
-  it('should return false for strings with letters', function() {
+  it('should return false for invalid strings', function() {
     expect(PushStateTree.isInt('1bc')).to.be.false;
+    expect(PushStateTree.isInt('1.1')).to.be.false;
+    expect(PushStateTree.isInt('-1.1')).to.be.false;
   });
 
   it('should return false for null', function() {
@@ -38,6 +40,11 @@ describe('PushStateTree isInt', function() {
   it('should return false for infinity numbers', function() {
     expect(PushStateTree.isInt(Number.POSITIVE_INFINITY)).to.be.false;
     expect(PushStateTree.isInt(Number.NEGATIVE_INFINITY)).to.be.false;
+  });
+
+  it('should return false for invalid numbers', function() {
+    expect(PushStateTree.isInt(1.1)).to.be.false;
+    expect(PushStateTree.isInt(-1.1)).to.be.false;
   });
 
 });
