@@ -36,7 +36,7 @@ const OLD_MATCH = 'oldMatch';
 
 // Helpers
 function isInt(n) {
-  return !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
+  return typeof n != 'undefined' && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
 }
 
 function wrapProperty(scope, prop, target) {
@@ -348,7 +348,7 @@ PushStateTree.prototype = {
     Object.defineProperty(rule, 'parentGroup', {
       get: function () {
         var attr = rule.getAttribute('parent-group');
-        if (attr && isInt(attr)) {
+        if (isInt(attr)) {
           return + attr;
         }
         return null;
@@ -755,6 +755,7 @@ if (!PushStateTree.prototype.replaceState) {
     return this;
   };
 }
+PushStateTree.isInt = isInt;
 
 // Node import support
 module.exports = PushStateTree;
