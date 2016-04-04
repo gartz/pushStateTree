@@ -755,6 +755,7 @@ if (!PushStateTree.prototype.replaceState) {
     return this;
   };
 }
+PushStateTree.isInt = isInt;
 
 // Node import support
 module.exports = PushStateTree;
