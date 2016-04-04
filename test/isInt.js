@@ -26,7 +26,7 @@ describe('PushStateTree isInt', function() {
     expect(PushStateTree.isInt(true)).to.be.false;
   });
 
-  it('should return false for {}', function() {
+  it('should return false for literal objects', function() {
     expect(PushStateTree.isInt({})).to.be.false;
   });
 
