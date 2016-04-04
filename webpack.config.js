@@ -16,25 +16,29 @@ yargs.options({
 
 let argv = yargs.argv;
 
+const PUBLISH = argv.publish;
 const BASE_PATH = path.resolve(__dirname);
 
-const BANNER = `! ${pkg.title} - v${pkg.version} - ${moment().format('YYYY-MM-DD')}
-* ${pkg.homepage}
-* Copyright (c) ${moment().format('YYYY')} ${pkg.author.name}; Licensed ${pkg.licenses.type}`;
+const BANNER = `${pkg.title} - v${pkg.version} - ${moment().format('YYYY-MM-DD')}
+ ${pkg.homepage}
+ Copyright (c) ${moment().format('YYYY')} ${pkg.author.name}; Licensed ${pkg.licenses[0].type}`;
 
 let config = {
-  entry: !argv.publish ? { 'push-state-tree': './src/pushStateTree' } : {
+  entry: !PUBLISH ? { 'push-state-tree': './src/pushStateTree' } : {
     'push-state-tree': './src/pushStateTree',
     'push-state-tree.min': './src/pushStateTree'
   },
   output: {
-    path: BASE_PATH,
+    path: path.join(BASE_PATH, 'build'),
     filename: '[name].js',
-    devtoolModuleFilenameTemplate: 'webpack://pushstatetree.source/[resource-path]?[hash]'
+    library: 'PushStateTree',
+    libraryTarget: 'umd',
+    umdNamedDefine: false,
+    devtoolModuleFilenameTemplate: 'webpack://pushstatetree.source/[resource-path]'
   },
 
   // Records are needed for HMR and it's used by the PHP to change layout file address
-  recordsOutputPath: path.join(BASE_PATH, 'build/records.json'),
+  recordsPath: path.join(BASE_PATH, 'build/records.json'),
   resolve: {
     root: path.join(BASE_PATH, 'src')
   },
@@ -59,16 +63,21 @@ let config = {
   plugins: [
     // Allow global definition to setup environment conditional where minification can remove pieces of code
     new webpack.DefinePlugin({
-      VERSION: JSON.stringify(pkg.version || '')
+      //PST_NO_OLD_IE: false, // Do not release with this option set
+      VERSION: JSON.stringify(pkg.version || ''),
+      DEBUG: !PUBLISH
     }),
 
-    new webpack.BannerPlugin(BANNER, {entryOnly: true}),
-
-    new webpack.optimize.UglifyJsPlugin({
-      test: /\.min\.js$/,
-      sourceMap: true
-    })
-  ]
+    new webpack.BannerPlugin(BANNER, {entryOnly: true})
+  ],
+  devtool: 'hidden-source-map'
 };
+
+if (PUBLISH) {
+  config.plugins.push(new webpack.optimize.UglifyJsPlugin({
+    test: /\.min\.js$/,
+    sourceMap: true
+  }));
+}
 
 module.exports = config;

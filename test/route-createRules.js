@@ -1,7 +1,6 @@
 var PushStateTree = require('../src/pushStateTree');
 
 describe('PushStateTree createRule', function() {
-  'use strict';
 
   describe('when rule /^servers(\/)?(.*)/', function() {
     var pst;

@@ -12,6 +12,10 @@ yargs.options({
     type: 'boolean',
     describe: 'Start a dev-server on port 8080 and karma server on port 9876'
   },
+  'fast-build': {
+    type: 'boolean',
+    describe: 'Use faster source-map techniques, more info at https://webpack.github.io/docs/configuration.html#devtool'
+  },
   'dev-port': {
     type: 'numeric',
     describe: 'The dev-server port',
@@ -25,18 +29,39 @@ yargs.options({
 
 let argv = yargs.argv;
 
-if (argv.watch) {
+const WATCH = argv.watch;
+
+// Fast-build option make the DEVTOOL use a faster source-map technique, however it is harder to breakpoint in runtime
+// so it's disabled by default, more info at https://webpack.github.io/docs/configuration.html#devtool
+const devtool = argv['fast-build'] ? 'cheap-module-eval-source-map' : 'inline-source-map';
+
+if (WATCH) {
   let port = argv['dev-port'] || 8080;
 
   const webpackDevConfig = Object.assign({
-    cache: true,
-    devtool: 'hidden-source-map'
-  }, webpackConfig);
+    resolve: {}
+  }, webpackConfig, {
+    debug: true,
+    devtool
+  });
+
+  webpackDevConfig.output.pathinfo = true;
+  webpackDevConfig.resolve.alias = {
+    'push-state-tree': path.resolve(__dirname, webpackDevConfig.entry['push-state-tree'])
+  };
 
   webpackDevConfig.entry['push-state-tree'] = [
-    webpackConfig.entry['push-state-tree'],
-    `webpack-dev-server/client?http://localhost:${port}/`
+    // Add inline webpack-dev-server client
+    `webpack-dev-server/client?http://localhost:${port}/`,
+    // Keep default lib
+    'expose?PushStateTree!' + webpackDevConfig.entry['push-state-tree']
   ];
+
+  // For development server testing, it should not be a library, a devserver.js is including and assign the global
+  // PushStateTree for the logic in the Demo work
+  delete webpackDevConfig.output.library;
+  delete webpackDevConfig.output.libraryTarget;
+  delete webpackDevConfig.output.umdNamedDefine;
 
   var compiler = webpack(webpackDevConfig);
   var server = new webpackDevServer(compiler, {
@@ -45,7 +70,7 @@ if (argv.watch) {
     noInfo: true,
     inline: true,
     stats: { colors: true },
-    headers: { 'X-SourceMap': '/push-state-tree.js.map' }
+    publicPath: '/build/'
   });
   server.listen(port, err => {
     if (err) throw err;
@@ -85,25 +110,31 @@ module.exports = function (config) {
       // source files, that you wanna generate coverage for
       // do not include tests or libraries
       // (these files will be instrumented by Istanbul)
-      'src/pushStateTree.js': ['coverage', 'webpack', 'sourcemap'],
+      'src/**/*.js': ['coverage', 'webpack', 'sourcemap'],
       'test/**/*.js': ['webpack', 'sourcemap']
     },
 
     webpack: {
-      module: Object.assign(webpackConfig.module, {
+      // Create a literal object for the module to not change how webpack-dev-server load the modules
+      module: Object.assign({}, webpackConfig.module, {
         postLoaders: [{
           test: /\.js/,
-          exclude: /(test|node_modules|bower_components)/,
+          exclude: /(test|node_modules|bower_components|\.shim\.js)/,
           loader: 'istanbul-instrumenter'
         }]
       }),
       plugins: webpackConfig.plugins,
-      devtool: 'inline-source-map'
+      bail: !WATCH,
+      devtool
     },
 
     webpackMiddleware: {
+      noInfo: true,
       stats: {
-        colors: true
+        colors: true,
+        chunks: false,
+        modules: false,
+        reasons: false
       }
     },
 
@@ -139,7 +170,11 @@ module.exports = function (config) {
     autoWatch: true,
 
     // Start these browsers
-    browsers: ['PhantomJS'],
+    browsers: (
+      WATCH
+      ? ['PhantomJS', 'Chrome', 'Firefox']
+      : ['PhantomJS']
+    ),
 
     // If browser does not capture in given timeout [ms], kill it
     captureTimeout: 60000,
