@@ -2,312 +2,37 @@ var root = typeof window !== 'undefined' && window || global;
 var document = root.document;
 var location = root.location;
 
-var isIE = (function(){
-  var trident = window.navigator.userAgent.indexOf('Trident');
-  return trident >= 0;
-}());
+// Add support to location.origin for all browsers
+require('./origin.shim');
 
-// Shim, to work with older browsers
-(function () {
-  // Opera and IE doesn't implement location.origin
-  if (!root.location.origin) {
-    root.location.origin = root.location.protocol + '//' + root.location.host;
-  }
-})();
+let isIE = require('./ieOld.shim').isIE;
 
-(function () {
-  /* global HTMLDocument */
-  if (Function.prototype.bind) { return; }
+// If you have your own shim for ES3 and old IE browsers, you can remove this shim from your package by adding a
+// webpack.DefinePlugin that translates `typeof PST_NO_OLD_IE === 'undefined'` to false, this will remove the section
+// in the minified version:
+//     new webpack.DefinePlugin({
+//       PST_NO_OLD_IE: false
+//     })
+// https://webpack.github.io/docs/list-of-plugins.html#defineplugin
+if (typeof PST_NO_OLD_IE === 'undefined') {
+  require('./es3.shim.js');
+}
 
-  Function.prototype.bind = function (oThis) {
-    if (typeof this !== 'function') {
-      // closest thing possible to the ECMAScript 5 internal IsCallable function
-      throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
-    }
-
-    var aArgs = Array.prototype.slice.call(arguments, 1),
-      fToBind = this,
-      FNOP = function () {},
-      fBound = function () {
-        var context = oThis;
-        if (this instanceof FNOP && oThis){
-          context = this;
-        }
-        return fToBind.apply(context, aArgs.concat(Array.prototype.slice.call(arguments)));
-      };
-
-    FNOP.prototype = this.prototype;
-    fBound.prototype = new FNOP();
-
-    return fBound;
-  };
-})();
-
-// IE9 shims
-var HashChangeEvent = root.HashChangeEvent;
-var Event = root.Event;
-
-(function () {
-  if (!Element.prototype.addEventListener) { return; }
-
-  function CustomEvent(event, params) {
-    params = params || {
-      bubbles: false,
-      cancelable: false,
-      detail: undefined
-    };
-    var evt = document.createEvent('CustomEvent');
-    evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
-    return evt;
-  }
-
-  CustomEvent.prototype = Event.prototype;
-
-  if (!root.CustomEvent || !!isIE) {
-    root.CustomEvent = CustomEvent;
-  }
-
-  // Opera before 15 has HashChangeEvent but throw a DOM Implement error
-  if (!HashChangeEvent || (root.opera && root.opera.version() < 15) || !!isIE) {
-    HashChangeEvent = root.CustomEvent;
-  }
-
-  if (isIE) {
-    Event = CustomEvent;
-  }
-
-  // fix for Safari
-  try {
-    new HashChangeEvent('hashchange');
-  } catch(e) {
-    HashChangeEvent = CustomEvent;
-  }
-
-  try {
-    new Event('popstate');
-  } catch (e) {
-    Event = CustomEvent;
-  }
-})();
-
-// IE 8 shims
-(function () {
-  if (Element.prototype.addEventListener || !Object.defineProperty) { return; }
-
-  // create an MS event object and get prototype
-  var proto = document.createEventObject().constructor.prototype;
-
-  Object.defineProperty(proto, 'target', {
-    get: function() { return this.srcElement; }
-  });
-
-  // IE8 addEventLister shim
-  var addEventListenerFunc = function(type, handler) {
-    if (!this.__bindedFunctions) {
-      this.__bindedFunctions = [];
-    }
-
-    var fn = handler;
-
-    if (!('on' + type in this) || type === 'hashchange') {
-      this.__elemetIEid = this.__elemetIEid || '__ie__' + Math.random();
-      var customEventId = type + this.__elemetIEid;
-      //TODO: Bug???
-      //document.documentElement[customEventId];
-      var element = this;
-
-      var propHandler = function (event) {
-        // if the property changed is the custom jqmReady property
-        if (event.propertyName === customEventId) {
-          fn.call(element, document.documentElement[customEventId]);
-        }
-      };
-
-      this.__bindedFunctions.push({
-        original: fn,
-        binded: propHandler
-      });
-
-      document.documentElement.attachEvent('onpropertychange', propHandler);
-
-      if (type !== 'hashchange') { return; }
-    }
-
-    var bindedFn = fn.bind(this);
-
-    this.__bindedFunctions.push({
-      original: fn,
-      binded: bindedFn
-    });
-
-    this.attachEvent('on' + type, bindedFn);
-  };
-
-  // setup the DOM and window objects
-  HTMLDocument.prototype.addEventListener = addEventListenerFunc;
-  Element.prototype.addEventListener = addEventListenerFunc;
-  window.addEventListener = addEventListenerFunc;
-
-  // IE8 removeEventLister shim
-  var removeEventListenerFunc = function(type, handler) {
-    if (!this.__bindedFunctions) {
-      this.__bindedFunctions = [];
-    }
-
-    var fn = handler;
-
-    var bindedFn;
-
-    if (!('on' + type in this) || type === 'hashchange') {
-      for (var i = 0; i < this.__bindedFunctions.length; i++) {
-        if (this.__bindedFunctions[i].original === fn) {
-          bindedFn = this.__bindedFunctions[i].binded;
-          this.__bindedFunctions = this.__bindedFunctions.splice(i, 1);
-          i = this.__bindedFunctions.length;
-        }
-      }
-
-      if (bindedFn) {
-        document.documentElement.detachEvent('onpropertychange', bindedFn);
-      }
-
-      if (type !== 'hashchange') { return; }
-    }
-
-    for (var j = 0; j < this.__bindedFunctions.length; j++) {
-      if (this.__bindedFunctions[j].original === fn) {
-        bindedFn = this.__bindedFunctions[j].binded;
-        this.__bindedFunctions = this.__bindedFunctions.splice(j, 1);
-        j = this.__bindedFunctions.length;
-      }
-    }
-    if (!bindedFn) { return; }
-
-    this.detachEvent('on' + type, bindedFn);
-  };
-
-  // setup the DOM and window objects
-  HTMLDocument.prototype.removeEventListener = removeEventListenerFunc;
-  Element.prototype.removeEventListener = removeEventListenerFunc;
-  window.removeEventListener = removeEventListenerFunc;
-
-  Event = function (type, obj) {
-
-    var evt = document.createEventObject();
-
-    obj = obj || {};
-    evt.type = type;
-    evt.detail = obj.detail;
-
-    if (!('on' + type in root) || type === 'hashchange') {
-      evt.name = type;
-      evt.customEvent = true;
-    }
-
-    return evt;
-  };
-
-  /*jshint -W020 */
-  CustomEvent = Event;
-
-  HashChangeEvent = CustomEvent;
-
-  var dispatchEventFunc = function (e) {
-    if (!e.customEvent) {
-      this.fireEvent(e.type, e);
-      return;
-    }
-    // no event registred
-    if (!this.__elemetIEid) {
-      return;
-    }
-    var customEventId = e.name + this.__elemetIEid;
-    document.documentElement[customEventId] = e;
-  };
-
-  // setup the Element dispatchEvent used to trigger events on the board
-  HTMLDocument.prototype.dispatchEvent = dispatchEventFunc;
-  Element.prototype.dispatchEvent = dispatchEventFunc;
-  window.dispatchEvent = dispatchEventFunc;
-})();
-
-(function () {
-  // modern browser support forEach, probably will be IE8
-  var modernBrowser = 'forEach' in Array.prototype;
-
-  // IE8 pollyfills:
-  // IE8 slice doesn't work with NodeList
-  if (!modernBrowser) {
-    var builtinSlice = Array.prototype.slice;
-    Array.prototype.slice = function() {
-      var arr = [];
-      for (var i = 0, n = this.length; i < n; i++) {
-        if (i in this) {
-          arr.push(this[i]);
-        }
-      }
-
-      return builtinSlice.apply(arr, arguments);
-    };
-  }
-  if (!('forEach' in Array.prototype)) {
-    Array.prototype.forEach = function(action, that) {
-      for (var i = 0; i < this.length; i++) {
-        if (i in this) {
-          action.call(that, this[i], i);
-        }
-      }
-    };
-  }
-  if (typeof String.prototype.trim !== 'function') {
-    String.prototype.trim = function() {
-      return this.replace(/^\s+|\s+$/g, '');
-    };
-  }
-  if (!Array.prototype.filter) {
-    Array.prototype.filter = function(fun /*, thisArg */) {
-      if (this === void 0 || this === null) {
-        throw new TypeError();
-      }
-
-      var t = Object(this);
-      var len = t.length >>> 0;
-      if (typeof fun !== 'function') {
-        throw new TypeError();
-      }
-
-      var res = [];
-      var thisArg = arguments.length >= 2 ? arguments[1] : void 0;
-      for (var i = 0; i < len; i++) {
-        if (i in t) {
-          var val = t[i];
-
-          // NOTE: Technically this should Object.defineProperty at
-          //       the next index, as push can be affected by
-          //       properties on Object.prototype and Array.prototype.
-          //       But that method's new, and collisions should be
-          //       rare, so use the more-compatible alternative.
-          if (fun.call(thisArg, val, i, t)) { res.push(val); }
-        }
-      }
-
-      return res;
-    };
-  }
-})();
+// TODO: Use a PushStateTree.prototype.createEvent instead of shim native CustomEvents
+require('./customEvent.shim');
+require('./eventTarget.shim');
 
 // Constants for uglifiers
-
-var USE_PUSH_STATE = 'usePushState';
-var HAS_PUSH_STATE = 'hasPushState';
-var HASHCHANGE = 'hashchange';
-var POPSTATE = 'popstate';
-var LEAVE = 'leave';
-var UPDATE = 'update';
-var ENTER = 'enter';
-var CHANGE = 'change';
-var MATCH = 'match';
-var OLD_MATCH = 'oldMatch';
+const USE_PUSH_STATE = 'usePushState';
+const HAS_PUSH_STATE = 'hasPushState';
+const HASHCHANGE = 'hashchange';
+const POPSTATE = 'popstate';
+const LEAVE = 'leave';
+const UPDATE = 'update';
+const ENTER = 'enter';
+const CHANGE = 'change';
+const MATCH = 'match';
+const OLD_MATCH = 'oldMatch';
 
 // Helpers
 function isInt(n) {
@@ -514,9 +239,9 @@ function PushStateTree(options) {
 
     // If there is holding dispatch in the event, do it now
     if (holdingDispatch) {
-      this.dispatch();
+      rootElement.dispatch();
     }
-  }.bind(rootElement));
+  });
 
   var readOnhashchange = false;
   var onhashchange = function () {
@@ -535,9 +260,9 @@ function PushStateTree(options) {
 
     // If there is holding dispatch in the event, do it now
     if (holdingDispatch) {
-      this.dispatch();
+      rootElement.dispatch();
     }
-  }.bind(rootElement);
+  };
 
   rootElement.avoidHashchangeHandler = function () {
     // Avoid triggering hashchange event
@@ -560,7 +285,7 @@ function PushStateTree(options) {
   root.addEventListener('load', function () {
     dispatchHashChange();
 
-    if (isIE) {
+    if (isIE()) {
       root.setInterval(() => {
         if (this.uri !== oldURI) {
           dispatchHashChange();

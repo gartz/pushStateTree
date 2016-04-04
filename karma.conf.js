@@ -119,7 +119,7 @@ module.exports = function (config) {
       module: Object.assign({}, webpackConfig.module, {
         postLoaders: [{
           test: /\.js/,
-          exclude: /(test|node_modules|bower_components)/,
+          exclude: /(test|node_modules|bower_components|\.shim\.js)/,
           loader: 'istanbul-instrumenter'
         }]
       }),

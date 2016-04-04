@@ -51,6 +51,7 @@
   },
   "globals": {
     "VERSION": true,
-    "DEBUG": true
+    "DEBUG": true,
+    "PST_NO_OLD_IE": true
   }
 }
