@@ -36,7 +36,7 @@ const OLD_MATCH = 'oldMatch';
 
 // Helpers
 function isInt(n) {
-  return n && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
+  return typeof n != 'undefined' && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
 }
 
 function wrapProperty(scope, prop, target) {
