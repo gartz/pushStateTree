@@ -41,4 +41,12 @@ describe('PushStateTree isInt', function() {
   it('should return false for null', function() {
     expect(PushStateTree.isInt(null)).to.be.false;
   });
+
+  it('should return false for infinity numbers', function() {
+    expect(PushStateTree.isInt(Number.POSITIVE_INFINITY)).to.be.false;
+  });
+
+  it('should return true for negative numbers', function() {
+    expect(PushStateTree.isInt(-1)).to.be.true;
+  });
 });
