@@ -412,8 +412,8 @@ PushStateTree.prototype = {
       'dispatch',
       'pushState',
       'replaceState'
-    ].forEach(function(methodName){
-      rule[methodName] = function(){
+    ].forEach(function (methodName) {
+      rule[methodName] = function () {
         this.parentElement[methodName].apply(this.parentElement, arguments);
       };
     });
