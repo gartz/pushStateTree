@@ -49,4 +49,27 @@ describe('PushStateTree createRule', function() {
 
   });
 
+  describe('when parent-group is specified', function() {
+    var parentGroup = 2;
+    var pst;
+    var rule;
+    beforeEach(function() {
+      pst = new PushStateTree();
+      rule = pst.createRule({
+        id: 'parent',
+        parentGroup: 2,
+        rule: /[^/]+/
+      });
+    });
+
+    it('should bind 'get' with parentGroup property', function() {
+      expect(rule.parentGroup).to.equal(2);
+    });
+
+    it('should bind 'set' with parentGroup property', function() {
+      rule.parentGroup = 3;
+      expect(rule.parentGroup).to.equal(3);
+    });
+
+  });
 });
