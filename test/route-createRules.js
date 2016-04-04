@@ -61,14 +61,24 @@ describe('PushStateTree createRule', function() {
       });
     });
 
-    it('should bind 'get' with parentGroup property', function() {
-      expect(rule.parentGroup).to.equal(2);
+    it('should bind "get" with parentGroup property', function() {
+      expect(rule.parentGroup).to.equal(parentGroup);
     });
 
-    it('should bind 'set' with parentGroup property', function() {
+    it('should bind "set" with parentGroup property', function() {
       rule.parentGroup = 3;
       expect(rule.parentGroup).to.equal(3);
     });
 
+    it('should remove the "parent-group" if not an int is set', function() {
+      chai.spy.on(rule, 'removeAttribute');
+      rule.parentGroup = '';
+      expect(rule.removeAttribute).to.have.been.called.with('parent-group');
+    });
+
+    it('should return null if theres no parent-group', function() {
+      rule.parentGroup = null;
+      expect(rule.parentGroup).to.be.null;
+    });
   });
 });
