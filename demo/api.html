@@ -1,14 +1,254 @@
 <div class="container bs-docs-container">
   <div class="row">
     <div class="col-md-9" role="main">
+
       <div class="bs-docs-section">
-        <h1 id="basics" class="page-header">
-          Events
+        <h1 id="routers" class="page-header">
+          Routers
+          <a href="routers" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
         </h1>
+      </div>
+
+      <div class="bs-docs-section">
+        <h1 id="rules" class="page-header">
+          Rules
+          <a href="rules" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h1>
+        <p>
+          Rules are objects that contain a regular expression to match the URL, it might be directly related to the
+          router object or being child of another rule.
+        </p>
+        <p>
+          When a URL change or is manually triggered, the rules are executed in order to check all changes that will
+          occur on the change of the current URL. Those changes create a queue of events to be executed that respect
+          the event priority order, when a rule that doesn't match contain children, those children tree will dispatch
+          `leave` without executing the regexp on rules that were in match state previously.
+        </p>
+        <p>
+          Grouping rules as children of a rule is effective on performance. A good example is to create a rule for each
+          entry point or page, and all the dependencies rules as child, by doing that, when the user go alway from such
+          page, the rules that belong to it as child won't execute regular expression execution and the performance of
+          page switch will be faster.
+        </p>
+        <p>
+          The performance on executing rules are usually very good. You might want to micro-optimize if you target on
+          low performance mobile devices or if you Single Page Application is huge with hundreds of rules. Most of the
+          time, if you keep your `enter` events lightweight, it will be faster then reloading pages.
+        </p>
+        <p>
+          A <code>rule</code> instance is also a <code>HTMLElement</code>, meaning that it will have the same
+          structure, methods and properties of a <code>HTMLElement</code>, using browser native event listeners,
+          allowing be appended into other elements or have elements inside it.
+        </p>
+        <pre class="prettyprint lang-html"><xmp><pushstatetree-rule id="myRuleID" rule="/regular_expression/">
+  <pushstatetree-rule id="myParentRule" rule="/regular_expression/" parentGroup="1">
+  </pushstatetree-rule>
+</pushstatetree-rule></xmp></pre>
+        <p>
+          Rules also contains all trigger methods from the <code>router</code> instance where they're in.
+        </p>
+        <p>
+          It's possible to create rules from router instances, after create the rule, you must append it inside a router
+          or another rule to it became enabled, example:
+        </p>
+        <pre class="prettyprint lang-js"><code>var pushStateTree = new PushStateTree();
+
+// Create a Rule element
+var myRuleELement = pushStateTree.createRule({
+  id: 'myFirstRule',
+  rule: /.+/
+});
+
+// Append to pushStateTree to enable
+pushStateTree.appendChild(myRuleElement);</code></pre>
+        <p>
+          To disable a rule, you need to remove it from the router or the other rule where it is, if you remove a rule
+          that contains children rules, all the children rules will also be disabled.
+        </p>
+          <pre class="prettyprint lang-js"><code>// Remove from pushStateTree to disable
+pushStateTree.removeChild(myRuleElement);</code></pre>
+
+        <h2 id="rule-properties">
+          Properties
+          <a href="rule-properties" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h2>
+        <p>
+          You can define the properties passing a literal object with options to the method <code>createRule</code> from
+          the router instance, or you can set those properties in the rule instance after it's created.
+        </p>
+        <pre class="prettyprint lang-js"><code>var pushStateTree = new PushStateTree();
+
+// Create a empty Rule element
+var myRuleELement = pushStateTree.createRule();
+
+// Set properties:
+myRuleELement.id = 'myFirstRule';
+myRuleELement.rule: /.+/;
+
+// Append to pushStateTree to enable
+pushStateTree.appendChild(myRuleElement);</code></pre>
+
+        <h3 id="rule-property-rule">
+          rule = {Regular Expression}
+          <a href="rule-property-rule" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          This property must contain a Regular Expression that will evaluate the rule element. The context used to match
+          will depend on the parent element.
+        </p>
+        <p>
+          If the parent element is a <code>Router</code> the content will be the full URL not including the
+          <code>basePath</code>.
+        </p>
+        <p>
+          If the parent element is a <code>Rule</code> the content will be the partial URL used by the parent rule, or
+          if the property <code>parentGroup</code> is set, it will use the maching group from the parent rule.
+        </p>
+        <p>
+          In the next example, each string representing the match will be value of a group 0, because they don't contain
+          a <code>parentGroup</code>, read the
+          <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/String/match"
+             target="_blank">MDN article</a> about match strings using Regular Expression.
+        </p>
+        <pre class="prettyprint lang-js"><code>// Testing address: http://localhost/abc:def/
+myRuleElement1.rule = /.+/;          // "abc:def/"
+myRuleElement2.rule = /abc:(.*)\//;  // "abc:def/", "def"
+myRuleElement3.rule = /(.+):(.+)\//; // "abc:def/", "abc", "def"
+myRuleElement4.rule = /(test)\//;    // no match
+
+// Testing address: http://localhost/abc:/
+myRuleElement1.rule = /.+/;          // "abc:/"
+myRuleElement2.rule = /abc:(.*)\//;  // "abc:/", ""
+myRuleElement3.rule = /(.+):(.+)\//; // no match
+myRuleElement4.rule = /(test)\//;    // no match
+
+// Testing address: http://localhost/test/
+myRuleElement1.rule = /.+/;          // "test/"
+myRuleElement2.rule = /abc:(.*)\//;  // no match
+myRuleElement3.rule = /(.+):(.+)\//; // no match
+myRuleElement4.rule = /(test)\//;    // "test/", "test"</code></pre>
+        <p>
+          To match anything you need to add the rule <code>/.*/</code> and it will match anything, this rule is useful
+          when you want to track events on everypage, like using Google Analytics in your Single Page Application.
+        </p>
+
+        <h3 id="rule-property-parentGroup">
+          parentGroup = {Number}
+          <a href="rule-property-parentGroup" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          It only applies if the <code>rule</code> is children of another <code>rule</code>, and it will match with the
+          group in the parent rule regular expression.
+        </p>
+        <p>
+          By default <code>parentGroup</code> is <code>0</code>, meaning it will match the full string in the parent
+          rule, but you can change this value to one that match the Regular Expression group of the parent rule.
+        </p>
+        <pre class="prettyprint lang-js"><code>// Testing address: http://localhost/abc:def/
+                                     //     0         1      2
+parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", "def"
+childrenRule_0.parentGroup = 0;      // Same as empty parentGroup "abc:def/"
+childrenRule_0.rule = /(.+)/;        // "abc:def/", "abc:def/"
+childrenRule_1.parentGroup = 1;      // Listen for "abc"
+childrenRule_1.rule = /(.+)/;        // "abc", "abc"
+childrenRule_2.parentGroup = 2;      // Listen for "def"
+childrenRule_2.rule = /(.+)/;        // "def", "def"
+
+// Testing address: http://localhost/abc:/
+                                     //     0         1    2
+parentRule.rule = /(.+):(.*)\//;     // "abc:def/", "abc", ""
+childrenRule.parentGroup = 2;        // Listen for ""
+childrenRule.rule = /(.+)/;          // no match (because the + sign)
+
+// Testing address: http://localhost/abc:def/ghi/
+                                     //     0         1      2      3
+parentRule.rule = /(.+):(.*)\/(.+)/; // "abc:def/", "abc", "def", "ghi/"
+childrenRule.parentGroup = 3;        // Listen for "ghi/"
+childrenRule.rule = /.+/;            // "ghi/"</code></pre>
+        <p>
+          If you're not very familiar with Regular Expressions, <a href="https://regex101.com/#javascript"
+                                                                   target="_blank">https://regex101.com/#javascript</a>
+          is a great tool to test your expressions, so copy the part of URL that you want to match, and others that you
+          don't want match, and create your rule, then you'll be ready to use-it.
+        </p>
+        <p>
+          With PushStateTree you can create a tree with as many levels you need for your project. You can add the
+          rules on fly, even children one's. So you can load entry points of your application with logic data relative
+          to the partial being rendered by your SPA, then you can load the other entry points with your own strategy.
+          <ul>
+            <li>
+              <strong>Pre-cache strategy</strong>: Render the current entry point and start loading other entry points in the background.
+            </li>
+            <li>
+              <strong>On-fly strategy</strong>: It loads the current URL, if the user click in a URL that is out of the current rule, it
+              will download the entry point package, apply the logic and trigger the route.
+            </li>
+          </ul>
+          Those are two examples that you can implement in your SPA using PushStateTree. A good way to achieve great
+          results is to adopt <a href="https://webpack.github.io/" target="_blank">Webpack Module Bundler</a> to pack
+          your bundle in entry points.
+        </p>
+        <p>
+          When you set a <code>parentGroup</code> you can have as many siblings watching the same group or
+          different groups. It's a good practice to have one instance to watch a group and every rule that apply to such
+          group be children of the rule.
+        </p>
+        <p>
+          The URL <code>/games/desktop/battlefield-1942</code> will be applied over some rules to exemplify how to use a
+          tree of rules.
+        </p>
+        <pre class="prettyprint lang-html"><xmp><pushstatetree-rule id="gamesPage" rule="/games/(.*)/"
+                    uri="games/desktop/battlefield-1942">
+  <pushstatetree-rule id="highPerformanceOnly" rule="/(desktop|console)\/(.*)/"
+                      parentGroup="1"
+                      uri="desktop/battlefield-1942"
+                      parentGroup1="desktop"
+                      parentGroup2="battlefield-1942">
+    <pushstatetree-rule id="numberRule" rule="/([a-zA-Z0-9_-]*)/"
+                        parentGroup="2"
+                        uri="battlefield-1942">
+    </pushstatetree-rule>
+    <pushstatetree-rule id="helpPluginA" rule="/(.+)/"
+                        uri="desktop/battlefield-1942">
+    </pushstatetree-rule>
+  </pushstatetree-rule>
+  <pushstatetree-rule id="helpPluginB" rule="/(.+)/"
+                      parentGroup="1"
+                      uri="desktop/battlefield-1942">
+  </pushstatetree-rule>
+</pushstatetree-rule></xmp></pre>
+        <p>
+          In the example above, the <code>helpPluginA</code> is same as <code>helpPluginB</code>, because the first one
+          is inside the <code>highPerformanceOnly</code> and it will get <code>parentGroup="0"</code> as default, what
+          includes the text that isn't in the group 1.
+        </p>
+        <p>
+          The instance <code>helpPluginA</code> doesn't include the full URL because it's parent is listening for a
+          group of <code>gamesPage</code> instance, by default it children will have access to the same match string if
+          the <code>parentGroup</code> property is missing.
+        </p>
+
+        <h3 id="rule-property-uri">
+          uri (Read Only){String|null}
+          <a href="rule-property-uri" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          It contains a string with the partial URI that match with the regular expression in the rule. If the rule
+          doesn't match, it will be <code>null</code>. When it's a child rule that rely on a parent group, it will
+          contain the result match of the parent group instead the full URI.
+        </p>
+        <p>
+          A good way to use the <code>uri</code> is to get the property from the route context of an event callback.
+        </p>
+
+        <h2 id="rule-events">
+          Events
+          <a href="rule-events" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h2>
         <p>
           When you create a rule in PushStateTree, this rule will trigger
           events when it's inside a router or another rule, those events
-          create a flow where you can use execute callbacks.
+          create a flow where you can use callbacks.
         </p>
         <p>
           The initial rule flow is:
@@ -19,44 +259,150 @@
         <p>
           After the initial flow happen the flows will be always:
           <span class="label label-danger">leave</span> >
+          <span class="label label-info">change</span> >
           <span class="label label-primary">enter</span> >
-          <span class="label label-info">change</span>.
+          <span class="label label-success">match</span>.
         </p>
         <p>
           The full list of events in call priority:
-          <span class="label label-warning">any</span> [
-          <span class="label label-danger">leave</span> >
-          <span class="label label-success">match</span> (
-          <span class="label label-primary">enter</span> >
-          <span class="label label-info">change</span> ) ].
+          (<span class="label label-warning">update</span>+<span class="label label-danger">leave</span>) >
+          (<span class="label label-warning">update</span>+<span class="label label-info">change</span>) >
+          (*<span class="label label-warning">update</span>+<span class="label label-success">match</span>) >
+          (<span class="label label-warning">update</span>+<span class="label label-primary">enter</span>).
         </p>
-        <h2>enter</h2>
         <p>
-          Called when you match a rule once it wasn't triggered before.
+          * The <span class="label label-success">match</span> and <span class="label label-warning">update</span> that
+          refers to it, can be triggered multiple times in the same URL by calling the method <code>dispatch()</code>.
+          Any other event will only be dispatch if there were a change in the URI what it rely-on.
         </p>
-        <h2>change</h2>
+        <h3 id="rule-event-enter">
+          enter
+          <a href="rule-event-enter" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          Called when your URL change and the rule matches it for the first time or after <code>leave</code> event has
+          being triggered in the same rule. URL changes that keep matching the same rule will not trigger
+          <code>enter</code> multiple times.
+        </p>
+        <p>
+          This event is good to append elements on DOM, children rules can rely that parent enter are executed in order
+          before children event is triggered, this way you can compose your elements in the DOM knowing that they're
+          ready to be used.
+        </p>
+        <p>
+          This example uses jQuery to manipulate DOM and Events, however you can use vanilla JavaScript to add/remove
+          event listeners by using <code>addEventListener</code> and <code>removeEventListener</code> instead of jQuery
+          methods to use it.
+        </p>
+        <pre class="prettyprint lang-js"><code>// Use the runtime code to render a template
+var $pageTemplate = $('<div>My Page<div id="content"></div></div>');
+
+// Use `enter` listener to append this template to the body.
+$(myRule).on('enter', function () {
+  $('body').append($pageTemplate);
+});</code></pre>
+        <p>
+          In this example we are using the runtime code to render a template, rendering templates is a heavy operation
+          and doing this way we will render this template only once. Listening for `enter` we will append the rendered
+          template to the DOM.
+        </p>
+        <p>
+          This way we setup references to be used by other events, like our <code>$pageTemplate</code> that can be
+          manipulated by events without need to query the DOM for it.
+        </p>
+
+        <h3 id="rule-event-match">
+          match
+          <a href="rule-event-match" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
+        <p>
+          Called when URL change match the current rule. In the execution order, this is the last event called. It also
+          have another difference from the others. While other events only happen if the URL that they're listen changes
+          this event will be dispatched multiple times if the method <code>dispatch()</code> is called even without any
+          URL change.
+        </p>
+        <p>
+          It's useful to apply lightweight changes in the DOM, redirect URLs and other minimal operations.
+        </p>
+        <p>
+          Match does the same kind of callback other routers usually do, like Backbone and SailsJS. If you're migrating
+          from one of those libs, probably your current project will use this event for most of your routes, them you
+          can optimize it adding the other routes to your app.
+        </p>
+        <pre class="prettyprint lang-js"><code>// Use the runtime code to cache selectors
+$content = $pageTemplate.find('#content');
+
+// Use `match` listener to change the content of the page.
+$(myRule).on('match', function () {
+  $content.text('Welcome to the address ' + this.uri);
+});</code></pre>
+
+        <h3 id="rule-event-change">
+          change
+          <a href="rule-event-change" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
         <p>
           Called if the rule match, but already executed enter.
         </p>
-        <h2>leave</h2>
+        <h3 id="rule-event-leave">
+          leave
+          <a href="rule-event-leave" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
         <p>
           If the previous match this rule but the current doesn't, leave
           will be called.
         </p>
-        <h2>match</h2>
+        <h3 id="rule-event-update">
+          update
+          <a href="rule-event-update" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h3>
         <p>
-          Called if enter or change are called.<br>
-          * Match event is called on every dispatch, even if the URL doesn't change.
+          Called before any other event.
+        </p>
+
+        <h2 id="rule-methods">
+          Methods
+          <a href="rule-methods" class="anchorjs-link"><span class="anchorjs-icon"></span></a>
+        </h2>
+        <p>
+          The rules contain all <code>HTMLElement</code> methods, to add events you can use native methods like
+          <code>addEventListener</code> or wrap the instance in a JQuery library to use <code>on</code> method.
         </p>
         <p>
-          Match does the same kind of callback other routers usually do, like
-          Backbone and SailsJS.
+          It also contain all the trigger events from the current router, even if the rule is children of another rule.
         </p>
-        <h2>any</h2>
-        <p>
-          Called on any event.
-        </p>
+
+      </div>
+
+    </div>
+
+    <!-- start Right Menu -->
+    <div class="col-md-3" role="complementary">
+      <div class="bs-docs-sidebar hidden-print hidden-xs hidden-sm affix-top">
+        <ul class="nav bs-docs-sidenav" role="tablist">
+
+          <li>
+            <a href="#routers">Routers</a>
+          </li>
+
+          <li>
+            <a href="#rules">Rules</a>
+            <ul class="nav">
+              <li>
+                <a href="#rule-properties">Properties</a>
+              </li>
+              <li>
+                <a href="#rule-events">Events</a>
+              </li>
+              <li>
+                <a href="#rule-methods">Methods</a>
+              </li>
+            </ul>
+          </li>
+
+        </ul>
       </div>
     </div>
+    <!-- end of Right Menu -->
   </div>
 </div>

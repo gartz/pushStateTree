@@ -16,26 +16,37 @@
   // Add menu option in the first load
   navbarAdd('Servers', '/servers/', 2, rule);
 
-  var $template;
-  var $body = $('body');
-  var $window = $(window);
   var $sidebar;
   var $anchorElements;
-  
-  // Load template
-  $.ajax(demoPath + 'servers.html').done(function (template){
-    $template = $(template);
-  }).done(function(){
-    // Add the rules after the HTML is loaded, and then dispatch the url changing check
-    $(rule)
-      .append(scrollSpyRule)
-      .appendTo(pushStateTree)
-      .get(0).dispatch();
-  });
 
-  var scrollspy = function(event){
+  // Load template, storing the promise from jquery
+  var page = setupTemplate(rule, 'servers.html');
+  page.request
+    .then(function () {
+      var $roleComplementary = page.$template.find('[role=complementary]');
+      $sidebar = page.$template.find('.bs-docs-sidebar');
 
-    // Avoid multiple re
+      // Fix window resize checkPosition for the sidebar
+      $(window).resize(trottle(function () {
+        $sidebar.affix('checkPosition');
+      }, 150));
+
+      // Listen for scroll event
+      $sidebar.affix({
+        offset: {
+          top: function () { return $roleComplementary.offset().top; }
+        }
+      });
+    })
+    .then(function () {
+      $(rule)
+        .append(scrollSpyRule)
+        .appendTo(pushStateTree)
+        .get(0).dispatch();
+    });
+
+  function scrollspy(event) {
+    // Rewrite the browser URL for the current element on the spy area
     if($(event.target).find('.active').length > 0) return;
     var $anchor = $(event.target).find('a[href]');
     if (!$anchor || $anchor.length === 0) return;
@@ -48,63 +59,25 @@
     // Remove the # begin to make the links relative
     uri = uri.match(/^(#*)?(.*)/)[2];
 
-
     // Replace the URL, but don't dispatch (because the animation for match it)
     scrollSpyRule.replaceState(null, null, uri);
-  };
+  }
 
-  var firstEnter = true;
-
-  $(rule).on('enter', function(){
-    $('#content').append($template);
-    $anchorElements = $template.find('[role=main] [id]');
-    $sidebar = $template.find('.bs-docs-sidebar');
+  $(rule).on('enter', function () {
+    $anchorElements = page.$template.find('[role=main] [id]');
 
     // Enable Bootstrap scrollspy
-    $body
-      .attr({
-        'data-spy': 'scroll',
-        'data-target': '.bs-docs-sidebar',
-        'data-offset': '0'
+    $('body')
+      .scrollspy({
+        target: '.bs-docs-sidebar',
+        offset: 0
       })
-      .scrollspy('refresh')
       .on('activate.bs.scrollspy', scrollspy);
+  }).on('leave', function() {
 
-    // Listen for scroll event
-    if (firstEnter) {
-      $($template).find('.bs-docs-sidebar').affix({
-        offset: {
-          top: $($template).find('[role=complementary]').offset().top
-        }
-      });
-
-      // After first type ever enter, disable the flag
-      firstEnter = false;
-    }
-  }).on('leave', function(){
     // Disable Bootstrap scrollspy
-    $body
-      .attr({
-        'data-spy': '',
-        'data-target': '',
-        'data-offset': ''
-      })
-      .scrollspy('refresh')
-      .off('activate.bs.scrollspy', scrollspy);
-
-    $template.remove && $template.remove();
-  }).on('match', function(event){
-    // if match the app uri, but without the end slash redirect to add the slash, this make relative links work
-
-    var oEvent = event.originalEvent;
-    var uri = oEvent.detail.match[0];
-    var hasSlash = !!oEvent.detail.match[1];
-
-    if (!hasSlash) {
-      this.replace(uri + '/');
-    }
+    $('body').off('activate.bs.scrollspy', scrollspy);
   });
-
   var $animation;
 
   $(scrollSpyRule).on('match', function(event){
