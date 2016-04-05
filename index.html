@@ -28,10 +28,10 @@
     }
     </style>
 
-    <!-- Place favicon.ico and apple-touch-icon(s) in the root directory -->
     <script src="//ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
     <link href="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
     <script src="//maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+    <script src="//cdn.rawgit.com/google/code-prettify/master/loader/prettify.js"></script>
 
     <script>
       /* global $ */
@@ -62,10 +62,14 @@
         document.head.appendChild(element);
       }
       // Load offline jquery and bootstrap
+      var deps = 0;
+      function resolveBoot() {
+        deps++; if (deps==2) boot();
+      }
+      loadOffline('prettify.js', resolveBoot);
       loadOffline('jquery.min.js', function(){
         loadOffline('bootstrap.min.css');
-        loadOffline('bootstrap.min.js');
-        boot();
+        loadOffline('bootstrap.min.js', resolveBoot);
       });
     } else {
       boot();
