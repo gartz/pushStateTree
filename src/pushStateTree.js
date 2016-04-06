@@ -42,7 +42,7 @@ function isInt(n) {
   return typeof n != 'undefined' && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
 }
 
-function proxyProperty(context, property, targetObject) {
+function proxyReadOnlyProperty(context, property, targetObject) {
   // Proxy the property with same name from the targetObject into the defined context
   // if `targetObject` is `false` it will always return `false`.
 
@@ -50,6 +50,7 @@ function proxyProperty(context, property, targetObject) {
     get: function () {
       return targetObject && targetObject[property];
     },
+    // IE7 need set to not throw exception when using defineProperty
     set: function () {}
   });
 }
@@ -109,7 +110,7 @@ function PushStateTree(options) {
   // pushState it will always be false. and use hash navigation enforced.
   // use backend non permanent redirect when old browsers are detected in the request.
   if (!PushStateTree.prototype[HAS_PUSH_STATE]) {
-    proxyProperty(rootElement, USE_PUSH_STATE, false);
+    proxyReadOnlyProperty(rootElement, USE_PUSH_STATE, false);
   } else {
     var usePushState = options[USE_PUSH_STATE];
     Object.defineProperty(rootElement, USE_PUSH_STATE, {
@@ -174,8 +175,8 @@ function PushStateTree(options) {
     }
   }
 
-  proxyProperty(rootElement, 'length', root.history);
-  proxyProperty(rootElement, 'state', root.history);
+  proxyReadOnlyProperty(rootElement, 'length', root.history);
+  proxyReadOnlyProperty(rootElement, 'state', root.history);
 
   var cachedUri = {
     url: '',
