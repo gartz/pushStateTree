@@ -113,8 +113,6 @@ function PushStateTree(options) {
     return PushStateTree.apply(PushStateTree.createElement('pushstatetree-route'), arguments);
   }
 
-  this.VERSION = VERSION;
-
   // Setup options
   for (var prop in options) {
     if (options.hasOwnProperty(prop)) {
@@ -164,33 +162,19 @@ function PushStateTree(options) {
   });
   this.basePath = options.basePath;
 
-  let wrappMethodsAndPropertiesToPrototype = property => {
-    
-    // function wrapper, without bind the context
+  //TODO: emcapsulate this
+  for (let property in PushStateTree.prototype) {
     if (typeof PushStateTree.prototype[property] === 'function') {
+      // function wrapper, without bind the context
       this[property] = function () {
         return PushStateTree.prototype[property].apply(this, arguments);
       };
-    } else {
-      
-      // Don't wrap property if already exists
-      if (typeof this[property] !== 'undefined') return;
-      
-      // property wrapper
-      Object.defineProperty(this, property, {
-        get() {
-          return PushStateTree.prototype[property];
-        },
-        set(val) {
-          PushStateTree.prototype[property] = val;
-        }
-      });
+      continue;
     }
-  };
-
-  //TODO: emcapsulate this
-  for (var protoProperty in PushStateTree.prototype) {
-    wrappMethodsAndPropertiesToPrototype(protoProperty);
+    // Copy properties from prototype to the instance
+    if (typeof this[property] == 'undefined') {
+      this[property] = PushStateTree.prototype[property];
+    }
   }
 
   proxyReadOnlyProperty(this, 'length', history);
@@ -348,6 +332,7 @@ Object.assign(PushStateTree, {
     throw new Error('PushStateTree requires HTMLElement support from window to work.')
   },
   prototype: {
+    VERSION,
     hasPushState,
 
     // Version ~0.11 beatifyLocation is enabled by default
