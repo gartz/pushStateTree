@@ -47,11 +47,9 @@ function proxyReadOnlyProperty(context, property, targetObject) {
   // if `targetObject` is `false` it will always return `false`.
 
   Object.defineProperty(context, property, {
-    get: function () {
+    get() {
       return targetObject && targetObject[property];
-    },
-    // IE7 need set to not throw exception when using defineProperty
-    set: function () {}
+    }
   });
 }
 
@@ -114,10 +112,10 @@ function PushStateTree(options) {
   } else {
     var usePushState = options[USE_PUSH_STATE];
     Object.defineProperty(rootElement, USE_PUSH_STATE, {
-      get: function () {
+      get() {
         return usePushState;
       },
-      set: function (val) {
+      set(val) {
         usePushState = val !== false;
       }
     });
@@ -125,10 +123,10 @@ function PushStateTree(options) {
 
   // When enabled beautifyLocation will auto switch between hash to pushState when enabled
   Object.defineProperty(rootElement, 'beautifyLocation', {
-    get: function () {
+    get() {
       return PushStateTree.prototype.beautifyLocation && usePushState;
     },
-    set: function (value) {
+    set(value) {
       PushStateTree.prototype.beautifyLocation = value === true;
     }
   });
@@ -136,10 +134,10 @@ function PushStateTree(options) {
 
   var basePath;
   Object.defineProperty(rootElement, 'basePath', {
-    get: function () {
+    get() {
       return basePath;
     },
-    set: function (value) {
+    set(value) {
       basePath = value || '';
       if (basePath[0] !== '/') {
         basePath = '/' + basePath;
@@ -158,10 +156,10 @@ function PushStateTree(options) {
       if (typeof rootElement[prop] !== 'undefined') return;
       // property wrapper
       Object.defineProperty(rootElement, prop, {
-        get: function () {
+        get() {
           return PushStateTree.prototype[prop];
         },
-        set: function (val) {
+        set(val) {
           PushStateTree.prototype[prop] = val;
         }
       });
@@ -183,7 +181,7 @@ function PushStateTree(options) {
     uri: ''
   };
   Object.defineProperty(rootElement, 'uri', {
-    get: function () {
+    get() {
       if (cachedUri.url === root.location.href) return cachedUri.uri;
 
       var uri;
@@ -223,7 +221,7 @@ function PushStateTree(options) {
   });
 
   Object.defineProperty(rootElement, 'isPathValid', {
-    get: function () {
+    get() {
       var uri = root.location.pathname + root.location.search;
       return !this.basePath || (uri).indexOf(this.basePath) === 0;
     }
@@ -339,10 +337,10 @@ PushStateTree.prototype = {
 
     // Bind rule property with element attribute
     Object.defineProperty(rule, 'rule', {
-      get: function () {
+      get() {
         return ruleRegex;
       },
-      set: function (val) {
+      set(val) {
         if (val instanceof RegExp){
           ruleRegex = val;
         } else {
@@ -362,14 +360,14 @@ PushStateTree.prototype = {
 
     // Bind rule property with element attribute
     Object.defineProperty(rule, 'parentGroup', {
-      get: function () {
+      get() {
         var attr = rule.getAttribute('parent-group');
         if (isInt(attr)) {
           return + attr;
         }
         return null;
       },
-      set: function (val) {
+      set(val) {
         if (isInt(val)) {
           rule.setAttribute('parent-group', val);
         } else {
@@ -386,20 +384,20 @@ PushStateTree.prototype = {
     // Match is always a array, so you can test for match[n] anytime
     var match = [];
     Object.defineProperty(rule, MATCH, {
-      get: function () {
+      get() {
         return match;
       },
-      set: function (val) {
+      set(val) {
         match = val instanceof Array ? val : [];
       }
     });
 
     var oldMatch = [];
     Object.defineProperty(rule, OLD_MATCH, {
-      get: function () {
+      get() {
         return oldMatch;
       },
-      set: function (val) {
+      set(val) {
         oldMatch = val instanceof Array ? val : [];
       }
     });
@@ -696,82 +694,82 @@ for (var method in root.history) {
   }
 }
 
-PushStateTree.prototype[HAS_PUSH_STATE] = root.history && !!root.history.pushState;
-if (!PushStateTree.prototype[HAS_PUSH_STATE]) {
-  PushStateTree.prototype[USE_PUSH_STATE] = false;
-}
+PushStateTree.prototype[HAS_PUSH_STATE] = root.history ? !!root.history.pushState : false;
 
-var lastTitle = null;
-
-if (!PushStateTree.prototype.pushState) {
-  PushStateTree.prototype.pushState = function(state, title, uri) {
-    var t = document.title || '';
-    uri = uri || '';
-    if (lastTitle !== null) {
-      document.title = lastTitle;
-    }
-    this.avoidHashchangeHandler();
-
-    // Replace hash url
-    if (isExternal(uri)) {
-      // this will redirect the browser, so doesn't matters the rest...
-      root.location.href = uri;
-    }
-
-    // Remove the has if is it present
-    if (uri[0] === '#') {
-      uri = uri.slice(1);
-    }
-
-    if (isRelative(uri)) {
-      uri = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + uri;
-      uri = resolveRelativePath(uri);
-    }
-
-    root.location.hash = uri;
-
-    document.title = t;
-    lastTitle = title;
-
-    return this;
-  };
-}
-
-if (!PushStateTree.prototype.replaceState) {
-  PushStateTree.prototype.replaceState = function(state, title, uri) {
-    var t = document.title || '';
-    uri = uri || '';
-    if (lastTitle !== null) {
-      document.title = lastTitle;
-    }
-    this.avoidHashchangeHandler();
-
-    // Replace the url
-    if (isExternal(uri)) {
-      throw new Error('Invalid url replace.');
-    }
-
-    if (uri[0] === '#') {
-      uri = uri.slice(1);
-    }
-
-    if (isRelative(uri)) {
-      var relativePos = root.location.hash.lastIndexOf('/') + 1;
-      uri = root.location.hash.slice(1, relativePos) + uri;
-      uri = resolveRelativePath(uri);
-    }
-
-    // Always use hash navigation
-    uri = '#' + uri;
-
-    root.location.replace(uri);
-    document.title = t;
-    lastTitle = title;
-
-    return this;
-  };
-}
 PushStateTree.isInt = isInt;
+
+// Add support to pushState on old browsers that doesn't native support it
+if (typeof PST_NO_OLD_IE == 'undefined' && typeof PST_NO_SHIM == 'undefined' && typeof document != 'undefined') {
+  let lastTitle = null;
+  if (!PushStateTree.prototype.pushState) {
+    PushStateTree.prototype.pushState = function (state, title, uri) {
+      var t = document.title || '';
+      uri = uri || '';
+      if (lastTitle !== null) {
+        document.title = lastTitle;
+      }
+      this.avoidHashchangeHandler();
+
+      // Replace hash url
+      if (isExternal(uri)) {
+        // this will redirect the browser, so doesn't matters the rest...
+        root.location.href = uri;
+      }
+
+      // Remove the has if is it present
+      if (uri[0] === '#') {
+        uri = uri.slice(1);
+      }
+
+      if (isRelative(uri)) {
+        uri = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + uri;
+        uri = resolveRelativePath(uri);
+      }
+
+      root.location.hash = uri;
+
+      document.title = t;
+      lastTitle = title;
+
+      return this;
+    };
+  }
+
+  if (!PushStateTree.prototype.replaceState) {
+    PushStateTree.prototype.replaceState = function (state, title, uri) {
+      var t = document.title || '';
+      uri = uri || '';
+      if (lastTitle !== null) {
+        document.title = lastTitle;
+      }
+      this.avoidHashchangeHandler();
+
+      // Replace the url
+      if (isExternal(uri)) {
+        throw new Error('Invalid url replace.');
+      }
+
+      if (uri[0] === '#') {
+        uri = uri.slice(1);
+      }
+
+      if (isRelative(uri)) {
+        var relativePos = root.location.hash.lastIndexOf('/') + 1;
+        uri = root.location.hash.slice(1, relativePos) + uri;
+        uri = resolveRelativePath(uri);
+      }
+
+      // Always use hash navigation
+      uri = '#' + uri;
+
+      root.location.replace(uri);
+      document.title = t;
+      lastTitle = title;
+
+      return this;
+    };
+  }
+}
 
 // Node import support
 module.exports = PushStateTree;
