@@ -1,14 +1,15 @@
 const PushStateTree = require('../src/pushStateTree');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
-describe('PushStateTree methods should', function() {
+describe('PushStateTree methods', function() {
+  let pst;
 
-  cleanHistoryAPI();
+  beforeEach(() => {
+    pst = new PushStateTree();
+  });
 
-  it('have the methods: pushState, replaceState, dispatch, assign, replace, navigate', function() {
-    var pst = new PushStateTree();
-    var methods = [];
-    for (var method in pst) {
+  it('should have the methods: pushState, replaceState, dispatch, assign, replace, navigate', () => {
+    let methods = [];
+    for (let method in pst) {
       if (typeof pst[method] === 'function') {
         methods.push(method);
       }
@@ -22,9 +23,7 @@ describe('PushStateTree methods should', function() {
       'assign',
       'replace',
       'navigate'
-    ].forEach(function(method){
-      expect(methods).to.contain(method);
-    });
+    ].forEach(method => expect(methods).to.contain(method));
   });
 
 });
