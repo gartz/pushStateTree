@@ -27,8 +27,8 @@ require('./eventTarget.shim');
 
 // Constants for uglifiers
 const USE_PUSH_STATE = 'usePushState';
-const HASHCHANGE = 'hashchange';
-const POPSTATE = 'popstate';
+const HASH_CHANGE = 'hashchange';
+const POP_STATE = 'popstate';
 const LEAVE = 'leave';
 const UPDATE = 'update';
 const ENTER = 'enter';
@@ -233,7 +233,7 @@ function PushStateTree(options) {
     match: []
   };
 
-  root.addEventListener(POPSTATE, function () {
+  root.addEventListener(POP_STATE, function () {
     var eventURI = rootElement.uri;
     var eventState = rootElement.state;
     rootElement.rulesDispatcher();
@@ -270,15 +270,15 @@ function PushStateTree(options) {
 
   rootElement.avoidHashchangeHandler = function () {
     // Avoid triggering hashchange event
-    root.removeEventListener(HASHCHANGE, onhashchange);
+    root.removeEventListener(HASH_CHANGE, onhashchange);
     readOnhashchange = true;
   };
 
-  root.addEventListener(HASHCHANGE, onhashchange);
+  root.addEventListener(HASH_CHANGE, onhashchange);
 
   // Uglify propourses
   var dispatchHashChange = function () {
-    root.dispatchEvent(new HashChangeEvent(HASHCHANGE));
+    root.dispatchEvent(new HashChangeEvent(HASH_CHANGE));
   };
 
   // Modern browsers
@@ -298,7 +298,7 @@ function PushStateTree(options) {
         if (readOnhashchange) {
           readOnhashchange = false;
           oldURI = this.uri;
-          root.addEventListener(HASHCHANGE, onhashchange);
+          root.addEventListener(HASH_CHANGE, onhashchange);
         }
       }, 50);
     }
@@ -456,7 +456,7 @@ Object.assign(PushStateTree, {
         return this;
       }
       holdingDispatch = false;
-      root.dispatchEvent(new Event(POPSTATE));
+      root.dispatchEvent(new Event(POP_STATE));
       return this;
     },
 
