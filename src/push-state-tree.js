@@ -27,7 +27,6 @@ require('./eventTarget.shim');
 
 // Constants for uglifiers
 const USE_PUSH_STATE = 'usePushState';
-const HAS_PUSH_STATE = 'hasPushState';
 const HASHCHANGE = 'hashchange';
 const POPSTATE = 'popstate';
 const LEAVE = 'leave';
@@ -107,7 +106,7 @@ function PushStateTree(options) {
   // Allow switch between pushState or hash navigation modes, in browser that doesn't support
   // pushState it will always be false. and use hash navigation enforced.
   // use backend non permanent redirect when old browsers are detected in the request.
-  if (!PushStateTree.prototype[HAS_PUSH_STATE]) {
+  if (!PushStateTree.hasPushState) {
     proxyReadOnlyProperty(rootElement, USE_PUSH_STATE, false);
   } else {
     var usePushState = options[USE_PUSH_STATE];
@@ -315,331 +314,338 @@ var eventsQueue = [];
 var holdingDispatch = false;
 var holdDispatch = false;
 
-PushStateTree.createElement = function (name) {
-  // When document is available, use it to create and return a HTMLElement
-  if (typeof document !== 'undefined') {
-    return document.createElement(name);
-  }
-  throw new Error('PushStateTree requires HTMLElement support from window to work.')
-};
-PushStateTree.VERSION = VERSION;
+let hasPushState = !!(root.history && root.history.pushState);
 
-PushStateTree.prototype = {
-  // Version ~0.11 beatifyLocation is enabled by default
-  beautifyLocation: true,
-
-  createRule: function (options) {
-    // Create a pushstreamtree-rule element from a literal object
-
-    var rule = PushStateTree.createElement('pushstatetree-rule');
-
-    var ruleRegex = new RegExp('');
-
-    // Bind rule property with element attribute
-    Object.defineProperty(rule, 'rule', {
-      get() {
-        return ruleRegex;
-      },
-      set(val) {
-        if (val instanceof RegExp){
-          ruleRegex = val;
-        } else {
-
-          // IE8 trigger set from the property when update the attribute, avoid recursive loop
-          if (val === ruleRegex.toString()) return;
-
-          // Slice the pattern from the attribute
-          var slicedPattern = (val + '').match(/^\/(.+)\/([gmi]*)|(.*)/);
-
-          ruleRegex = new RegExp(slicedPattern[1] || slicedPattern[3], slicedPattern[2]);
-        }
-
-        rule.setAttribute('rule', ruleRegex.toString());
-      }
-    });
-
-    // Bind rule property with element attribute
-    Object.defineProperty(rule, 'parentGroup', {
-      get() {
-        var attr = rule.getAttribute('parent-group');
-        if (isInt(attr)) {
-          return + attr;
-        }
-        return null;
-      },
-      set(val) {
-        if (isInt(val)) {
-          rule.setAttribute('parent-group', val);
-        } else {
-          rule.removeAttribute('parent-group');
-        }
-      }
-    });
-
-    for (var prop in options)
-      if (options.hasOwnProperty(prop)) {
-        rule[prop] = options[prop];
-      }
-
-    // Match is always a array, so you can test for match[n] anytime
-    var match = [];
-    Object.defineProperty(rule, MATCH, {
-      get() {
-        return match;
-      },
-      set(val) {
-        match = val instanceof Array ? val : [];
-      }
-    });
-
-    var oldMatch = [];
-    Object.defineProperty(rule, OLD_MATCH, {
-      get() {
-        return oldMatch;
-      },
-      set(val) {
-        oldMatch = val instanceof Array ? val : [];
-      }
-    });
-
-    rule[MATCH] = [];
-    rule[OLD_MATCH] = [];
-
-    // Replicate the methods from `route` to the rule, by transversing until find and execute
-    // the router method, not a fast operation, but ensure the right route to be triggered
-    [
-      'assign',
-      'navigate',
-      'replace',
-      'dispatch',
-      'pushState',
-      'replaceState'
-    ].forEach(function (methodName) {
-      rule[methodName] = function () {
-        this.parentElement[methodName].apply(this.parentElement, arguments);
-      };
-    });
-
-    return rule;
-  },
-
-  add: function (options) {
-    // Transform any literal object in a pushstatetree-rule and append it
-
-    this.appendChild(this.createRule(options));
-    return this;
-  },
-
-  remove: function (queryOrElement) {
-    // Remove a pushstateree-rule, pass a element or it query
-
-    var element = queryOrElement;
-    if (typeof queryOrElement === 'string') {
-      element = this.querySelector(queryOrElement);
+Object.assign(PushStateTree, {
+  VERSION,
+  isInt,
+  hasPushState,
+  createElement(name) {
+    // When document is available, use it to create and return a HTMLElement
+    if (typeof document !== 'undefined') {
+      return document.createElement(name);
     }
-
-    if (element && element.parentElement) {
-      element.parentElement.removeChild(element);
-      return element;
-    }
+    throw new Error('PushStateTree requires HTMLElement support from window to work.')
   },
+  prototype: {
+    hasPushState,
 
-  dispatch: function () {
-    // Deferred trigger the actual browser location
-    if (holdDispatch) {
-      holdingDispatch = true;
-      return this;
-    }
-    holdingDispatch = false;
-    root.dispatchEvent(new Event(POPSTATE));
-    return this;
-  },
+    // Version ~0.11 beatifyLocation is enabled by default
+    beautifyLocation: true,
 
-  assign: function (url) {
-    // Shortcut for pushState and dispatch methods
-    return this.pushState(null, null, url).dispatch();
-  },
+    createRule(options) {
+      // Create a pushstreamtree-rule element from a literal object
 
-  replace: function (url) {
-    // Shortcut for pushState and dispatch methods
-    return this.replaceState(null, null, url).dispatch();
-  },
+      var rule = PushStateTree.createElement('pushstatetree-rule');
 
-  navigate: function () {
-    this.assign.apply(this, arguments);
-  },
+      var ruleRegex = new RegExp('');
 
-  rulesDispatcher: function () {
-    // Will dispatch the right events in each rule
-    /*jshint validthis:true */
+      // Bind rule property with element attribute
+      Object.defineProperty(rule, 'rule', {
+        get() {
+          return ruleRegex;
+        },
+        set(val) {
+          if (val instanceof RegExp){
+            ruleRegex = val;
+          } else {
 
-    // Abort if the basePath isn't valid for this router
-    if (!this.isPathValid) return;
+            // IE8 trigger set from the property when update the attribute, avoid recursive loop
+            if (val === ruleRegex.toString()) return;
 
-    function runner(uri, oldURI) {
-      Array.prototype.slice.call(this.children || this.childNodes)
-        .forEach(recursiveDispatcher.bind(this, uri, oldURI));
-      return uri;
-    }
+            // Slice the pattern from the attribute
+            var slicedPattern = (val + '').match(/^\/(.+)\/([gmi]*)|(.*)/);
 
-    eventsQueue.push(runner.bind(this, this.uri));
+            ruleRegex = new RegExp(slicedPattern[1] || slicedPattern[3], slicedPattern[2]);
+          }
 
-    // Is there already a queue been executed, so just add the runner
-    // and let the main queue resolve it
-    if (eventsQueue.length > 1) { return; }
-
-    // Chain execute the evetsQueue
-    var last = oldURI;
-    while (eventsQueue.length > 0) {
-      last = eventsQueue[0].call(null, last);
-      eventsQueue.shift();
-    }
-
-    // If a dispatch is triggered inside a event callback, it need to hold
-    holdDispatch = true;
-
-    // A stack of all events to be dispatched, to ensure the priority order
-    var eventStack = this.eventStack;
-
-    // Order of events stack execution, leave event isn't here because it executes in the
-    // recursiveDispatcher, for one loop less
-    [CHANGE, ENTER, MATCH].forEach(function(type){
-      // Execute the leave stack of events
-      while (eventStack[type].length > 0) {
-        var events = eventStack[type][0].events;
-        var element = eventStack[type][0].element;
-
-        //TODO: Ignore if there isn't same in the enter stack and remove it
-        while (events.length > 0){
-          element.dispatchEvent(events[0]);
-          events.shift();
+          rule.setAttribute('rule', ruleRegex.toString());
         }
-        eventStack[type].shift();
-      }
-    });
-
-    // If there is holding dispatchs in the event, do it now
-    holdDispatch = false;
-
-    function recursiveDispatcher(uri, oldURI, ruleElement) {
-      if (!ruleElement.rule) return;
-
-      var useURI = uri;
-      var useOldURI = oldURI;
-      var parentElement;
-
-      if (typeof ruleElement.parentGroup === 'number') {
-        useURI = '';
-        parentElement = ruleElement.parentElement;
-
-        if (parentElement[MATCH].length > ruleElement.parentGroup)
-          useURI = parentElement[MATCH][ruleElement.parentGroup] || '';
-
-        useOldURI = '';
-        if (parentElement[OLD_MATCH].length > ruleElement.parentGroup)
-          useOldURI = parentElement[OLD_MATCH][ruleElement.parentGroup] || '';
-      }
-
-      ruleElement[MATCH] = useURI[MATCH](ruleElement.rule);
-      if (typeof useOldURI === 'string') {
-        ruleElement[OLD_MATCH] = useOldURI[MATCH](ruleElement.rule);
-      } else {
-        ruleElement[OLD_MATCH] = [];
-      }
-      var match = ruleElement[MATCH];
-      var oldMatch = ruleElement[OLD_MATCH];
-      var children = Array.prototype.slice.call(ruleElement.children);
-
-      function PushStateTreeEvent(name, params) {
-
-        params = params || {};
-        params.detail = params.detail || {};
-        params.detail[MATCH] = match || [];
-        params.detail[OLD_MATCH] = oldMatch || [];
-        params.cancelable = true;
-
-        if (DEBUG) {
-          /*eslint no-console: "off" */
-          console.log({
-            name: name,
-            ruleElement: ruleElement,
-            params: params,
-            useURI: useURI,
-            useOldURI: useOldURI
-          });
-          if (console.trace) console.trace();
-        }
-        var event = new root.CustomEvent(name, params);
-        return event;
-      }
-
-      // Not match or leave?
-      if (match.length === 0) {
-        if (oldMatch.length === 0 || ruleElement.routerURI !== oldURI) {
-          // just not match...
-          return;
-        }
-        ruleElement.uri = null;
-        ruleElement.removeAttribute('uri');
-
-        children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
-
-        // Don't use stack for LEAVE event, dispatch in this loop
-        ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
-          detail: {type: LEAVE}
-        }));
-
-        ruleElement.dispatchEvent(new PushStateTreeEvent(LEAVE));
-        return;
-      }
-
-      // dispatch the match event
-      this.eventStack[MATCH].push({
-        element: ruleElement,
-        events: [
-          new PushStateTreeEvent(MATCH)
-        ]
       });
 
-      var isNewURI = ruleElement.routerURI !== oldURI;
-      ruleElement.routerURI = this.uri;
-      ruleElement.uri = match[0];
-      ruleElement.setAttribute('uri', match[0]);
+      // Bind rule property with element attribute
+      Object.defineProperty(rule, 'parentGroup', {
+        get() {
+          var attr = rule.getAttribute('parent-group');
+          if (isInt(attr)) {
+            return + attr;
+          }
+          return null;
+        },
+        set(val) {
+          if (isInt(val)) {
+            rule.setAttribute('parent-group', val);
+          } else {
+            rule.removeAttribute('parent-group');
+          }
+        }
+      });
 
-      if (oldMatch.length === 0 || isNewURI) {
-        // stack dispatch enter event
-        this.eventStack[ENTER].push({
+      for (var prop in options)
+        if (options.hasOwnProperty(prop)) {
+          rule[prop] = options[prop];
+        }
+
+      // Match is always a array, so you can test for match[n] anytime
+      let match = [];
+      Object.defineProperty(rule, MATCH, {
+        get() {
+          return match;
+        },
+        set(val) {
+          match = val instanceof Array ? val : [];
+        }
+      });
+
+      var oldMatch = [];
+      Object.defineProperty(rule, OLD_MATCH, {
+        get() {
+          return oldMatch;
+        },
+        set(val) {
+          oldMatch = val instanceof Array ? val : [];
+        }
+      });
+
+      rule[MATCH] = [];
+      rule[OLD_MATCH] = [];
+
+      // Replicate the methods from `route` to the rule, by transversing until find and execute
+      // the router method, not a fast operation, but ensure the right route to be triggered
+      [
+        'assign',
+        'navigate',
+        'replace',
+        'dispatch',
+        'pushState',
+        'replaceState'
+      ].forEach(function (methodName) {
+        rule[methodName] = function () {
+          this.parentElement[methodName].apply(this.parentElement, arguments);
+        };
+      });
+
+      return rule;
+    },
+
+    add(options) {
+      // Transform any literal object in a pushstatetree-rule and append it
+
+      this.appendChild(this.createRule(options));
+      return this;
+    },
+
+    remove(queryOrElement) {
+      // Remove a pushstateree-rule, pass a element or it query
+
+      var element = queryOrElement;
+      if (typeof queryOrElement === 'string') {
+        element = this.querySelector(queryOrElement);
+      }
+
+      if (element && element.parentElement) {
+        element.parentElement.removeChild(element);
+        return element;
+      }
+    },
+
+    dispatch() {
+      // Deferred trigger the actual browser location
+      if (holdDispatch) {
+        holdingDispatch = true;
+        return this;
+      }
+      holdingDispatch = false;
+      root.dispatchEvent(new Event(POPSTATE));
+      return this;
+    },
+
+    assign(url) {
+      // Shortcut for pushState and dispatch methods
+      return this.pushState(null, null, url).dispatch();
+    },
+
+    replace(url) {
+      // Shortcut for pushState and dispatch methods
+      return this.replaceState(null, null, url).dispatch();
+    },
+
+    navigate() {
+      this.assign.apply(this, arguments);
+    },
+
+    rulesDispatcher() {
+      // Will dispatch the right events in each rule
+      /*jshint validthis:true */
+
+      // Abort if the basePath isn't valid for this router
+      if (!this.isPathValid) return;
+
+      function runner(uri, oldURI) {
+        Array.prototype.slice.call(this.children || this.childNodes)
+          .forEach(recursiveDispatcher.bind(this, uri, oldURI));
+        return uri;
+      }
+
+      eventsQueue.push(runner.bind(this, this.uri));
+
+      // Is there already a queue been executed, so just add the runner
+      // and let the main queue resolve it
+      if (eventsQueue.length > 1) { return; }
+
+      // Chain execute the evetsQueue
+      var last = oldURI;
+      while (eventsQueue.length > 0) {
+        last = eventsQueue[0].call(null, last);
+        eventsQueue.shift();
+      }
+
+      // If a dispatch is triggered inside a event callback, it need to hold
+      holdDispatch = true;
+
+      // A stack of all events to be dispatched, to ensure the priority order
+      var eventStack = this.eventStack;
+
+      // Order of events stack execution, leave event isn't here because it executes in the
+      // recursiveDispatcher, for one loop less
+      [CHANGE, ENTER, MATCH].forEach(function(type){
+        // Execute the leave stack of events
+        while (eventStack[type].length > 0) {
+          var events = eventStack[type][0].events;
+          var element = eventStack[type][0].element;
+
+          //TODO: Ignore if there isn't same in the enter stack and remove it
+          while (events.length > 0){
+            element.dispatchEvent(events[0]);
+            events.shift();
+          }
+          eventStack[type].shift();
+        }
+      });
+
+      // If there is holding dispatchs in the event, do it now
+      holdDispatch = false;
+
+      function recursiveDispatcher(uri, oldURI, ruleElement) {
+        if (!ruleElement.rule) return;
+
+        var useURI = uri;
+        var useOldURI = oldURI;
+        var parentElement;
+
+        if (typeof ruleElement.parentGroup === 'number') {
+          useURI = '';
+          parentElement = ruleElement.parentElement;
+
+          if (parentElement[MATCH].length > ruleElement.parentGroup)
+            useURI = parentElement[MATCH][ruleElement.parentGroup] || '';
+
+          useOldURI = '';
+          if (parentElement[OLD_MATCH].length > ruleElement.parentGroup)
+            useOldURI = parentElement[OLD_MATCH][ruleElement.parentGroup] || '';
+        }
+
+        ruleElement[MATCH] = useURI[MATCH](ruleElement.rule);
+        if (typeof useOldURI === 'string') {
+          ruleElement[OLD_MATCH] = useOldURI[MATCH](ruleElement.rule);
+        } else {
+          ruleElement[OLD_MATCH] = [];
+        }
+        var match = ruleElement[MATCH];
+        var oldMatch = ruleElement[OLD_MATCH];
+        var children = Array.prototype.slice.call(ruleElement.children);
+
+        function PushStateTreeEvent(name, params) {
+
+          params = params || {};
+          params.detail = params.detail || {};
+          params.detail[MATCH] = match || [];
+          params.detail[OLD_MATCH] = oldMatch || [];
+          params.cancelable = true;
+
+          if (DEBUG) {
+            /*eslint no-console: "off" */
+            console.log({
+              name: name,
+              ruleElement: ruleElement,
+              params: params,
+              useURI: useURI,
+              useOldURI: useOldURI
+            });
+            if (console.trace) console.trace();
+          }
+          var event = new root.CustomEvent(name, params);
+          return event;
+        }
+
+        // Not match or leave?
+        if (match.length === 0) {
+          if (oldMatch.length === 0 || ruleElement.routerURI !== oldURI) {
+            // just not match...
+            return;
+          }
+          ruleElement.uri = null;
+          ruleElement.removeAttribute('uri');
+
+          children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
+
+          // Don't use stack for LEAVE event, dispatch in this loop
+          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
+            detail: {type: LEAVE}
+          }));
+
+          ruleElement.dispatchEvent(new PushStateTreeEvent(LEAVE));
+          return;
+        }
+
+        // dispatch the match event
+        this.eventStack[MATCH].push({
           element: ruleElement,
           events: [
-            new PushStateTreeEvent(UPDATE, {
-              detail: {type: ENTER}
-            }),
-            new PushStateTreeEvent(ENTER)
+            new PushStateTreeEvent(MATCH)
           ]
         });
+
+        var isNewURI = ruleElement.routerURI !== oldURI;
+        ruleElement.routerURI = this.uri;
+        ruleElement.uri = match[0];
+        ruleElement.setAttribute('uri', match[0]);
+
+        if (oldMatch.length === 0 || isNewURI) {
+          // stack dispatch enter event
+          this.eventStack[ENTER].push({
+            element: ruleElement,
+            events: [
+              new PushStateTreeEvent(UPDATE, {
+                detail: {type: ENTER}
+              }),
+              new PushStateTreeEvent(ENTER)
+            ]
+          });
+
+          children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
+          return;
+        }
+
+        // if has something changed, dispatch the change event
+        if (match[0] !== oldMatch[0]) {
+          // stack dispatch enter event
+          this.eventStack[CHANGE].push({
+            element: ruleElement,
+            events: [
+              new PushStateTreeEvent(UPDATE, {
+                detail: {type: CHANGE}
+              }),
+              new PushStateTreeEvent(CHANGE)
+            ]
+          });
+        }
 
         children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
-        return;
       }
-
-      // if has something changed, dispatch the change event
-      if (match[0] !== oldMatch[0]) {
-        // stack dispatch enter event
-        this.eventStack[CHANGE].push({
-          element: ruleElement,
-          events: [
-            new PushStateTreeEvent(UPDATE, {
-              detail: {type: CHANGE}
-            }),
-            new PushStateTreeEvent(CHANGE)
-          ]
-        });
-      }
-
-      children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
     }
   }
-};
+});
 
 function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
   /*jshint validthis:true */
@@ -694,81 +700,80 @@ for (var method in root.history) {
   }
 }
 
-PushStateTree.prototype[HAS_PUSH_STATE] = root.history ? !!root.history.pushState : false;
-
-PushStateTree.isInt = isInt;
-
 // Add support to pushState on old browsers that doesn't native support it
-if (typeof PST_NO_OLD_IE == 'undefined' && typeof PST_NO_SHIM == 'undefined' && typeof document != 'undefined') {
+if (typeof PST_NO_OLD_IE == 'undefined'
+  && typeof PST_NO_SHIM == 'undefined'
+  && !PushStateTree.hasPushState
+  && root.document
+  && root.location
+) {
+  let document = root.document;
+  let location = root.location;
   let lastTitle = null;
-  if (!PushStateTree.prototype.pushState) {
-    PushStateTree.prototype.pushState = function (state, title, uri) {
-      var t = document.title || '';
-      uri = uri || '';
-      if (lastTitle !== null) {
-        document.title = lastTitle;
-      }
-      this.avoidHashchangeHandler();
+  PushStateTree.prototype.pushState = function (state, title, uri) {
+    title = title || document.title || '';
+    uri = uri || '';
+    if (lastTitle !== null) {
+      document.title = lastTitle;
+    }
+    this.avoidHashchangeHandler();
 
-      // Replace hash url
-      if (isExternal(uri)) {
-        // this will redirect the browser, so doesn't matters the rest...
-        root.location.href = uri;
-      }
+    // Replace hash url
+    if (isExternal(uri)) {
+      // this will redirect the browser, so doesn't matters the rest...
+      location.href = uri;
+    }
 
-      // Remove the has if is it present
-      if (uri[0] === '#') {
-        uri = uri.slice(1);
-      }
+    // Remove the has if is it present
+    if (uri[0] === '#') {
+      uri = uri.slice(1);
+    }
 
-      if (isRelative(uri)) {
-        uri = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + uri;
-        uri = resolveRelativePath(uri);
-      }
+    if (isRelative(uri)) {
+      uri = location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + uri;
+      uri = resolveRelativePath(uri);
+    }
 
-      root.location.hash = uri;
+    location.hash = uri;
 
-      document.title = t;
-      lastTitle = title;
+    document.title = title;
+    lastTitle = title;
 
-      return this;
-    };
-  }
+    return this;
+  };
 
-  if (!PushStateTree.prototype.replaceState) {
-    PushStateTree.prototype.replaceState = function (state, title, uri) {
-      var t = document.title || '';
-      uri = uri || '';
-      if (lastTitle !== null) {
-        document.title = lastTitle;
-      }
-      this.avoidHashchangeHandler();
+  PushStateTree.prototype.replaceState = function (state, title, uri) {
+    title = title || document.title || '';
+    uri = uri || '';
+    if (lastTitle !== null) {
+      document.title = lastTitle;
+    }
+    this.avoidHashchangeHandler();
 
-      // Replace the url
-      if (isExternal(uri)) {
-        throw new Error('Invalid url replace.');
-      }
+    // Replace the url
+    if (isExternal(uri)) {
+      throw new Error('Invalid url replace.');
+    }
 
-      if (uri[0] === '#') {
-        uri = uri.slice(1);
-      }
+    if (uri[0] === '#') {
+      uri = uri.slice(1);
+    }
 
-      if (isRelative(uri)) {
-        var relativePos = root.location.hash.lastIndexOf('/') + 1;
-        uri = root.location.hash.slice(1, relativePos) + uri;
-        uri = resolveRelativePath(uri);
-      }
+    if (isRelative(uri)) {
+      var relativePos = location.hash.lastIndexOf('/') + 1;
+      uri = location.hash.slice(1, relativePos) + uri;
+      uri = resolveRelativePath(uri);
+    }
 
-      // Always use hash navigation
-      uri = '#' + uri;
+    // Always use hash navigation
+    uri = '#' + uri;
 
-      root.location.replace(uri);
-      document.title = t;
-      lastTitle = title;
+    location.replace(uri);
+    document.title = title;
+    lastTitle = title;
 
-      return this;
-    };
-  }
+    return this;
+  };
 }
 
 // Node import support
