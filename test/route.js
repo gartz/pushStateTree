@@ -1,36 +1,10 @@
-var PushStateTree = require('../src/push-state-tree');
+const PushStateTree = require('../src/push-state-tree');
+import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
 describe('PushStateTree should', function() {
-  var events = {
-    popstate: [],
-    hashchange: [],
-    DOMContentLoaded: [],
-    readystatechange: [],
-    load: []
-  };
+  cleanHistoryAPI();
 
-  before(function(){
-    var addEventListener = window.addEventListener;
-    window.addEventListener = function(name, callback){
-      events[name].push(callback);
-      addEventListener.apply(window, arguments);
-    };
-  });
-
-  beforeEach(function(){
-    // Reset the URI before begin the tests
-    history.pushState(null, null, '/');
-    for (var eventName in events)
-      if (events.hasOwnProperty(eventName)) {
-        var eventList = events[eventName];
-        while (eventList.length) {
-          var callback = eventList.pop();
-          window.removeEventListener(eventName, callback);
-        }
-      }
-  });
-
-  it('be available on global scope', function() {
+  it('be available as UMD library', function() {
     expect(PushStateTree).to.be.defined;
   });
 

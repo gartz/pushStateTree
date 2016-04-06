@@ -1,44 +1,18 @@
-var PushStateTree = require('../src/push-state-tree');
+const PushStateTree = require('../src/push-state-tree');
+import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
-describe('PushStateTree basePath should', function() {
+describe('PushStateTree Router basePath', function () {
 
-  var events = {
-    popstate: [],
-    hashchange: [],
-    DOMContentLoaded: [],
-    readystatechange: [],
-    load: []
-  };
+  cleanHistoryAPI();
 
-  before(function(){
-    var addEventListener = window.addEventListener;
-    window.addEventListener = function(name, callback){
-      events[name].push(callback);
-      addEventListener.apply(window, arguments);
-    };
-  });
-
-  beforeEach(function(){
-    // Reset the URI before begin the tests
-    history.pushState(null, null, '/');
-    for (var eventName in events)
-      if (events.hasOwnProperty(eventName)) {
-        var eventList = events[eventName];
-        while (eventList.length) {
-          var callback = eventList.pop();
-          window.removeEventListener(eventName, callback);
-        }
-      }
-  });
-
-  it('allow to set the base path', function(){
+  it('should allow to set the base path', function () {
     var pst = new PushStateTree({
       basePath: '/test/'
     });
     expect(pst.basePath).to.equal('/test/');
   });
 
-  it('normalize basePath folder', function(){
+  it('should normalize basePath folder', function () {
     expect((new PushStateTree({
       basePath: 'folder/'
     })).basePath).to.equal('/folder/');
@@ -47,7 +21,7 @@ describe('PushStateTree basePath should', function() {
     })).basePath).to.equal('/folder/sub-folder/');
   });
 
-  it('normalize basePath file', function(){
+  it('should normalize basePath file', function () {
     expect((new PushStateTree({
       basePath: 'file'
     })).basePath).to.equal('/file');
@@ -74,13 +48,13 @@ describe('PushStateTree basePath should', function() {
     })).basePath).to.equal('/folder/file.ext?param=value');
   });
 
-  it('use the non relative root as basePath if not specified', function(){
+  it('should use the non relative root as basePath if not specified', function () {
     history.pushState(null, null, '/abc/123/');
     var pst = new PushStateTree();
     expect(pst.basePath).to.equal('/');
   });
 
-  it('not share the basePath between route instances', function(){
+  it('should not share the basePath between route instances', function () {
     var pst1 = new PushStateTree({
       basePath: '1/'
     });
