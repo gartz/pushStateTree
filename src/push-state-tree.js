@@ -1,5 +1,25 @@
-var root = typeof window !== 'undefined' && window || global;
-var location = root.location;
+const root = typeof window !== 'undefined' && window || global;
+
+let errorApiMessage = api => new Error(`PushStateTree ${VERSION} requires ${api} API to run.`);
+
+if (!root.document) {
+  throw errorApiMessage('document');
+}
+const document = root.document;
+
+if (!root.location) {
+  throw errorApiMessage('location');
+}
+const location = root.location;
+
+if (!root.history) {
+  throw errorApiMessage('history');
+}
+const history = root.history;
+
+if (!root.CustomEvent) {
+  throw errorApiMessage('CustomEvent');
+}
 
 // If you have your own shim for ES3 and old IE browsers, you can remove all shim files from your package by adding a
 // webpack.DefinePlugin that translates `typeof PST_NO_SHIM === 'undefined'` to false, this will remove the section
@@ -172,8 +192,8 @@ function PushStateTree(options) {
     }
   }
 
-  proxyReadOnlyProperty(rootElement, 'length', root.history);
-  proxyReadOnlyProperty(rootElement, 'state', root.history);
+  proxyReadOnlyProperty(rootElement, 'length', history);
+  proxyReadOnlyProperty(rootElement, 'state', history);
 
   var cachedUri = {
     url: '',
@@ -181,12 +201,12 @@ function PushStateTree(options) {
   };
   Object.defineProperty(rootElement, 'uri', {
     get() {
-      if (cachedUri.url === root.location.href) return cachedUri.uri;
+      if (cachedUri.url === location.href) return cachedUri.uri;
 
       var uri;
-      if (root.location.hash.length || root.location.href[location.href.length - 1] === '#') {
+      if (location.hash.length || location.href[location.href.length - 1] === '#') {
         // Remove all begin # chars from the location when using hash
-        uri = root.location.hash.match(/^(#*)?(.*\/?)/)[2];
+        uri = location.hash.match(/^(#*)?(.*\/?)/)[2];
 
         var usePushState = rootElement[USE_PUSH_STATE];
         if (rootElement.beautifyLocation && rootElement.isPathValid && usePushState) {
@@ -199,7 +219,7 @@ function PushStateTree(options) {
           );
         }
       } else {
-        uri = root.location.pathname + root.location.search;
+        uri = location.pathname + location.search;
         if (this.isPathValid) {
           uri = uri.slice(this.basePath.length);
         }
@@ -212,7 +232,7 @@ function PushStateTree(options) {
         rootElement.setAttribute('uri', uri);
       }
 
-      cachedUri.url = root.location.href;
+      cachedUri.url = location.href;
       cachedUri.uri = uri;
       return uri;
     },
@@ -221,7 +241,7 @@ function PushStateTree(options) {
 
   Object.defineProperty(rootElement, 'isPathValid', {
     get() {
-      var uri = root.location.pathname + root.location.search;
+      var uri = location.pathname + location.search;
       return !this.basePath || (uri).indexOf(this.basePath) === 0;
     }
   });
@@ -314,7 +334,7 @@ var eventsQueue = [];
 var holdingDispatch = false;
 var holdDispatch = false;
 
-let hasPushState = !!(root.history && root.history.pushState);
+let hasPushState = !!(history && history.pushState);
 
 Object.assign(PushStateTree, {
   VERSION,
@@ -686,7 +706,7 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
       }
     }
 
-    root.history[scopeMethod].apply(root.history, args);
+    history[scopeMethod].apply(history, args);
 
     // Chainnable
     return this;
@@ -694,8 +714,8 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
 }
 
 // Wrap history methods
-for (var method in root.history) {
-  if (typeof root.history[method] === 'function') {
+for (var method in history) {
+  if (typeof history[method] === 'function') {
     preProcessUriBeforeExecuteNativeHistoryMethods.call(PushStateTree.prototype, method);
   }
 }
@@ -704,11 +724,7 @@ for (var method in root.history) {
 if (typeof PST_NO_OLD_IE == 'undefined'
   && typeof PST_NO_SHIM == 'undefined'
   && !PushStateTree.hasPushState
-  && root.document
-  && root.location
 ) {
-  let document = root.document;
-  let location = root.location;
   let lastTitle = null;
   PushStateTree.prototype.pushState = function (state, title, uri) {
     title = title || document.title || '';
@@ -730,7 +746,7 @@ if (typeof PST_NO_OLD_IE == 'undefined'
     }
 
     if (isRelative(uri)) {
-      uri = location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + uri;
+      uri = location.hash.slice(1, location.hash.lastIndexOf('/') + 1) + uri;
       uri = resolveRelativePath(uri);
     }
 
