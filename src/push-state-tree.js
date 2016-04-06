@@ -119,7 +119,7 @@ function PushStateTree(options) {
   // Setup options
   for (var prop in options) {
     if (options.hasOwnProperty(prop)) {
-      rootElement[prop] = options[prop];
+      this[prop] = options[prop];
     }
   }
 
@@ -127,10 +127,10 @@ function PushStateTree(options) {
   // pushState it will always be false. and use hash navigation enforced.
   // use backend non permanent redirect when old browsers are detected in the request.
   if (!PushStateTree.hasPushState) {
-    proxyReadOnlyProperty(rootElement, USE_PUSH_STATE, false);
+    proxyReadOnlyProperty(this, USE_PUSH_STATE, false);
   } else {
     var usePushState = options[USE_PUSH_STATE];
-    Object.defineProperty(rootElement, USE_PUSH_STATE, {
+    Object.defineProperty(this, USE_PUSH_STATE, {
       get() {
         return usePushState;
       },
@@ -141,7 +141,7 @@ function PushStateTree(options) {
   }
 
   // When enabled beautifyLocation will auto switch between hash to pushState when enabled
-  Object.defineProperty(rootElement, 'beautifyLocation', {
+  Object.defineProperty(this, 'beautifyLocation', {
     get() {
       return PushStateTree.prototype.beautifyLocation && usePushState;
     },
@@ -149,10 +149,10 @@ function PushStateTree(options) {
       PushStateTree.prototype.beautifyLocation = value === true;
     }
   });
-  rootElement.beautifyLocation = options.beautifyLocation && rootElement.usePushState;
+  this.beautifyLocation = options.beautifyLocation && this.usePushState;
 
-  var basePath;
-  Object.defineProperty(rootElement, 'basePath', {
+  let basePath;
+  Object.defineProperty(this, 'basePath', {
     get() {
       return basePath;
     },
@@ -163,33 +163,35 @@ function PushStateTree(options) {
       }
     }
   });
-  rootElement.basePath = options.basePath;
+  this.basePath = options.basePath;
 
-  function wrappMethodsAndPropertiesToPrototype(prop) {
-    if (typeof PushStateTree.prototype[prop] === 'function') {
-      // function wrapper
-      rootElement[prop] = function () {
-        return PushStateTree.prototype[prop].apply(this, arguments);
+  let wrappMethodsAndPropertiesToPrototype = property => {
+    
+    // function wrapper, without bind the context
+    if (typeof PushStateTree.prototype[property] === 'function') {
+      this[property] = function () {
+        return PushStateTree.prototype[property].apply(this, arguments);
       };
     } else {
-      if (typeof rootElement[prop] !== 'undefined') return;
+      
+      // Don't wrap property if already exists
+      if (typeof this[property] !== 'undefined') return;
+      
       // property wrapper
-      Object.defineProperty(rootElement, prop, {
+      Object.defineProperty(this, property, {
         get() {
-          return PushStateTree.prototype[prop];
+          return PushStateTree.prototype[property];
         },
         set(val) {
-          PushStateTree.prototype[prop] = val;
+          PushStateTree.prototype[property] = val;
         }
       });
     }
-  }
+  };
 
   //TODO: emcapsulate this
   for (var protoProperty in PushStateTree.prototype) {
-    if (PushStateTree.prototype.hasOwnProperty(protoProperty)) {
-      wrappMethodsAndPropertiesToPrototype(protoProperty);
-    }
+    wrappMethodsAndPropertiesToPrototype(protoProperty);
   }
 
   proxyReadOnlyProperty(rootElement, 'length', history);
