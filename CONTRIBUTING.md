@@ -15,18 +15,20 @@ Install the dependencies:
 
     npm install
 
-We use Grunt, if you don't have it installed use:
+To start a demo server and test server you need to execute:
 
-    npm install -g grunt-cli
+    npm start
 
-If you need a code-coverage report, you can run:
+* Demo server: [http://localhost:8080/](http://localhost:8080/)
+* Test server: [http://localhost:9876/](http://localhost:9876/)
 
-    grunt report
+This tests will watch for changes in the `src` and `test` folders, changes will trigger a new test
+run and might refresh your demo in the browser.
 
-This will run the tests, generate a report and open a HTTP server on the port 3000, to
-access the code coverage, you can use the link http://localhost:3000/report/coverage/html/
+The source-map for test server are in the `webpack://./test/`, and for demo server are in
+`webpack://pushStateTree.source/./`.
 
-After you do your changes and create the test script, push to your fork and pull request it back.
+After you do your changes and create the test script, create a PR to the `dev` branch.
 
 Please explain in the pull request the goal of your changes.
 

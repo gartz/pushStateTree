@@ -1,7 +1,4 @@
-/*globals PushStateTree, it, expect, beforeEach, beforeAll */
-describe('PushStateTree methods should', function() {
-  'use strict';
-
+export default function cleanHistoryAPI() {
   var events = {
     popstate: [],
     hashchange: [],
@@ -10,7 +7,7 @@ describe('PushStateTree methods should', function() {
     load: []
   };
 
-  beforeAll(function(){
+  before(function(){
     var addEventListener = window.addEventListener;
     window.addEventListener = function(name, callback){
       events[name].push(callback);
@@ -30,27 +27,4 @@ describe('PushStateTree methods should', function() {
         }
       }
   });
-
-  it('have the methods: pushState, replaceState, dispatch, assign, replace, navigate', function() {
-    var pst = new PushStateTree();
-    var methods = [];
-    for (var method in pst) {
-      if (typeof pst[method] === 'function') {
-        methods.push(method);
-      }
-    }
-
-    // Methods that should exist:
-    [
-      'pushState',
-      'replaceState',
-      'dispatch',
-      'assign',
-      'replace',
-      'navigate'
-    ].forEach(function(method){
-      expect(methods).toContain(method);
-    });
-  });
-
-});
+}

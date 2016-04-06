@@ -1,7 +1,8 @@
 {
   "name": "push-state-tree",
+  "title": "PushStateTree",
   "description": "A standalone powerful library to manage browser routing with nested level support, complex match expressions and on-fly rules change (convenient to lazy module loading).",
-  "version": "0.14.0",
+  "version": "0.15.0",
   "homepage": "https://github.com/gartz/pushStateTree/",
   "author": {
     "name": "Gabriel Reitz Giannattasio <gabriel@gartz.com.br>",
@@ -20,38 +21,65 @@
       "url": "https://github.com/gartz/pushStateTree/blob/master/LICENSE-MIT"
     }
   ],
-  "main": "push-state-tree.js",
+  "main": "build/push-state-tree.js",
   "engines": {
-    "node": ">= 0.12.0"
+    "node": ">= 5.5.0"
   },
   "scripts": {
-    "start": "node ./server.js",
-    "test": "grunt test"
+    "start": "karma start --watch",
+    "quick-start": "karma start --watch --fast-build",
+    "preversion": "npm run build",
+    "build": "karma start && webpack --publish",
+    "test": "karma start"
+  },
+  "babel": {
+    "presets": [
+      "es2015"
+    ],
+    "plugins": [
+      "transform-runtime",
+      [
+        "transform-strict-mode",
+        {
+          "strict": true
+        }
+      ]
+    ]
   },
   "devDependencies": {
-    "assemble": "~0.4.42",
-    "codeclimate-test-reporter": "0.1.0",
-    "grunt": "~0.4.5",
-    "grunt-contrib-clean": "~0.6.0",
-    "grunt-contrib-concat": "~0.5.1",
-    "grunt-contrib-connect": "~0.11.2",
-    "grunt-contrib-jasmine": "~0.9.0",
-    "grunt-contrib-jshint": "~0.11.2",
-    "grunt-contrib-nodeunit": "~0.4.1",
-    "grunt-contrib-qunit": "~0.7.0",
-    "grunt-contrib-rename": "0.0.3",
-    "grunt-contrib-uglify": "~0.9.1",
-    "grunt-contrib-watch": "~0.6.1",
-    "grunt-coveralls": "^1.0.0",
-    "grunt-json-generator": "~0.1.0",
-    "grunt-merge-json": "~0.9.4",
-    "grunt-qunit-junit": "^0.3.1",
-    "grunt-update-json": "~0.2.1",
-    "grunt-template-jasmine-istanbul": "~0.3.4",
-    "jshint-junit-reporter": "0.2.2",
-    "jshint-stylish": "~2.0.1",
-    "load-grunt-tasks": "~3.2.0",
-    "node-static": "^0.7.7"
+    "babel-core": "^6.7.4",
+    "babel-loader": "^6.2.4",
+    "babel-plugin-transform-runtime": "^6.6.0",
+    "babel-plugin-transform-strict-mode": "^6.6.5",
+    "babel-preset-es2015": "^6.6.0",
+    "chai": "^3.5.0",
+    "chai-spies": "^0.7.1",
+    "codeclimate-test-reporter": "0.3.1",
+    "coveralls": "^2.11.9",
+    "eslint": "^2.5.3",
+    "eslint-loader": "^1.3.0",
+    "eslint-plugin-mocha": "^2.0.0",
+    "expose-loader": "^0.7.1",
+    "istanbul-instrumenter-loader": "^0.2.0",
+    "json-loader": "^0.5.4",
+    "karma": "^0.13.22",
+    "karma-chai": "^0.1.0",
+    "karma-chai-spies": "^0.1.4",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-coverage": "^0.5.5",
+    "karma-mocha": "^0.2.2",
+    "karma-phantomjs-launcher": "^1.0.0",
+    "karma-script-launcher": "^0.1.0",
+    "karma-sourcemap-loader": "^0.3.7",
+    "karma-webpack": "^1.7.0",
+    "mocha": "^2.4.5",
+    "moment": "^2.12.0",
+    "open": "0.0.5",
+    "phantomjs-prebuilt": "^2.1.4",
+    "underscore": "^1.8.3",
+    "webpack": "^1.12.14",
+    "webpack-dev-server": "^1.14.1",
+    "yargs": "^4.3.2"
   },
   "keywords": [
     "route",
@@ -78,5 +106,6 @@
     "shim",
     "navigator",
     "navigation"
-  ]
+  ],
+  "dependencies": {}
 }
