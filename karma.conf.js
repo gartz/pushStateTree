@@ -117,7 +117,7 @@ module.exports = function (config) {
     webpack: {
       // Create a literal object for the module to not change how webpack-dev-server load the modules
       module: Object.assign({}, webpackConfig.module, {
-        postLoaders: [{
+        preLoaders: [{
           test: /\.js/,
           exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
           loader: 'istanbul-instrumenter'
