@@ -1,4 +1,4 @@
-const PushStateTree = require('../src/pushStateTree');
+const PushStateTree = require('../src/push-state-tree');
 const pkg = require('../package.json');
 
 describe('PushStateTree', function () {
