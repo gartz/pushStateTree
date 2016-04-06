@@ -1,4 +1,4 @@
-var PushStateTree = require('../src/pushStateTree');
+const PushStateTree = require('../src/pushStateTree');
 
 describe('PushStateTree createRule', function() {
 
@@ -7,6 +7,7 @@ describe('PushStateTree createRule', function() {
     var rule;
     var regexRule = /^servers(\/)?(.*)/;
     var idRule = 'servers';
+
     beforeEach(function() {
       pst = new PushStateTree();
       rule = pst.createRule({
@@ -27,25 +28,20 @@ describe('PushStateTree createRule', function() {
       expect(rule.rule).to.equal(regexRule);
     });
 
-    describe('when a set rule function is created', function() {
+    it('should allow to define native and custom properties from options', function () {
+      let values = {
+        id: 'test',
+        rule: /test/,
+        parentGroup: 3,
+        className: 'test'
+      };
+      let rule = pst.createRule(values);
 
-      it('should change regex value ', function() {
-        rule.rule = /^faq(\/)?(.*)/;
-        expect(rule.rule.toString()).to.equal(/^faq(\/)?(.*)/.toString());
-      });
-
-      it('should convert string into regex format', function() {
-        rule.rule = '^faq(\\/)?(.*)';
-        expect(rule.rule).to.be.instanceof(RegExp);
-      });
-
-      it('should avoid recursive loop', function() {
-        chai.spy.on(rule, 'setAttribute');
-        rule.rule = '/^servers(\\/)?(.*)/';
-        expect(rule.setAttribute).not.to.have.been.called;
+      Object.keys(values).forEach(key => {
+        expect(rule[key]).to.be.equal(values[key]);
       });
     });
-
+    
   });
 
 });
