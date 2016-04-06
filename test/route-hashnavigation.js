@@ -1,4 +1,4 @@
-var PushStateTree = require('../src/pushStateTree');
+var PushStateTree = require('../src/push-state-tree');
 
 describe('PushStateTree hash-navigation should', function() {
 
