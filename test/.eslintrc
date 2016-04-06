@@ -2,12 +2,13 @@
   "plugins": [
     "mocha"
   ],
-	"env": {
+  "env": {
     "mocha": true
-	},
-	"globals": {
+  },
+  "globals": {
     "VERSION": true,
     "expect": true,
-    "chai": true
-	}
+    "chai": true,
+    "assert": true
+  }
 }
