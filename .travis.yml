@@ -1,7 +1,7 @@
 language: node_js
 sudo: false
 node_js:
-  - "5.5"
+  - "5"
 addons:
   code_climate:
     repo_token: 418a1b87b0824002644b73e147820942b4259522011e2d14ff65ebdee6542872
@@ -9,7 +9,7 @@ install: npm install
 before_script:
   - npm test
 script:
-  - cat ./build/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js
+  - sh -c 'cat ./build/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js || true'
 after_script:
-  - codeclimate < report/coverage/lcov/lcov.info
+  - sh -c 'codeclimate-test-reporter < build/coverage/lcov.info || true'
 sudo: false
