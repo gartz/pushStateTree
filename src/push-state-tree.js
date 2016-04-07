@@ -597,17 +597,6 @@ Object.assign(PushStateTree, {
           params.detail[OLD_MATCH] = oldMatch || [];
           params.cancelable = true;
 
-          if (DEBUG) {
-            /*eslint no-console: "off" */
-            console.log({
-              name: name,
-              ruleElement: ruleElement,
-              params: params,
-              useURI: useURI,
-              useOldURI: useOldURI
-            });
-            if (console.trace) console.trace();
-          }
           var event = new root.CustomEvent(name, params);
           return event;
         }
