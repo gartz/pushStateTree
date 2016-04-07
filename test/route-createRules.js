@@ -45,20 +45,20 @@ describe('PushStateTree createRule', function() {
   });
 
   describe('when parent-group is specified', function() {
-    var parentGroup = 2;
+    var expectedParentGroup = 2;
     var pst;
     var rule;
     beforeEach(function() {
       pst = new PushStateTree();
       rule = pst.createRule({
         id: 'parent',
-        parentGroup: 2,
+        parentGroup: expectedParentGroup,
         rule: /[^/]+/
       });
     });
 
     it('should bind "get" with parentGroup property', function() {
-      expect(rule.parentGroup).to.equal(parentGroup);
+      expect(rule.parentGroup).to.equal(expectedParentGroup);
     });
 
     it('should bind "set" with parentGroup property', function() {
