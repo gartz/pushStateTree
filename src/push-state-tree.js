@@ -58,29 +58,44 @@ const OLD_MATCH = 'oldMatch';
 
 // Internal history keep tracking of all changes in the location history, it can be reset any
 let internalHistory;
+function InternalLocation(url, previous) {
+  this.url = url;
+  this.previous = previous;
+}
 function InternalHistory() {
   if (!this) {
-    internalHistory = new InternalHistory();
-    return;
+    return internalHistory = new InternalHistory();
   }
 
   // It's a object like an array, but it can start from a certain point to allow memory cleanup
   if (internalHistory && internalHistory.length) {
-    this.startFrom = this.length - 1;
-    this[this.startFrom] = internalHistory[this.startFrom];
+    this.startFrom = internalHistory.length - 1;
+    let savedLocation = internalHistory[this.startFrom];
 
     // Break the link to previous to allow GC collect unused values
-    this[this.startFrom].previous = undefined;
+    if (savedLocation) savedLocation.previous = undefined;
+
+    this[this.startFrom] = savedLocation;
     this.length = internalHistory.length;
   } else {
     this.startFrom = 0;
     this.length = 0;
   }
 }
-InternalHistory.prototype.push = function (location) {
-  location.previous = this[this.length - 1];
-  this[this.length] = location;
+InternalHistory.prototype.push = function (url) {
+  let previous = this[this.length - 1];
+
+  // Ignore if is the same URL
+  if (previous && url == previous.url) return;
+
+  this[this.length] = new InternalLocation(url, previous);
   this.length += 1;
+
+  // Reset every 100 iterations in the history
+  if (this.length % 100 == 0) InternalHistory();
+};
+InternalHistory.prototype.last = function () {
+  return this[this.length - 1];
 };
 // Init internal history
 InternalHistory();
@@ -142,13 +157,6 @@ function PushStateTree(options) {
     return PushStateTree.apply(PushStateTree.createElement('pushstatetree-route'), arguments);
   }
 
-  // Setup options
-  for (var prop in options) {
-    if (options.hasOwnProperty(prop)) {
-      this[prop] = options[prop];
-    }
-  }
-
   // Allow switch between pushState or hash navigation modes, in browser that doesn't support
   // pushState it will always be false. and use hash navigation enforced.
   // use backend non permanent redirect when old browsers are detected in the request.
@@ -206,30 +214,24 @@ function PushStateTree(options) {
     }
   }
 
-  proxyReadOnlyProperty(this, 'length', history);
-  proxyReadOnlyProperty(this, 'state', history);
-
   var cachedUri = {
     url: '',
     uri: ''
   };
   Object.defineProperty(this, 'uri', {
     get() {
-      if (cachedUri.url === location.href) return cachedUri.uri;
+      let href = location.href;
+      if (cachedUri.url === href) return cachedUri.uri;
 
       var uri;
-      if (location.hash.length || location.href[location.href.length - 1] === '#') {
+      if (location.hash.length || href[href.length - 1] === '#') {
         // Remove all begin # chars from the location when using hash
         uri = location.hash.match(/^(#*)?(.*\/?)/)[2];
 
         if (this.beautifyLocation && this.isPathValid && this[USE_PUSH_STATE]) {
           // when using pushState, replace the browser location to avoid ugly URLs
 
-          this.replaceState(
-            this.state,
-            this.title,
-            uri[0] === '/' ? uri : '/' + uri
-          );
+          this.replaceState(null, null, uri[0] === '/' ? uri : '/' + uri);
         }
       } else {
         uri = location.pathname + location.search;
@@ -252,6 +254,15 @@ function PushStateTree(options) {
     configurable: true
   });
 
+  // Setup options
+  for (var prop in options) {
+    if (options.hasOwnProperty(prop)) {
+      this[prop] = options[prop];
+    }
+  }
+
+  proxyReadOnlyProperty(this, 'length', internalHistory);
+
   Object.defineProperty(this, 'isPathValid', {
     get() {
       var uri = location.pathname + location.search;
@@ -267,12 +278,13 @@ function PushStateTree(options) {
   };
 
   root.addEventListener(POP_STATE, () => {
+
+    internalHistory.push(location.href);
+
     var eventURI = this.uri;
-    var eventState = this.state;
     this.rulesDispatcher();
 
     oldURI = eventURI;
-    oldState = eventState;
 
     // If there is holding dispatch in the event, do it now
     if (holdingDispatch) {
@@ -289,11 +301,9 @@ function PushStateTree(options) {
     if (oldURI === this.uri) return;
 
     var eventURI = this.uri;
-    var eventState = this.state;
     this.rulesDispatcher();
 
     oldURI = eventURI;
-    oldState = eventState;
 
     // If there is holding dispatch in the event, do it now
     if (holdingDispatch) {
@@ -341,7 +351,6 @@ function PushStateTree(options) {
 }
 
 /*eslint no-unused-vars: ["error", { "varsIgnorePattern": "oldState" }]*/
-var oldState = null;
 var oldURI = null;
 var eventsQueue = [];
 var holdingDispatch = false;
@@ -353,6 +362,7 @@ Object.assign(PushStateTree, {
   VERSION,
   isInt,
   hasPushState,
+  getInternalHistory() { return internalHistory; },
   createElement(name) {
     // When document is available, use it to create and return a HTMLElement
     if (typeof document !== 'undefined') {
