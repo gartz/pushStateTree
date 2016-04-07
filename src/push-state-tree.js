@@ -566,8 +566,7 @@ Object.assign(PushStateTree, {
       [CHANGE, ENTER, MATCH].forEach(function(type){
         // Execute the leave stack of events
         while (eventStack[type].length > 0) {
-          var events = eventStack[type][0].events;
-          var element = eventStack[type][0].element;
+          let {events, element} = eventStack[type][0];
 
           //TODO: Ignore if there isn't same in the enter stack and remove it
           while (events.length > 0){
@@ -754,7 +753,7 @@ if (typeof PST_NO_OLD_IE == 'undefined'
 ) {
   let lastTitle = null;
   PushStateTree.prototype.pushState = function (state, title, uri) {
-    title = title || document.title || '';
+    title = title || document.title;
     uri = uri || '';
     if (lastTitle !== null) {
       document.title = lastTitle;
@@ -786,7 +785,7 @@ if (typeof PST_NO_OLD_IE == 'undefined'
   };
 
   PushStateTree.prototype.replaceState = function (state, title, uri) {
-    title = title || document.title || '';
+    title = title || document.title;
     uri = uri || '';
     if (lastTitle !== null) {
       document.title = lastTitle;
