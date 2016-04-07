@@ -531,8 +531,7 @@ Object.assign(PushStateTree, {
       [CHANGE, ENTER, MATCH].forEach(function(type){
         // Execute the leave stack of events
         while (eventStack[type].length > 0) {
-          var events = eventStack[type][0].events;
-          var element = eventStack[type][0].element;
+          let {events, element} = eventStack[type][0];
 
           //TODO: Ignore if there isn't same in the enter stack and remove it
           while (events.length > 0){
