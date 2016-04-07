@@ -11,5 +11,5 @@ before_script:
 script:
   - sh -c 'cat ./build/coverage/lcov.info | ./node_modules/coveralls/bin/coveralls.js || true'
 after_script:
-  - sh -c 'codeclimate < build/coverage/lcov.info || true'
+  - sh -c 'codeclimate-test-reporter < build/coverage/lcov.info || true'
 sudo: false
