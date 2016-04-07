@@ -17,6 +17,9 @@ describe('PushStateTree methods', function() {
 
     // Methods that should exist:
     [
+      'forward',
+      'back',
+      'go',
       'pushState',
       'replaceState',
       'dispatch',
