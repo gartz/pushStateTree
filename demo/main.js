@@ -114,7 +114,7 @@ var pushStateTree = new PushStateTree({
   // server don't support it, but enable in localhost or
   // other root server for this demo
   usePushState: !basePath,
-  debug: true
+  beautifyLocation: true
 });
 
 // Delegate anchor clicks to use pushStateTree
