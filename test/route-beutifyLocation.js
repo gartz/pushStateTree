@@ -1,5 +1,6 @@
 const PushStateTree = require('../src/push-state-tree');
 import cleanHistoryAPI from './helper/cleanHistoryAPI';
+const _ = require('underscore');
 
 describe('PushStateTree beutifyLocation should', function() {
 
@@ -50,10 +51,14 @@ describe('PushStateTree beutifyLocation should', function() {
     });
 
     // Reset URL
-    var randomURI = Math.random() + '';
-    history.pushState(null, null, '/' + randomURI);
-    expect(pst.uri).to.equal(randomURI);
-    expect(location.pathname).to.equal('/' + randomURI);
+    let url = _.uniqueId('/unique_url_');
+    history.pushState(null, null, url);
+
+    // Test without the /
+    expect(pst.uri).to.equal(url.substr(1));
+
+    // pathname contains the /
+    expect(location.pathname).to.equal(url);
 
     location.hash = '/abc';
     expect(pst.uri).to.equal('abc');

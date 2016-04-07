@@ -97,8 +97,6 @@ InternalHistory.prototype.push = function (url) {
 InternalHistory.prototype.last = function () {
   return this[this.length - 1];
 };
-// Init internal history
-InternalHistory();
 
 // Helpers
 function isInt(n) {
@@ -156,6 +154,9 @@ function PushStateTree(options) {
   if (!(this instanceof elementPrototype)) {
     return PushStateTree.apply(PushStateTree.createElement('pushstatetree-route'), arguments);
   }
+
+  // Initialize internal history when creating a router instance
+  PushStateTree.initInternalHistory();
 
   // Allow switch between pushState or hash navigation modes, in browser that doesn't support
   // pushState it will always be false. and use hash navigation enforced.
@@ -220,13 +221,14 @@ function PushStateTree(options) {
   };
   Object.defineProperty(this, 'uri', {
     get() {
-      let href = location.href;
+      let href = internalHistory.last().url;
       if (cachedUri.url === href) return cachedUri.uri;
 
-      var uri;
-      if (location.hash.length || href[href.length - 1] === '#') {
+      let uri;
+      let hashPosition = href.indexOf('#');
+      if (hashPosition != -1) {
         // Remove all begin # chars from the location when using hash
-        uri = location.hash.match(/^(#*)?(.*\/?)/)[2];
+        uri = href.substr(hashPosition).match(/^(#*)?(.*\/?)/)[2];
 
         if (this.beautifyLocation && this.isPathValid && this[USE_PUSH_STATE]) {
           // when using pushState, replace the browser location to avoid ugly URLs
@@ -247,7 +249,7 @@ function PushStateTree(options) {
         this.setAttribute('uri', uri);
       }
 
-      cachedUri.url = location.href;
+      cachedUri.url = href;
       cachedUri.uri = uri;
       return uri;
     },
@@ -350,7 +352,6 @@ function PushStateTree(options) {
   return this;
 }
 
-/*eslint no-unused-vars: ["error", { "varsIgnorePattern": "oldState" }]*/
 var oldURI = null;
 var eventsQueue = [];
 var holdingDispatch = false;
@@ -362,13 +363,23 @@ Object.assign(PushStateTree, {
   VERSION,
   isInt,
   hasPushState,
-  getInternalHistory() { return internalHistory; },
+  getInternalHistory() {
+    return internalHistory;
+  },
   createElement(name) {
     // When document is available, use it to create and return a HTMLElement
     if (typeof document !== 'undefined') {
       return document.createElement(name);
     }
     throw new Error('PushStateTree requires HTMLElement support from window to work.')
+  },
+  initInternalHistory() {
+    if (!internalHistory) {
+      // Init internal history
+      InternalHistory();
+    }
+
+    internalHistory.push(location.href);
   },
   prototype: {
     VERSION,
