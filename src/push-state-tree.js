@@ -727,7 +727,7 @@ if (typeof PST_NO_OLD_IE == 'undefined'
 ) {
   let lastTitle = null;
   PushStateTree.prototype.pushState = function (state, title, uri) {
-    title = title || document.title || '';
+    title = title || document.title;
     uri = uri || '';
     if (lastTitle !== null) {
       document.title = lastTitle;
@@ -759,7 +759,7 @@ if (typeof PST_NO_OLD_IE == 'undefined'
   };
 
   PushStateTree.prototype.replaceState = function (state, title, uri) {
-    title = title || document.title || '';
+    title = title || document.title;
     uri = uri || '';
     if (lastTitle !== null) {
       document.title = lastTitle;
