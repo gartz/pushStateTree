@@ -29,9 +29,6 @@ if (!root.CustomEvent) {
 //     })
 // https://webpack.github.io/docs/list-of-plugins.html#defineplugin
 
-// Add support to location.origin for all browsers
-require('./origin.shim');
-
 let isIE = require('./ieOld.shim').isIE;
 
 // If you don't want support IE 7 and IE 8 you can remove the compatibility shim with `PST_NO_OLD_ID: false`
