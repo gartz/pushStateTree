@@ -1,7 +1,7 @@
 language: node_js
 sudo: false
 node_js:
-  - "5.5"
+  - "5"
 addons:
   code_climate:
     repo_token: 418a1b87b0824002644b73e147820942b4259522011e2d14ff65ebdee6542872
