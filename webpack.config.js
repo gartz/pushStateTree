@@ -24,9 +24,9 @@ const BANNER = `${pkg.title} - v${pkg.version} - ${moment().format('YYYY-MM-DD')
  Copyright (c) ${moment().format('YYYY')} ${pkg.author.name}; Licensed ${pkg.licenses[0].type}`;
 
 let config = {
-  entry: !PUBLISH ? { 'push-state-tree': './src/pushStateTree' } : {
-    'push-state-tree': './src/pushStateTree',
-    'push-state-tree.min': './src/pushStateTree'
+  entry: !PUBLISH ? { 'push-state-tree': './src/push-state-tree' } : {
+    'push-state-tree': './src/push-state-tree',
+    'push-state-tree.min': './src/push-state-tree'
   },
   output: {
     path: path.join(BASE_PATH, 'build'),
