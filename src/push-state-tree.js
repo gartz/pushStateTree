@@ -281,7 +281,7 @@ function PushStateTree(options) {
 
   root.addEventListener(POP_STATE, () => {
 
-    internalHistory.push(location.href);
+    internalHistory.push(location.pathname);
 
     var eventURI = this.uri;
     this.rulesDispatcher();
@@ -379,7 +379,7 @@ Object.assign(PushStateTree, {
       InternalHistory();
     }
 
-    internalHistory.push(location.href);
+    internalHistory.push(location.pathname);
   },
   prototype: {
     VERSION,
@@ -692,8 +692,16 @@ Object.assign(PushStateTree, {
 });
 
 function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
-  /*jshint validthis:true */
-  var scopeMethod = method;
+
+  // If not pushState or replaceState methods, execute it from history API
+  if (method !== 'pushState' && method !== 'replaceState') {
+    this[method] = function () {
+      history[method].apply(history, args);
+      return this;
+    };
+    return;
+  }
+
   this[method] = function () {
     // Wrap method
 
@@ -701,38 +709,33 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
     var args = Array.prototype.slice.call(arguments);
 
     // if has a basePath translate the not relative paths to use the basePath
-    if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
+    if (!isExternal(args[2])) {
+      // When not external link, need to normalize the URI
 
-      if (!isExternal(args[2])) {
-        // When not external link, need to normalize the URI
+      if (isRelative(args[2])) {
+        // Relative to the uri
+        var basePath = this.uri.match(/^([^?#]*)\//);
+        basePath = basePath ? basePath[1] + '/' : '';
+        args[2] = basePath + args[2];
+      } else {
+        // This isn't relative, will cleanup / and # from the begin and use the remain path
+        args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
+      }
 
-        if (isRelative(args[2])) {
-          // Relative to the uri
-          var basePath = this.uri.match(/^([^?#]*)\//);
-          basePath = basePath ? basePath[1] + '/' : '';
-          args[2] = basePath + args[2];
-        } else {
-          // This isn't relative, will cleanup / and # from the begin and use the remain path
-          args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
-        }
+      if (!this[USE_PUSH_STATE]) {
 
-        if (!this[USE_PUSH_STATE]) {
+        // Ignore basePath when using location.hash and resolve relative path and keep
+        // the current location.pathname, some browsers history API might apply the new pathname
+        // with the hash content if not explicit
+        args[2] = location.pathname + '#' + resolveRelativePath(args[2]);
+      } else {
 
-          // Ignore basePath when using location.hash and resolve relative path and keep
-          // the current location.pathname, some browsers history API might apply the new pathname
-          // with the hash content if not explicit
-          args[2] = location.pathname + '#' + resolveRelativePath(args[2]);
-        } else {
-
-          // Add the basePath to your uri, not allowing to go by pushState outside the basePath
-          args[2] = this.basePath + args[2];
-        }
+        // Add the basePath to your uri, not allowing to go by pushState outside the basePath
+        args[2] = this.basePath + args[2];
       }
     }
 
-    history[scopeMethod].apply(history, args);
-
-    // Chainnable
+    history[method].apply(history, args);
     return this;
   };
 }
