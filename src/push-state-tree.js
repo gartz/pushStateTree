@@ -56,6 +56,35 @@ const CHANGE = 'change';
 const MATCH = 'match';
 const OLD_MATCH = 'oldMatch';
 
+// Internal history keep tracking of all changes in the location history, it can be reset any
+let internalHistory;
+function InternalHistory() {
+  if (!this) {
+    internalHistory = new InternalHistory();
+    return;
+  }
+
+  // It's a object like an array, but it can start from a certain point to allow memory cleanup
+  if (internalHistory && internalHistory.length) {
+    this.startFrom = this.length - 1;
+    this[this.startFrom] = internalHistory[this.startFrom];
+
+    // Break the link to previous to allow GC collect unused values
+    this[this.startFrom].previous = undefined;
+    this.length = internalHistory.length;
+  } else {
+    this.startFrom = 0;
+    this.length = 0;
+  }
+}
+InternalHistory.prototype.push = function (location) {
+  location.previous = this[this.length - 1];
+  this[this.length] = location;
+  this.length += 1;
+};
+// Init internal history
+InternalHistory();
+
 // Helpers
 function isInt(n) {
   return typeof n != 'undefined' && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
