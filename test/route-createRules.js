@@ -41,7 +41,7 @@ describe('PushStateTree createRule', function() {
         expect(rule[key]).to.be.equal(values[key]);
       });
     });
-    
+
   });
 
   describe('when parent-group is specified', function() {
@@ -66,7 +66,7 @@ describe('PushStateTree createRule', function() {
       expect(rule.parentGroup).to.equal(3);
     });
 
-    it('should remove the "parent-group" if not an int is set', function() {
+    it('should remove the "parent-group" if an int is not set', function() {
       chai.spy.on(rule, 'removeAttribute');
       rule.parentGroup = '';
       expect(rule.removeAttribute).to.have.been.called.with('parent-group');
@@ -75,11 +75,6 @@ describe('PushStateTree createRule', function() {
     it('should return null if theres no parent-group', function() {
       rule.parentGroup = null;
       expect(rule.parentGroup).to.be.null;
-    });
-
-    it('should set 0 to parentGroup', function() {
-      rule.parentGroup = 0;
-      expect(rule.parentGroup).to.be.equal(0);
     });
   });
 });
