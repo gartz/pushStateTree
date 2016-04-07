@@ -1,22 +1,25 @@
 var root = typeof window !== 'undefined' && window || global;
-var document = root.document;
 var location = root.location;
+
+// If you have your own shim for ES3 and old IE browsers, you can remove all shim files from your package by adding a
+// webpack.DefinePlugin that translates `typeof PST_NO_SHIM === 'undefined'` to false, this will remove the section
+// in the minified version:
+//     new webpack.DefinePlugin({
+//       PST_NO_SHIM: false
+//     })
+// https://webpack.github.io/docs/list-of-plugins.html#defineplugin
 
 // Add support to location.origin for all browsers
 require('./origin.shim');
 
 let isIE = require('./ieOld.shim').isIE;
 
-// If you have your own shim for ES3 and old IE browsers, you can remove this shim from your package by adding a
-// webpack.DefinePlugin that translates `typeof PST_NO_OLD_IE === 'undefined'` to false, this will remove the section
-// in the minified version:
+// If you don't want support IE 7 and IE 8 you can remove the compatibility shim with `PST_NO_OLD_ID: false`
 //     new webpack.DefinePlugin({
 //       PST_NO_OLD_IE: false
 //     })
 // https://webpack.github.io/docs/list-of-plugins.html#defineplugin
-if (typeof PST_NO_OLD_IE === 'undefined') {
-  require('./es3.shim.js');
-}
+require('./es3.shim.js');
 
 // TODO: Use a PushStateTree.prototype.createEvent instead of shim native CustomEvents
 require('./customEvent.shim');
@@ -36,14 +39,18 @@ const OLD_MATCH = 'oldMatch';
 
 // Helpers
 function isInt(n) {
-  return !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
+  return typeof n != 'undefined' && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
 }
 
-function wrapProperty(scope, prop, target) {
-  Object.defineProperty(scope, prop, {
+function proxyReadOnlyProperty(context, property, targetObject) {
+  // Proxy the property with same name from the targetObject into the defined context
+  // if `targetObject` is `false` it will always return `false`.
+
+  Object.defineProperty(context, property, {
     get: function () {
-      return target;
+      return targetObject && targetObject[property];
     },
+    // IE7 need set to not throw exception when using defineProperty
     set: function () {}
   });
 }
@@ -86,7 +93,7 @@ function PushStateTree(options) {
 
   // Force the instance to always return a HTMLElement
   if (!(this instanceof elementPrototype)) {
-    return PushStateTree.apply(document.createElement('pushstatetree-route'), arguments);
+    return PushStateTree.apply(PushStateTree.createElement('pushstatetree-route'), arguments);
   }
 
   var rootElement = this;
@@ -103,7 +110,7 @@ function PushStateTree(options) {
   // pushState it will always be false. and use hash navigation enforced.
   // use backend non permanent redirect when old browsers are detected in the request.
   if (!PushStateTree.prototype[HAS_PUSH_STATE]) {
-    wrapProperty(rootElement, USE_PUSH_STATE, false);
+    proxyReadOnlyProperty(rootElement, USE_PUSH_STATE, false);
   } else {
     var usePushState = options[USE_PUSH_STATE];
     Object.defineProperty(rootElement, USE_PUSH_STATE, {
@@ -168,8 +175,8 @@ function PushStateTree(options) {
     }
   }
 
-  wrapProperty(rootElement, 'length', root.history.length);
-  wrapProperty(rootElement, 'state', root.history.state);
+  proxyReadOnlyProperty(rootElement, 'length', root.history);
+  proxyReadOnlyProperty(rootElement, 'state', root.history);
 
   var cachedUri = {
     url: '',
@@ -310,6 +317,15 @@ var eventsQueue = [];
 var holdingDispatch = false;
 var holdDispatch = false;
 
+PushStateTree.createElement = function (name) {
+  // When document is available, use it to create and return a HTMLElement
+  if (typeof document !== 'undefined') {
+    return document.createElement(name);
+  }
+  throw new Error('PushStateTree requires HTMLElement support from window to work.')
+};
+PushStateTree.VERSION = VERSION;
+
 PushStateTree.prototype = {
   // Version ~0.11 beatifyLocation is enabled by default
   beautifyLocation: true,
@@ -317,7 +333,7 @@ PushStateTree.prototype = {
   createRule: function (options) {
     // Create a pushstreamtree-rule element from a literal object
 
-    var rule = document.createElement('pushstatetree-rule');
+    var rule = PushStateTree.createElement('pushstatetree-rule');
 
     var ruleRegex = new RegExp('');
 
@@ -348,7 +364,7 @@ PushStateTree.prototype = {
     Object.defineProperty(rule, 'parentGroup', {
       get: function () {
         var attr = rule.getAttribute('parent-group');
-        if (attr && isInt(attr)) {
+        if (isInt(attr)) {
           return + attr;
         }
         return null;
@@ -400,8 +416,8 @@ PushStateTree.prototype = {
       'dispatch',
       'pushState',
       'replaceState'
-    ].forEach(function(methodName){
-      rule[methodName] = function(){
+    ].forEach(function (methodName) {
+      rule[methodName] = function () {
         this.parentElement[methodName].apply(this.parentElement, arguments);
       };
     });
@@ -451,7 +467,7 @@ PushStateTree.prototype = {
     return this.replaceState(null, null, url).dispatch();
   },
 
-  navigate: function(){
+  navigate: function () {
     this.assign.apply(this, arguments);
   },
 
@@ -755,6 +771,7 @@ if (!PushStateTree.prototype.replaceState) {
     return this;
   };
 }
+PushStateTree.isInt = isInt;
 
 // Node import support
 module.exports = PushStateTree;

@@ -36,7 +36,6 @@ function trottle(func, wait) {
   };
 }
 
-//TODO: Optimize this function, not priority
 function navbarAdd(text, link, order, rule){
   // Create and add menu option in the right priority order
 
@@ -60,6 +59,12 @@ function navbarAdd(text, link, order, rule){
 
   if (rule) {
     $(rule)
+      // Force all templates to be inside a folder url
+      .on('match', function () {
+        if (this.uri.indexOf('/') === -1) {
+          this.replace(this.uri + '/');
+        }
+      })
       .on('enter', function() {
         $navbarAnchor.toggleClass('active', true);
       }).on('leave', function() {
@@ -74,7 +79,7 @@ function navbarAdd(text, link, order, rule){
 function setupTemplate(rule, src) {
   // Load template, storing the promise from jquery
   var r = {};
-  r.request = $.ajax(demoPath + src).done(function (template) {
+  r.request = $.ajax(demoPath + src).then(function (template) {
     r.$template = $(template);
     if (basePath) {
       r.$template.find('[src]').each(function(i, element){
@@ -86,6 +91,9 @@ function setupTemplate(rule, src) {
   r.$rule = $(rule)
     .on('enter', function () {
       $('#content').append(r.$template);
+    })
+    .one('enter', function () {
+      if (window.prettyPrint) window.prettyPrint();
     })
     .on('leave', function () {
       r.$template.remove();

@@ -62,6 +62,7 @@ if (WATCH) {
   delete webpackDevConfig.output.library;
   delete webpackDevConfig.output.libraryTarget;
   delete webpackDevConfig.output.umdNamedDefine;
+  webpackDevConfig.module.preLoaders = [];
 
   var compiler = webpack(webpackDevConfig);
   var server = new webpackDevServer(compiler, {
@@ -97,7 +98,7 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/**/*.js'
+      'test/*.js'
     ],
 
     // list of files to exclude
@@ -117,11 +118,14 @@ module.exports = function (config) {
     webpack: {
       // Create a literal object for the module to not change how webpack-dev-server load the modules
       module: Object.assign({}, webpackConfig.module, {
-        postLoaders: [{
-          test: /\.js/,
-          exclude: /(test|node_modules|bower_components|\.shim\.js)/,
-          loader: 'istanbul-instrumenter'
-        }]
+        preLoaders: [
+          {
+            test: /\.js/,
+            exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
+            loader: 'istanbul-instrumenter'
+          },
+          ...webpackConfig.module.preLoaders
+        ]
       }),
       plugins: webpackConfig.plugins,
       bail: !WATCH,
