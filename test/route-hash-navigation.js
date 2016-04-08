@@ -9,6 +9,7 @@ describe('PushStateTree hash-navigation should', function() {
 
   beforeEach(() => {
     pst = new PushStateTree({
+      beautifyLocation: false,
       usePushState: false
     });
   });

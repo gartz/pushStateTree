@@ -7,7 +7,7 @@ describe('PushStateTree-rule', function () {
 
   cleanHistoryAPI();
 
-  before(function () {
+  beforeEach(function () {
     pst = new PushStateTree();
     rule = pst.createRule();
   });

@@ -15,7 +15,7 @@ export default function cleanHistoryAPI() {
     };
   });
 
-  beforeEach(function(){
+  afterEach(function(){
     // Reset the URI before begin the tests
     history.pushState(null, null, '/');
     for (var eventName in events)
