@@ -553,7 +553,6 @@ Object.assign(PushStateTree, {
     dispatch() {
       // Deferred trigger the actual browser location
       if (holdDispatch) {
-        holdingDispatch = true;
         return this;
       }
       holdingDispatch = false;
