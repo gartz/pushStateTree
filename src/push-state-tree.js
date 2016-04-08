@@ -243,35 +243,18 @@ function PushStateTree(options) {
       // If it's available from the cache return it
       if (cachedUri.url == url && cachedUri.basePath == basePath) return uri;
 
+      uri = this.getUri(url);
+
+      // Update cache
       cachedUri.url = url;
       cachedUri.basePath = basePath;
+      cachedUri.uri = uri;
 
-      // When out of the valid path, return empty string
-      if (!this.isPathValid) {
-        uri = '';
-        cachedUri.uri = uri;
-        return uri;
-      }
-
-      // If is a hash address, remove the
-      let hashPosition = url.indexOf('#');
-      if (hashPosition != -1) {
-        // Remove all begin # chars from the location when using hash
-        uri = url.substr(hashPosition).match(/.*#(.*)/)[1];
-      } else {
-        // Remove basepath
-        uri = url.slice(this.basePath.length);
-      }
-
-      // Remove the very first slash, do don't match it as URI
-      //TODO: make it optional
-      uri = uri.replace(/^[\/]+/, '');
-
+      // Expose DOM Attribute
       if (this.getAttribute('uri') !== uri) {
         this.setAttribute('uri', uri);
       }
 
-      cachedUri.uri = uri;
       return uri;
     },
     configurable: true
@@ -283,6 +266,20 @@ function PushStateTree(options) {
     get() {
       var uri = internalHistory.last().url;
       return !this.basePath || (uri).indexOf(this.basePath) === 0;
+    }
+  });
+
+  let disabled = false;
+  Object.defineProperty(this, 'disabled', {
+    get() {
+      return disabled;
+    },
+    set(value) {
+      value = value === true;
+      if (value != disabled) {
+
+      }
+      disabled = value;
     }
   });
 
@@ -302,12 +299,9 @@ function PushStateTree(options) {
 
   root.addEventListener(POP_STATE, () => {
 
-    this.internalHistoryId = internalHistory.push(convertToURI(location.href));
+    internalHistory.push(convertToURI(location.href));
 
-    var eventURI = this.uri;
     this.rulesDispatcher();
-
-    oldURI = eventURI;
 
     // If there is holding dispatch in the event, do it now
     if (holdingDispatch) {
@@ -315,28 +309,25 @@ function PushStateTree(options) {
     }
   });
 
-  var readOnhashchange = false;
-  var onhashchange = () => {
+  let readOnhashchange = false;
+  let onhashchange = () => {
     // Workaround IE8
     if (readOnhashchange) return;
     if (!this.isPathValid) return;
 
-    if (this.beautifyLocation && this[USE_PUSH_STATE] && location.href.indexOf('#') !== -1) {
-      // when using pushState, replace the browser location to avoid ugly URLs
-      let uri = (location.hash || '#').match(/.*#(.*)/)[1];
+    // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
+    if (this.beautifyLocation && this[USE_PUSH_STATE] && internalHistory.last().url.indexOf('#') !== -1) {
 
       // Execute after to pop_state again
-      this.replaceState(`${this.basePath}/${uri}`);
+      this.replaceState(`/${this.uri}`);
       return;
     }
 
     // Don't dispatch, because already have dispatched in popstate event
-    if (oldURI === this.uri) return;
+    let internalHistory = PushStateTree.getInternalHistory();
+    if (this.internalHistoryId == internalHistory.last().id) return;
 
-    var eventURI = this.uri;
     this.rulesDispatcher();
-
-    oldURI = eventURI;
 
     // If there is holding dispatch in the event, do it now
     if (holdingDispatch) {
@@ -365,15 +356,15 @@ function PushStateTree(options) {
     dispatchHashChange();
 
     if (!isIE()) return;
-
+    // Watch for URL changes in the IE
     setInterval(() => {
-      if (this.uri !== oldURI) {
+      let id = internalHistory.push(convertToURI(location.href));
+      if (this.internalHistoryId != id) {
         dispatchHashChange();
         return;
       }
       if (readOnhashchange) {
         readOnhashchange = false;
-        oldURI = this.uri;
         root.addEventListener(HASH_CHANGE, onhashchange);
       }
     }, 50);
@@ -382,7 +373,6 @@ function PushStateTree(options) {
   return this;
 }
 
-var oldURI = null;
 var eventsQueue = [];
 var holdingDispatch = false;
 var holdDispatch = false;
@@ -537,6 +527,29 @@ Object.assign(PushStateTree, {
       }
     },
 
+    getUri(url) {
+      let uri = '';
+      if (!this.isPathValid) {
+        return uri;
+      }
+
+      // If is a hash address, remove the
+      let hashPosition = url.indexOf('#');
+      if (hashPosition != -1) {
+        // Remove all begin # ch ars from the location when using hash
+        uri = url.substr(hashPosition).match(/.*#(.*)/)[1];
+      } else {
+        // Remove basepath
+        uri = url.slice(this.basePath.length);
+      }
+
+      // Remove the very first slash, do don't match it as URI
+      //TODO: make it optional
+      uri = uri.replace(/^[\/]+/, '');
+
+      return uri;
+    },
+
     dispatch() {
       // Deferred trigger the actual browser location
       if (holdDispatch) {
@@ -564,8 +577,6 @@ Object.assign(PushStateTree, {
 
     rulesDispatcher() {
       // Will dispatch the right events in each rule
-      /*jshint validthis:true */
-
       // Abort if the basePath isn't valid for this router
       if (!this.isPathValid) return;
 
@@ -581,8 +592,12 @@ Object.assign(PushStateTree, {
       // and let the main queue resolve it
       if (eventsQueue.length > 1) { return; }
 
+      let internalHistory = PushStateTree.getInternalHistory();
+      let internalLocation = internalHistory[this.internalHistoryId];
+      this.internalHistoryId = internalHistory.last().id;
+
       // Chain execute the evetsQueue
-      var last = oldURI;
+      var last = internalLocation ? this.getUri(internalLocation.url) : null;
       while (eventsQueue.length > 0) {
         last = eventsQueue[0].call(null, last);
         eventsQueue.shift();

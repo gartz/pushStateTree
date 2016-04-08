@@ -52,9 +52,10 @@ describe('PushStateTree beutifyLocation', function() {
 
     it('should remove the first slash from the URI in the regular URL', function(){
       let path = pst.basePath + 'test';
-      history.pushState(null, null, path);
-      expect(location.pathname).to.equal(path);
 
+      history.pushState(null, null, path);
+
+      expect(location.pathname).to.equal(path);
       expect(pst.uri).to.equal('test');
     });
 
@@ -102,17 +103,17 @@ describe('PushStateTree beutifyLocation', function() {
       expect(location.hash).to.equal('#' + url);
     });
 
-  });
+    it('should apply beautifyLocation when the basePath is fulfilled', function(){
+      history.pushState(null, null, pstBeautify.basePath);
 
-  it('should apply beautifyLocation when the basePath is fulfilled', function(){
-    history.pushState(null, null, '/test/');
-    var pst = new PushStateTree({
-      beautifyLocation: true,
-      basePath: '/test/'
+      let url = _.uniqueId('/unique_url_');
+
+      location.hash = url;
+      // Test without the initial slash
+      expect(pstBeautify.uri).to.equal(url.substr(1));
+      expect(location.hash).to.equal('');
     });
-    location.hash = '/abc';
-    expect(pst.uri).to.equal('abc');
-    expect(location.hash).to.equal('');
+
   });
 
   it('should no change if usePushState is false', function(){
