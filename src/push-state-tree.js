@@ -58,9 +58,8 @@ const OLD_MATCH = 'oldMatch';
 
 // Internal history keep tracking of all changes in the location history, it can be reset any
 let internalHistory;
-function InternalLocation(url, previous) {
-  this.url = url;
-  this.previous = previous;
+function InternalLocation(id, url, previous) {
+  Object.assign(this, {id, url, previous});
 }
 function InternalHistory() {
   if (!this) {
@@ -83,20 +82,31 @@ function InternalHistory() {
   }
 }
 InternalHistory.prototype.push = function (url) {
+  // Add a new url and return the InternalLocation id
+  // The url must not contain the origin, it's not useful since it can't change.
+
   let previous = this[this.length - 1];
 
   // Ignore if is the same URL
-  if (previous && url == previous.url) return;
+  if (previous && url == previous.url) return previous.id;
 
-  this[this.length] = new InternalLocation(url, previous);
+  let id = this.length;
+  this[id] = new InternalLocation(id, url, previous);
   this.length += 1;
 
   // Reset every 100 iterations in the history
   if (this.length % 100 == 0) InternalHistory();
+
+  return id;
 };
 InternalHistory.prototype.last = function () {
   return this[this.length - 1];
 };
+function convertToURI(url) {
+  // Remove unwanted data from url, but allow it run in internal browser url
+  let host = location.host && `//${location.host}`;
+  return url.substr(`${location.protocol}${host}`.length);
+}
 
 // Helpers
 function isInt(n) {
@@ -110,7 +120,9 @@ function proxyReadOnlyProperty(context, property, targetObject) {
   Object.defineProperty(context, property, {
     get() {
       return targetObject && targetObject[property];
-    }
+    },
+    // Must have set to ignore when try to set a new value and not throw error.
+    set() {}
   });
 }
 
@@ -164,29 +176,31 @@ function PushStateTree(options) {
   if (!PushStateTree.hasPushState) {
     proxyReadOnlyProperty(this, USE_PUSH_STATE, false);
   } else {
-    var usePushState = options[USE_PUSH_STATE];
+    let usePushState = true;
     Object.defineProperty(this, USE_PUSH_STATE, {
       get() {
         return usePushState;
       },
       set(val) {
-        usePushState = val !== false;
+        usePushState = PushStateTree.hasPushState ? val !== false : false;
       }
     });
+    this[USE_PUSH_STATE] = options[USE_PUSH_STATE];
   }
 
   // When enabled beautifyLocation will auto switch between hash to pushState when enabled
+  let beautifyLocation = true;
   Object.defineProperty(this, 'beautifyLocation', {
     get() {
-      return PushStateTree.prototype.beautifyLocation && usePushState;
+      return beautifyLocation;
     },
     set(value) {
-      PushStateTree.prototype.beautifyLocation = value === true;
+      beautifyLocation = value === true && this.usePushState;
     }
   });
-  this.beautifyLocation = options.beautifyLocation && this.usePushState;
+  this.beautifyLocation = options.beautifyLocation !== false;
 
-  let basePath;
+  let basePath = '';
   Object.defineProperty(this, 'basePath', {
     get() {
       return basePath;
@@ -217,43 +231,59 @@ function PushStateTree(options) {
 
   var cachedUri = {
     url: '',
-    uri: ''
+    uri: '',
+    basePath: ''
   };
   Object.defineProperty(this, 'uri', {
     get() {
-      let href = internalHistory.last().url;
-      if (cachedUri.url === href) return cachedUri.uri;
+      let url = internalHistory.last().url;
+      let basePath = this.basePath;
+      let uri = cachedUri.uri;
 
-      let uri;
-      let hashPosition = href.indexOf('#');
+      // If it's available from the cache return it
+      if (cachedUri.url == url && cachedUri.basePath == basePath) return uri;
+
+      cachedUri.url = url;
+      cachedUri.basePath = basePath;
+
+      // When out of the valid path, return empty string
+      if (!this.isPathValid) {
+        uri = '';
+        cachedUri.uri = uri;
+        return uri;
+      }
+
+      // If is a hash address, remove the
+      let hashPosition = url.indexOf('#');
       if (hashPosition != -1) {
         // Remove all begin # chars from the location when using hash
-        uri = href.substr(hashPosition).match(/^(#*)?(.*\/?)/)[2];
-
-        if (this.beautifyLocation && this.isPathValid && this[USE_PUSH_STATE]) {
-          // when using pushState, replace the browser location to avoid ugly URLs
-
-          this.replaceState(null, null, uri[0] === '/' ? uri : '/' + uri);
-        }
+        uri = url.substr(hashPosition).match(/.*#(.*)/)[1];
       } else {
-        uri = location.pathname + location.search;
-        if (this.isPathValid) {
-          uri = uri.slice(this.basePath.length);
-        }
+        // Remove basepath
+        uri = url.slice(this.basePath.length);
       }
 
       // Remove the very first slash, do don't match it as URI
+      //TODO: make it optional
       uri = uri.replace(/^[\/]+/, '');
 
       if (this.getAttribute('uri') !== uri) {
         this.setAttribute('uri', uri);
       }
 
-      cachedUri.url = href;
       cachedUri.uri = uri;
       return uri;
     },
     configurable: true
+  });
+
+  proxyReadOnlyProperty(this, 'length', internalHistory);
+
+  Object.defineProperty(this, 'isPathValid', {
+    get() {
+      var uri = internalHistory.last().url;
+      return !this.basePath || (uri).indexOf(this.basePath) === 0;
+    }
   });
 
   // Setup options
@@ -262,15 +292,6 @@ function PushStateTree(options) {
       this[prop] = options[prop];
     }
   }
-
-  proxyReadOnlyProperty(this, 'length', internalHistory);
-
-  Object.defineProperty(this, 'isPathValid', {
-    get() {
-      var uri = location.pathname + location.search;
-      return !this.basePath || (uri).indexOf(this.basePath) === 0;
-    }
-  });
 
   this.eventStack = {
     leave: [],
@@ -281,7 +302,7 @@ function PushStateTree(options) {
 
   root.addEventListener(POP_STATE, () => {
 
-    internalHistory.push(location.pathname);
+    this.internalHistoryId = internalHistory.push(convertToURI(location.href));
 
     var eventURI = this.uri;
     this.rulesDispatcher();
@@ -298,6 +319,16 @@ function PushStateTree(options) {
   var onhashchange = () => {
     // Workaround IE8
     if (readOnhashchange) return;
+    if (!this.isPathValid) return;
+
+    if (this.beautifyLocation && this[USE_PUSH_STATE] && location.href.indexOf('#') !== -1) {
+      // when using pushState, replace the browser location to avoid ugly URLs
+      let uri = (location.hash || '#').match(/.*#(.*)/)[1];
+
+      // Execute after to pop_state again
+      this.replaceState(`${this.basePath}/${uri}`);
+      return;
+    }
 
     // Don't dispatch, because already have dispatched in popstate event
     if (oldURI === this.uri) return;
@@ -321,8 +352,7 @@ function PushStateTree(options) {
 
   root.addEventListener(HASH_CHANGE, onhashchange);
 
-  // Uglify propourses
-  var dispatchHashChange = () => {
+  let dispatchHashChange = () => {
     root.dispatchEvent(new HashChangeEvent(HASH_CHANGE));
   };
 
@@ -379,14 +409,17 @@ Object.assign(PushStateTree, {
       InternalHistory();
     }
 
-    internalHistory.push(location.pathname);
+    internalHistory.push(convertToURI(location.href));
+  },
+  startGlobalListeners() {
+
+  },
+  stopGlobalListeners() {
+
   },
   prototype: {
     VERSION,
     hasPushState,
-
-    // Version ~0.11 beatifyLocation is enabled by default
-    beautifyLocation: true,
 
     createRule(options) {
       // Create a pushstreamtree-rule element from a literal object
@@ -705,20 +738,24 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
     // Wrap method
 
     // remove the method from arguments
-    var args = Array.prototype.slice.call(arguments);
+    let args = Array.prototype.slice.call(arguments);
+    let uri = args[0] || '';
+    if (typeof args[2] === 'string') {
+      uri = args[2];
+    }
 
     // if has a basePath translate the not relative paths to use the basePath
-    if (!isExternal(args[2])) {
+    if (!isExternal(uri)) {
       // When not external link, need to normalize the URI
 
-      if (isRelative(args[2])) {
+      if (isRelative(uri)) {
         // Relative to the uri
         var basePath = this.uri.match(/^([^?#]*)\//);
         basePath = basePath ? basePath[1] + '/' : '';
-        args[2] = basePath + args[2];
+        uri = basePath + uri;
       } else {
         // This isn't relative, will cleanup / and # from the begin and use the remain path
-        args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
+        uri = uri.match(/^([#/]*)?(.*)/)[2];
       }
 
       if (!this[USE_PUSH_STATE]) {
@@ -726,14 +763,17 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
         // Ignore basePath when using location.hash and resolve relative path and keep
         // the current location.pathname, some browsers history API might apply the new pathname
         // with the hash content if not explicit
-        args[2] = location.pathname + '#' + resolveRelativePath(args[2]);
+        uri = location.pathname + '#' + resolveRelativePath(uri);
       } else {
 
         // Add the basePath to your uri, not allowing to go by pushState outside the basePath
-        args[2] = this.basePath + args[2];
+        uri = this.basePath + uri;
       }
     }
 
+    // Ignore state and make the url be the current uri
+    args[0] = null;
+    args[2] = uri;
     history[method].apply(history, args);
     return this;
   };
@@ -751,13 +791,13 @@ if (typeof PST_NO_OLD_IE == 'undefined'
   && typeof PST_NO_SHIM == 'undefined'
   && !PushStateTree.hasPushState
 ) {
-  let lastTitle = null;
-  PushStateTree.prototype.pushState = function (state, title, uri) {
-    title = title || document.title;
-    uri = uri || '';
-    if (lastTitle !== null) {
-      document.title = lastTitle;
+  PushStateTree.prototype.pushState = function (uri) {
+    if (typeof arguments[2] === 'string') {
+      uri = arguments[2];
+    } else {
+      uri = uri || '';
     }
+
     this.avoidHashchangeHandler();
 
     // Replace hash url
@@ -778,18 +818,16 @@ if (typeof PST_NO_OLD_IE == 'undefined'
 
     location.hash = uri;
 
-    document.title = title;
-    lastTitle = title;
-
     return this;
   };
 
-  PushStateTree.prototype.replaceState = function (state, title, uri) {
-    title = title || document.title;
-    uri = uri || '';
-    if (lastTitle !== null) {
-      document.title = lastTitle;
+  PushStateTree.prototype.replaceState = function (uri) {
+    if (typeof arguments[2] === 'string') {
+      uri = arguments[2];
+    } else {
+      uri = uri || '';
     }
+
     this.avoidHashchangeHandler();
 
     // Replace the url
@@ -811,8 +849,6 @@ if (typeof PST_NO_OLD_IE == 'undefined'
     uri = '#' + uri;
 
     location.replace(uri);
-    document.title = title;
-    lastTitle = title;
 
     return this;
   };
