@@ -12,6 +12,10 @@ export default function cleanHistoryAPI() {
     }
   });
 
+  beforeEach(() => {
+    history.pushState(null, null, '/');
+  });
+
   afterEach(() => {
     // Reset the URI before begin the tests
     history.pushState(null, null, '/');
