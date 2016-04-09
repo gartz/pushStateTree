@@ -17,10 +17,6 @@ if (!root.history) {
 }
 const history = root.history;
 
-if (!root.CustomEvent) {
-  throw errorApiMessage('CustomEvent');
-}
-
 // If you have your own shim for ES3 and old IE browsers, you can remove all shim files from your package by adding a
 // webpack.DefinePlugin that translates `typeof PST_NO_SHIM === 'undefined'` to false, this will remove the section
 // in the minified version:
@@ -43,7 +39,6 @@ require('./es3.shim.js');
 
 // TODO: Use a PushStateTree.prototype.createEvent instead of shim native CustomEvents
 require('./customEvent.shim');
-require('./eventTarget.shim');
 
 // Constants for uglifiers
 const USE_PUSH_STATE = 'usePushState';
@@ -62,7 +57,7 @@ function InternalLocation(id, url, previous) {
   Object.assign(this, {id, url, previous});
 }
 function InternalHistory() {
-  if (!this) {
+  if (!(this instanceof InternalHistory)) {
     return internalHistory = new InternalHistory();
   }
 
@@ -373,7 +368,12 @@ Object.assign(PushStateTree, {
         // Workaround IE8
         if (readOnhashchange) return;
 
-        this.dispatch();
+        this.rulesDispatcher();
+
+        // If there is holding dispatch in the event, do it now
+        if (holdingDispatch) {
+          this.dispatch();
+        }
       };
 
       root.addEventListener(POP_STATE, modernBrowserListener);
@@ -387,7 +387,7 @@ Object.assign(PushStateTree, {
       root.addEventListener(HASH_CHANGE, onhashchange);
 
       let dispatchHashChange = () => {
-        root.dispatchEvent(new HashChangeEvent(HASH_CHANGE));
+        root.dispatchEvent(new root.HashChangeEvent(HASH_CHANGE));
       };
 
       // Modern browsers
@@ -573,7 +573,7 @@ Object.assign(PushStateTree, {
         return this;
       }
       holdingDispatch = false;
-      root.dispatchEvent(new Event(POP_STATE));
+      root.dispatchEvent(new root.Event(POP_STATE));
       return this;
     },
 
