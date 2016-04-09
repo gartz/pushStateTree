@@ -39,13 +39,6 @@
     ],
     "plugins": [
       [
-        "transform-runtime",
-        {
-          "polyfill": false,
-          "regenerator": true
-        }
-      ],
-      [
         "transform-strict-mode",
         {
           "strict": true
