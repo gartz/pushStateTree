@@ -372,17 +372,8 @@ Object.assign(PushStateTree, {
       let onhashchange = () => {
         // Workaround IE8
         if (readOnhashchange) return;
-        if (!this.isPathValid) return;
 
-        // Don't dispatch, because already have dispatched in popstate event
-        if (this.internalHistoryId == internalHistory.last().id) return;
-
-        this.rulesDispatcher();
-
-        // If there is holding dispatch in the event, do it now
-        if (holdingDispatch) {
-          this.dispatch();
-        }
+        this.dispatch();
       };
 
       root.addEventListener(POP_STATE, modernBrowserListener);
@@ -578,6 +569,7 @@ Object.assign(PushStateTree, {
     dispatch() {
       // Deferred trigger the actual browser location
       if (holdDispatch) {
+        holdingDispatch = true;
         return this;
       }
       holdingDispatch = false;
