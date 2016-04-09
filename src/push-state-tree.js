@@ -53,10 +53,9 @@ const OLD_MATCH = 'oldMatch';
 
 // Internal history keep tracking of all changes in the location history, it can be reset any
 let internalHistory;
-function InternalLocation(id, url, previous) {
+function InternalLocation(id, url) {
   this.id = id;
   this.url = url;
-  this.previous = previous;
 }
 function InternalHistory() {
   if (!(this instanceof InternalHistory)) {
@@ -88,7 +87,7 @@ InternalHistory.prototype.push = function (url) {
   if (previous && url == previous.url) return previous.id;
 
   let id = this.length;
-  this[id] = new InternalLocation(id, url, previous);
+  this[id] = new InternalLocation(id, url);
   this.length += 1;
 
   // Reset every 100 iterations in the history
