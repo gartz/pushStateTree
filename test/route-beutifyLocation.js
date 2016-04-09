@@ -95,7 +95,6 @@ describe('PushStateTree beutifyLocation', function() {
       location.hash = '/' + url;
 
       expect(pstBeautify.uri).to.equal(url);
-      debugger;
       expect(location.hash).to.equal('');
 
       expect(location.pathname).to.equal(pstBeautify.basePath + url);
