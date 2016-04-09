@@ -130,6 +130,31 @@ module.exports = function (config) {
             loader: 'istanbul-instrumenter'
           },
           ...webpackConfig.module.preLoaders
+        ],
+        loaders: [
+          {
+            test: /\.js$/,
+            exclude: /(node_modules)/,
+            loader: 'babel',
+            cacheDirectory: true,
+            query: {
+              presets: ['es2015'],
+              plugins: [
+                'transform-runtime',
+                [
+                  'transform-strict-mode',
+                  {
+                    strict: true
+                  }
+                ]
+              ]
+            }
+          },
+          {
+            test: /\.json$/,
+            exclude: /(node_modules)/,
+            loader: 'json'
+          }
         ]
       }),
       plugins: webpackConfig.plugins,

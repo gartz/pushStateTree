@@ -57,11 +57,6 @@ let config = {
         loader: 'babel',
         cacheDirectory: true
         // Babel configurations are located in the package.json file
-      },
-      {
-        test: /\.json$/,
-        exclude: /(node_modules)/,
-        loader: 'json'
       }
     ]
   },

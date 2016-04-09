@@ -300,7 +300,7 @@ var holdDispatch = false;
 
 let hasPushState = !!(history && history.pushState);
 
-Object.assign(PushStateTree, {
+let mixinPushStateTree = {
   VERSION,
   isInt,
   hasPushState,
@@ -757,7 +757,13 @@ Object.assign(PushStateTree, {
       }
     }
   }
-});
+};
+
+for (let property in mixinPushStateTree) {
+  if (mixinPushStateTree.hasOwnProperty(property)) {
+    PushStateTree[property] = mixinPushStateTree[property];
+  }
+}
 
 function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
 
