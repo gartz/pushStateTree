@@ -161,6 +161,13 @@ function PushStateTree(options) {
     return PushStateTree.apply(PushStateTree.createElement('pushstatetree-route'), arguments);
   }
 
+  this.eventStack = {
+    leave: [],
+    change: [],
+    enter: [],
+    match: []
+  };
+
   //TODO: emcapsulate this
   for (let property in PushStateTree.prototype) {
     if (typeof PushStateTree.prototype[property] === 'function') {
@@ -284,13 +291,6 @@ function PushStateTree(options) {
     }
   }
 
-  this.eventStack = {
-    leave: [],
-    change: [],
-    enter: [],
-    match: []
-  };
-
   return this;
 }
 
@@ -390,15 +390,11 @@ Object.assign(PushStateTree, {
         root.dispatchEvent(new root.HashChangeEvent(HASH_CHANGE));
       };
 
-      // Modern browsers
-      document.addEventListener('DOMContentLoaded', dispatchHashChange);
-      // Some IE browsers
-      root.addEventListener('readystatechange', dispatchHashChange);
-      // Almost all browsers
       let loadListener = () => {
         dispatchHashChange();
 
         if (!isIE()) return;
+
         // Watch for URL changes in the IE
         ieWatch = setInterval(() => {
           let id = internalHistory.push(convertToURI(location.href));
@@ -413,7 +409,16 @@ Object.assign(PushStateTree, {
         }, 50);
       };
 
-      root.addEventListener('load', loadListener);
+      if (document.readyState == 'complete') {
+        loadListener();
+      } else {
+        // Modern browsers
+        document.addEventListener('DOMContentLoaded', dispatchHashChange);
+        // Some IE browsers
+        root.addEventListener('readystatechange', dispatchHashChange);
+        // Almost all browsers
+        root.addEventListener('load', loadListener);
+      }
 
       return () => {
         // Method to stop watching
