@@ -6,7 +6,8 @@ describe('PushStateTree hash-navigation', () => {
   let pst;
   let urlTriggerMethods = [
     'navigate',
-    'replace'
+    'replace',
+    'assign'
   ];
 
   cleanHistoryAPI();

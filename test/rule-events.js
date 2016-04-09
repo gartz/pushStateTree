@@ -7,7 +7,8 @@ describe('PushStateTree-rule', function () {
   let rule;
   let urlTriggerMethods = [
     'navigate',
-    'replace'
+    'replace',
+    'assign'
   ];
 
   cleanHistoryAPI();

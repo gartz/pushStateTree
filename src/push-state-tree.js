@@ -767,7 +767,7 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
   // If not pushState or replaceState methods, execute it from history API
   if (method !== 'pushState' && method !== 'replaceState') {
     this[method] = function () {
-      history[method].apply(history, args);
+      history[method].apply(history, arguments);
       return this;
     };
     return;
