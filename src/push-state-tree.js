@@ -54,7 +54,9 @@ const OLD_MATCH = 'oldMatch';
 // Internal history keep tracking of all changes in the location history, it can be reset any
 let internalHistory;
 function InternalLocation(id, url, previous) {
-  Object.assign(this, {id, url, previous});
+  this.id = id;
+  this.url = url;
+  this.previous = previous;
 }
 function InternalHistory() {
   if (!(this instanceof InternalHistory)) {
