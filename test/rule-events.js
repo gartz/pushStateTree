@@ -49,6 +49,20 @@ describe('PushStateTree-rule', function () {
         spy.should.have.been.called.once;
       });
 
+      it('should update the uri when redirect internally', () => {
+        let url = _.uniqueId('url');
+        rule.rule = url;
+        var spy = chai.spy();
+        rule.addEventListener('enter', spy);
+
+        spy.should.not.have.been.called();
+
+        rule[triggerMethod](url);
+        rule.dispatch();
+
+        spy.should.have.been.called.once;
+      });
+
     });
 
   });
