@@ -160,11 +160,23 @@ var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Elemen
 
 function PushStateTree(options) {
   options = options || {};
-  options[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
 
   // Force the instance to always return a HTMLElement
   if (!(this instanceof elementPrototype)) {
     return PushStateTree.apply(PushStateTree.createElement('pushstatetree-route'), arguments);
+  }
+
+  //TODO: emcapsulate this
+  for (let property in PushStateTree.prototype) {
+    if (typeof PushStateTree.prototype[property] === 'function') {
+      // function wrapper, without bind the context
+      this[property] = PushStateTree.prototype[property].bind(this);
+      continue;
+    }
+    // Copy properties from prototype to the instance
+    if (typeof this[property] == 'undefined') {
+      this[property] = PushStateTree.prototype[property];
+    }
   }
 
   // Initialize internal history when creating a router instance
@@ -189,18 +201,17 @@ function PushStateTree(options) {
   }
 
   // When enabled beautifyLocation will auto switch between hash to pushState when enabled
-  let beautifyLocation = true;
+  let beautifyLocation = true && this[USE_PUSH_STATE];
   Object.defineProperty(this, 'beautifyLocation', {
     get() {
       return beautifyLocation;
     },
     set(value) {
-      beautifyLocation = value === true && this.usePushState;
+      beautifyLocation = this[USE_PUSH_STATE] && value === true;
     }
   });
-  this.beautifyLocation = options.beautifyLocation !== false;
 
-  let basePath = '';
+  let basePath;
   Object.defineProperty(this, 'basePath', {
     get() {
       return basePath;
@@ -213,21 +224,6 @@ function PushStateTree(options) {
     }
   });
   this.basePath = options.basePath;
-
-  //TODO: emcapsulate this
-  for (let property in PushStateTree.prototype) {
-    if (typeof PushStateTree.prototype[property] === 'function') {
-      // function wrapper, without bind the context
-      this[property] = function () {
-        return PushStateTree.prototype[property].apply(this, arguments);
-      };
-      continue;
-    }
-    // Copy properties from prototype to the instance
-    if (typeof this[property] == 'undefined') {
-      this[property] = PushStateTree.prototype[property];
-    }
-  }
 
   var cachedUri = {
     url: '',
@@ -265,11 +261,12 @@ function PushStateTree(options) {
   Object.defineProperty(this, 'isPathValid', {
     get() {
       var uri = internalHistory.last().url;
-      return !this.basePath || (uri).indexOf(this.basePath) === 0;
+      return !this.basePath || uri.indexOf(this.basePath) === 0;
     }
   });
 
-  let disabled = false;
+  let disabled = true;
+  let disableMethod;
   Object.defineProperty(this, 'disabled', {
     get() {
       return disabled;
@@ -277,14 +274,16 @@ function PushStateTree(options) {
     set(value) {
       value = value === true;
       if (value != disabled) {
-
+        disabled = value;
+        if (disabled) disableMethod();
+        else disableMethod = this.startGlobalListeners();
       }
-      disabled = value;
     }
   });
+  this.disabled = options.disabled === true;
 
-  // Setup options
-  for (var prop in options) {
+  // Setup options, must be executed after define all properties
+  for (let prop in options) {
     if (options.hasOwnProperty(prop)) {
       this[prop] = options[prop];
     }
@@ -296,79 +295,6 @@ function PushStateTree(options) {
     enter: [],
     match: []
   };
-
-  root.addEventListener(POP_STATE, () => {
-
-    internalHistory.push(convertToURI(location.href));
-
-    this.rulesDispatcher();
-
-    // If there is holding dispatch in the event, do it now
-    if (holdingDispatch) {
-      this.dispatch();
-    }
-  });
-
-  let readOnhashchange = false;
-  let onhashchange = () => {
-    // Workaround IE8
-    if (readOnhashchange) return;
-    if (!this.isPathValid) return;
-
-    // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
-    if (this.beautifyLocation && this[USE_PUSH_STATE] && internalHistory.last().url.indexOf('#') !== -1) {
-
-      // Execute after to pop_state again
-      this.replaceState(`/${this.uri}`);
-      return;
-    }
-
-    // Don't dispatch, because already have dispatched in popstate event
-    let internalHistory = PushStateTree.getInternalHistory();
-    if (this.internalHistoryId == internalHistory.last().id) return;
-
-    this.rulesDispatcher();
-
-    // If there is holding dispatch in the event, do it now
-    if (holdingDispatch) {
-      this.dispatch();
-    }
-  };
-
-  this.avoidHashchangeHandler = () => {
-    // Avoid triggering hashchange event
-    root.removeEventListener(HASH_CHANGE, onhashchange);
-    readOnhashchange = true;
-  };
-
-  root.addEventListener(HASH_CHANGE, onhashchange);
-
-  let dispatchHashChange = () => {
-    root.dispatchEvent(new HashChangeEvent(HASH_CHANGE));
-  };
-
-  // Modern browsers
-  document.addEventListener('DOMContentLoaded', dispatchHashChange);
-  // Some IE browsers
-  root.addEventListener('readystatechange', dispatchHashChange);
-  // Almost all browsers
-  root.addEventListener('load', () => {
-    dispatchHashChange();
-
-    if (!isIE()) return;
-    // Watch for URL changes in the IE
-    setInterval(() => {
-      let id = internalHistory.push(convertToURI(location.href));
-      if (this.internalHistoryId != id) {
-        dispatchHashChange();
-        return;
-      }
-      if (readOnhashchange) {
-        readOnhashchange = false;
-        root.addEventListener(HASH_CHANGE, onhashchange);
-      }
-    }, 50);
-  });
 
   return this;
 }
@@ -401,15 +327,114 @@ Object.assign(PushStateTree, {
 
     internalHistory.push(convertToURI(location.href));
   },
-  startGlobalListeners() {
 
-  },
-  stopGlobalListeners() {
-
-  },
   prototype: {
     VERSION,
     hasPushState,
+
+    startGlobalListeners() {
+      // Start the browser global listeners and return a method to stop listening to them
+
+      let internalHistory = PushStateTree.getInternalHistory();
+      internalHistory.push(convertToURI(location.href));
+
+      let builtfyLocation = () => {
+        // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
+        if (this.beautifyLocation
+          && this[USE_PUSH_STATE]
+          && internalHistory.last().url.indexOf('#') !== -1
+        ) {
+
+          // Execute after to pop_state again
+          this.replaceState(this.uri);
+          this.dispatch();
+          return true;
+        }
+      };
+
+
+      let modernBrowserListener = () => {
+        internalHistory.push(convertToURI(location.href));
+        if (!this.isPathValid) return;
+
+        if (builtfyLocation()) return;
+
+        this.rulesDispatcher();
+
+        // If there is holding dispatch in the event, do it now
+        if (holdingDispatch) {
+          this.dispatch();
+        }
+      };
+      let ieWatch;
+
+      let readOnhashchange = false;
+      let onhashchange = () => {
+        // Workaround IE8
+        if (readOnhashchange) return;
+        if (!this.isPathValid) return;
+
+        // Don't dispatch, because already have dispatched in popstate event
+        if (this.internalHistoryId == internalHistory.last().id) return;
+
+        this.rulesDispatcher();
+
+        // If there is holding dispatch in the event, do it now
+        if (holdingDispatch) {
+          this.dispatch();
+        }
+      };
+
+      root.addEventListener(POP_STATE, modernBrowserListener);
+
+      this.avoidHashchangeHandler = () => {
+        // Avoid triggering hashchange event
+        root.removeEventListener(HASH_CHANGE, onhashchange);
+        readOnhashchange = true;
+      };
+
+      root.addEventListener(HASH_CHANGE, onhashchange);
+
+      let dispatchHashChange = () => {
+        root.dispatchEvent(new HashChangeEvent(HASH_CHANGE));
+      };
+
+      // Modern browsers
+      document.addEventListener('DOMContentLoaded', dispatchHashChange);
+      // Some IE browsers
+      root.addEventListener('readystatechange', dispatchHashChange);
+      // Almost all browsers
+      let loadListener = () => {
+        dispatchHashChange();
+
+        if (!isIE()) return;
+        // Watch for URL changes in the IE
+        ieWatch = setInterval(() => {
+          let id = internalHistory.push(convertToURI(location.href));
+          if (this.internalHistoryId != id) {
+            dispatchHashChange();
+            return;
+          }
+          if (readOnhashchange) {
+            readOnhashchange = false;
+            root.addEventListener(HASH_CHANGE, onhashchange);
+          }
+        }, 50);
+      };
+
+      root.addEventListener('load', loadListener);
+
+      return () => {
+        // Method to stop watching
+        root.removeEventListener(POP_STATE, modernBrowserListener);
+        this.avoidHashchangeHandler = Function();
+        document.removeEventListener('DOMContentLoaded', dispatchHashChange);
+        root.removeEventListener('readystatechange', dispatchHashChange);
+        root.removeEventListener('load', loadListener);
+        root.removeEventListener(HASH_CHANGE, onhashchange);
+        if (ieWatch) clearInterval(ieWatch);
+      };
+    },
 
     createRule(options) {
       // Create a pushstreamtree-rule element from a literal object
@@ -539,7 +564,7 @@ Object.assign(PushStateTree, {
         // Remove all begin # ch ars from the location when using hash
         uri = url.substr(hashPosition).match(/.*#(.*)/)[1];
       } else {
-        // Remove basepath
+        // Remove basePath
         uri = url.slice(this.basePath.length);
       }
 
@@ -562,7 +587,7 @@ Object.assign(PushStateTree, {
 
     assign(url) {
       // Shortcut for pushState and dispatch methods
-      return this.pushState(null, null, url).dispatch();
+      return this.pushState(url).dispatch();
     },
 
     replace(url) {
@@ -597,7 +622,7 @@ Object.assign(PushStateTree, {
 
       // Chain execute the evetsQueue
       var last = internalLocation ? this.getUri(internalLocation.url) : null;
-      while (eventsQueue.length > 0) {
+      while (eventsQueue.length) {
         last = eventsQueue[0].call(null, last);
         eventsQueue.shift();
       }

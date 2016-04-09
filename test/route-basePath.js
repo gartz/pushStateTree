@@ -48,13 +48,22 @@ describe('PushStateTree Router basePath', function () {
     })).basePath).to.equal('/folder/file.ext?param=value');
   });
 
-  it('should use the non relative root as basePath if not specified', function () {
-    history.pushState(null, null, '/abc/123/');
+  it('should convert empty to slash', () => {
     var pst = new PushStateTree();
     expect(pst.basePath).to.equal('/');
   });
 
-  it('should not share the basePath between route instances', function () {
+  it('should detect when ends without slash', () => {
+    var pst = new PushStateTree({
+      basePath: 'file.html'
+    });
+    history.pushState(null, null, '/file.html/test');
+    //TODO: history.pushState is not dispatching popstate event
+    pst.dispatch();
+    expect(pst.uri).to.equal('test');
+  });
+
+  it('should not share the property between route instances', () => {
     var pst1 = new PushStateTree({
       basePath: '1/'
     });

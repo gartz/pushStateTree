@@ -43,6 +43,7 @@ describe('PushStateTree beutifyLocation', function() {
     beforeEach(() => {
       // Go to a path where the PST have beautify location disabled
       history.pushState(null, null, pst.basePath);
+      pst.dispatch();
     });
 
     it('should prioritise the hash to provide the URI', () => {
@@ -54,6 +55,8 @@ describe('PushStateTree beutifyLocation', function() {
       let path = pst.basePath + 'test';
 
       history.pushState(null, null, path);
+      //TODO: history pushState is not dispatching popstate
+      pst.dispatch();
 
       expect(location.pathname).to.equal(path);
       expect(pst.uri).to.equal('test');
@@ -77,6 +80,7 @@ describe('PushStateTree beutifyLocation', function() {
       // Reset URL
       let url = _.uniqueId('unique_url_');
       history.pushState(null, null, pstBeautify.basePath + url);
+      pstBeautify.dispatch();
 
       // Test without the /
       expect(pstBeautify.uri).to.equal(url);
@@ -84,11 +88,14 @@ describe('PushStateTree beutifyLocation', function() {
 
     it('should redirect from the location.hash', () => {
       // Reset URL
+      history.pushState(null, null, pstBeautify.basePath);
+
       let url = _.uniqueId('unique_url_');
 
       location.hash = '/' + url;
 
       expect(pstBeautify.uri).to.equal(url);
+      debugger;
       expect(location.hash).to.equal('');
 
       expect(location.pathname).to.equal(pstBeautify.basePath + url);
@@ -103,7 +110,7 @@ describe('PushStateTree beutifyLocation', function() {
       expect(location.hash).to.equal('#' + url);
     });
 
-    it('should apply beautifyLocation when the basePath is fulfilled', function(){
+    it('should redirect from hash to url when basePath is fulfilled', function(){
       history.pushState(null, null, pstBeautify.basePath);
 
       let url = _.uniqueId('/unique_url_');
@@ -111,19 +118,18 @@ describe('PushStateTree beutifyLocation', function() {
       location.hash = url;
       // Test without the initial slash
       expect(pstBeautify.uri).to.equal(url.substr(1));
+
       expect(location.hash).to.equal('');
     });
 
   });
 
   it('should no change if usePushState is false', function(){
-    var pst = new PushStateTree({
+    let pst = new PushStateTree({
       beautifyLocation: true,
       usePushState: false
     });
-    pst.navigate('test2');
-    expect(pst.uri).to.equal('test2');
-    expect(location.hash).to.equal('#test2');
+    expect(pst.beautifyLocation).to.be.false;
   });
 
 });

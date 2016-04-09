@@ -1,30 +1,22 @@
-export default function cleanHistoryAPI() {
-  var events = {
-    popstate: [],
-    hashchange: [],
-    DOMContentLoaded: [],
-    readystatechange: [],
-    load: []
-  };
+const PushStateTree = require('../../src/push-state-tree');
 
-  before(function(){
-    var addEventListener = window.addEventListener;
-    window.addEventListener = function(name, callback){
-      events[name].push(callback);
-      addEventListener.apply(window, arguments);
-    };
+export default function cleanHistoryAPI() {
+
+  let enabledInstances = [];
+  
+  before(() => {
+    let cache = PushStateTree.prototype.startGlobalListeners;
+    PushStateTree.prototype.startGlobalListeners = function () {
+      enabledInstances.push(this);
+      return cache.apply(this, arguments);
+    }
   });
 
-  afterEach(function(){
+  afterEach(() => {
     // Reset the URI before begin the tests
     history.pushState(null, null, '/');
-    for (var eventName in events)
-      if (events.hasOwnProperty(eventName)) {
-        var eventList = events[eventName];
-        while (eventList.length) {
-          var callback = eventList.pop();
-          window.removeEventListener(eventName, callback);
-        }
-      }
+    while (enabledInstances.length) {
+      enabledInstances.shift().disabled = true;
+    }
   });
 }
