@@ -67,9 +67,6 @@ function InternalHistory() {
     this.startFrom = internalHistory.length - 1;
     let savedLocation = internalHistory[this.startFrom];
 
-    // Break the link to previous to allow GC collect unused values
-    if (savedLocation) savedLocation.previous = undefined;
-
     this[this.startFrom] = savedLocation;
     this.length = internalHistory.length;
   } else {
