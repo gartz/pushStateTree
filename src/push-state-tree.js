@@ -832,11 +832,19 @@ if (typeof PST_NO_OLD_IE == 'undefined'
   && typeof PST_NO_SHIM == 'undefined'
   && !PushStateTree.hasPushState
 ) {
-  PushStateTree.prototype.pushState = function (uri) {
-    if (typeof arguments[2] === 'string') {
-      uri = arguments[2];
-    } else {
-      uri = uri || '';
+  PushStateTree.prototype.pushState = function (uri, ignored, deprecatedUri) {
+    // Does a shim for pushState when history API doesn't support pushState,
+    // from version 0.15.x it ignores state and title definition since they are
+    // never used in any production project so far and seems to make harder to
+    // developers to use the method since they need to add 2 useless arguments
+    // before the really necessary one.
+    // However it keeps compatible with any implementation that already add the
+    // url as third argument.
+    if (typeof deprecatedUri == 'string') {
+      uri = deprecatedUri;
+    }
+    if (typeof uri != 'string') {
+      uri = '';
     }
 
     this.avoidHashchangeHandler();
@@ -862,11 +870,20 @@ if (typeof PST_NO_OLD_IE == 'undefined'
     return this;
   };
 
-  PushStateTree.prototype.replaceState = function (uri) {
-    if (typeof arguments[2] === 'string') {
-      uri = arguments[2];
-    } else {
-      uri = uri || '';
+  PushStateTree.prototype.replaceState = function (uri, ignored, deprecatedUri) {
+    // Does a shim for replaceState when history API doesn't support pushState,
+    // from version 0.15.x it ignores state and title definition since they are
+    // never used in any production project so far and seems to make harder to
+    // developers to use the method since they need to add 2 useless arguments
+    // before the really necessary one.
+    // However it keeps compatible with any implementation that already add the
+    // url as third argument.
+
+    if (typeof deprecatedUri == 'string') {
+      uri = deprecatedUri;
+    }
+    if (typeof uri != 'string') {
+      uri = '';
     }
 
     this.avoidHashchangeHandler();
