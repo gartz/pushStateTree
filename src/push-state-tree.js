@@ -165,8 +165,7 @@ function PushStateTree(options) {
     enter: [],
     match: []
   };
-
-  //TODO: emcapsulate this
+  
   for (let property in PushStateTree.prototype) {
     if (typeof PushStateTree.prototype[property] === 'function') {
       // function wrapper, without bind the context
