@@ -41,7 +41,6 @@ require('./es3.shim.js');
 require('./customEvent.shim');
 
 // Constants for uglifiers
-const USE_PUSH_STATE = 'usePushState';
 const HASH_CHANGE = 'hashchange';
 const POP_STATE = 'popstate';
 const LEAVE = 'leave';
@@ -165,7 +164,7 @@ function PushStateTree(options) {
     enter: [],
     match: []
   };
-  
+
   for (let property in PushStateTree.prototype) {
     if (typeof PushStateTree.prototype[property] === 'function') {
       // function wrapper, without bind the context
@@ -185,10 +184,10 @@ function PushStateTree(options) {
   // pushState it will always be false. and use hash navigation enforced.
   // use backend non permanent redirect when old browsers are detected in the request.
   if (!PushStateTree.hasPushState) {
-    proxyReadOnlyProperty(this, USE_PUSH_STATE, false);
+    proxyReadOnlyProperty(this, 'usePushState', false);
   } else {
     let usePushState = true;
-    Object.defineProperty(this, USE_PUSH_STATE, {
+    Object.defineProperty(this, 'usePushState', {
       get() {
         return usePushState;
       },
@@ -196,17 +195,18 @@ function PushStateTree(options) {
         usePushState = PushStateTree.hasPushState ? val !== false : false;
       }
     });
-    this[USE_PUSH_STATE] = options[USE_PUSH_STATE];
+    this.usePushState = options.usePushState;
   }
 
-  // When enabled beautifyLocation will auto switch between hash to pushState when enabled
-  let beautifyLocation = true && this[USE_PUSH_STATE];
+  // When enabled beautifyLocation will replace the location using history.replaceState
+  // to remove the hash from the URL
+  let beautifyLocation = true && this.usePushState;
   Object.defineProperty(this, 'beautifyLocation', {
     get() {
       return beautifyLocation;
     },
     set(value) {
-      beautifyLocation = this[USE_PUSH_STATE] && value === true;
+      beautifyLocation = this.usePushState && value === true;
     }
   });
 
@@ -333,7 +333,7 @@ let mixinPushStateTree = {
       let builtfyLocation = () => {
         // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
         if (this.beautifyLocation
-          && this[USE_PUSH_STATE]
+          && this.usePushState
           && internalHistory.last().url.indexOf('#') !== -1
         ) {
 
@@ -797,7 +797,7 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
         uri = uri.match(/^([#/]*)?(.*)/)[2];
       }
 
-      if (!this[USE_PUSH_STATE]) {
+      if (!this.usePushState) {
 
         // Ignore basePath when using location.hash and resolve relative path and keep
         // the current location.pathname, some browsers history API might apply the new pathname
