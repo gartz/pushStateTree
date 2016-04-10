@@ -17,7 +17,7 @@ describe('PushStateTree hash-navigation should', function() {
     PushStateTree.hasPushState = cacheVal;
   });
 
-  it('force hash navigation if browser not support pushState', () => {
+  it(`force hash navigation if browser doesn't support pushState`, () => {
     var pst = new PushStateTree({
       usePushState: true
     });
