@@ -298,6 +298,7 @@ var holdDispatch = false;
 let hasPushState = !!(history && history.pushState);
 
 let mixinPushStateTree = {
+  // VERSION is defined in the webpack build, it is replaced by package.version
   VERSION,
   isInt,
   hasPushState,
@@ -321,6 +322,7 @@ let mixinPushStateTree = {
   },
 
   prototype: {
+    // VERSION is defined in the webpack build, it is replaced by package.version
     VERSION,
     hasPushState,
 
