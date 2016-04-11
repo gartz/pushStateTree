@@ -43,7 +43,6 @@ describe('PushStateTree createRule', function() {
         expect(rule[key]).to.be.equal(values[key]);
       });
     });
-    
-  });
 
+  });
 });

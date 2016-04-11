@@ -216,9 +216,9 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
 ## Development
 
  - Clone the project `git clone https://github.com/cloudhead/node-static.git`
- - Use npm to install dev dependencies `npm install --dev`
+ - Use npm to install dev dependencies `npm install`
  - Use npm to start a dev server `npm start`
- - Open you browser in the URL: [http://localhost:3000/](http://localhost:3000/)
+ - Open you browser in the URL: [http://localhost:8080/](http://localhost:8080/)
 
 ## Goals
 
@@ -239,6 +239,11 @@ You can look the [**demo page**](http://gartz.github.io/pushStateTree/).
  - **[Regex101](https://regex101.com/#javascript)** helps create, test and explain how to read the regular expression
  - **[RegExr](http://regexr.com/)** like Regex101 but only focus on testing
  - **[RegExper](http://www.regexper.com/)** create graphical flow of the regular expression explain
+
+## History
+
+ - **0.15.0**
+   - Removed `location.origin` shim, use `webrouter-location-shim` if you need a polyfill for your project.
 
 ## License
 Copyright (c) 2014 Gabriel Reitz Giannattasio
