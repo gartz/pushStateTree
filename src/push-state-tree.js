@@ -47,7 +47,8 @@ const CHANGE = 'change';
 const MATCH = 'match';
 const OLD_MATCH = 'oldMatch';
 
-// Internal history keep tracking of all changes in the location history, it can be reset any
+// Internal history keep tracking of all changes in the location history
+//TODO: implement proposal #47 and remove this
 let internalHistory;
 function InternalLocation(id, url) {
   this.id = id;
@@ -115,6 +116,46 @@ function proxyReadOnlyProperty(context, property, targetObject) {
   });
 }
 
+function proxyLikePrototype(context, prototypeContext) {
+  // It proxy the method, or property to the prototype
+
+  for (let property in prototypeContext) {
+    if (typeof prototypeContext[property] === 'function') {
+      // function wrapper, it doesn't use binding because it needs to execute the current version of the property in the
+      // prototype to conserve the prototype chain resource
+      context[property] = function () {
+        return prototypeContext[property].apply(this, arguments);
+      };
+      continue;
+    }
+    // Proxy prototype properties to the instance, but if they're redefined in the instance, use the instance definition
+    // without change the prototype property value
+    if (typeof context[property] == 'undefined') {
+      let propertyValue;
+      Object.defineProperty(context, property, {
+        get() {
+          if (typeof propertyValue == 'undefined') {
+            return prototypeContext[property];
+          }
+          return propertyValue;
+        },
+        set(value) {
+          propertyValue = value;
+        }
+      });
+    }
+  }
+}
+
+function objectMixinProperties(destineObject, sourceObject) {
+  // Simple version of Object.assign
+  for (let property in sourceObject) {
+    if (sourceObject.hasOwnProperty(property)) {
+      destineObject[property] = sourceObject[property];
+    }
+  }
+}
+
 function isExternal(url) {
   // Check if a URL is external
   return (/^[a-z0-9]+:\/\//i).test(url);
@@ -162,17 +203,7 @@ function PushStateTree(options) {
     match: []
   };
 
-  for (let property in PushStateTree.prototype) {
-    if (typeof PushStateTree.prototype[property] === 'function') {
-      // function wrapper, without bind the context
-      this[property] = PushStateTree.prototype[property].bind(this);
-      continue;
-    }
-    // Copy properties from prototype to the instance
-    if (typeof this[property] == 'undefined') {
-      this[property] = PushStateTree.prototype[property];
-    }
-  }
+  proxyLikePrototype(this, PushStateTree.prototype);
 
   // Initialize internal history when creating a router instance
   PushStateTree.initInternalHistory();
@@ -252,6 +283,7 @@ function PushStateTree(options) {
     configurable: true
   });
 
+  //TODO: Make it represent internal baseURI changes from proposal #47
   proxyReadOnlyProperty(this, 'length', internalHistory);
 
   Object.defineProperty(this, 'isPathValid', {
@@ -279,11 +311,7 @@ function PushStateTree(options) {
   this.disabled = options.disabled === true;
 
   // Setup options, must be executed after define all properties
-  for (let prop in options) {
-    if (options.hasOwnProperty(prop)) {
-      this[prop] = options[prop];
-    }
-  }
+  objectMixinProperties(this, options);
 
   return this;
 }
@@ -294,7 +322,7 @@ var holdDispatch = false;
 
 let hasPushState = !!(history && history.pushState);
 
-let mixinPushStateTree = {
+objectMixinProperties(PushStateTree, {
   // VERSION is defined in the webpack build, it is replaced by package.version
   VERSION,
   isInt,
@@ -476,11 +504,6 @@ let mixinPushStateTree = {
         }
       });
 
-      for (var prop in options)
-        if (options.hasOwnProperty(prop)) {
-          rule[prop] = options[prop];
-        }
-
       // Match is always a array, so you can test for match[n] anytime
       let match = [];
       Object.defineProperty(rule, MATCH, {
@@ -501,6 +524,8 @@ let mixinPushStateTree = {
           oldMatch = val instanceof Array ? val : [];
         }
       });
+
+      objectMixinProperties(this, options);
 
       rule[MATCH] = [];
       rule[OLD_MATCH] = [];
@@ -753,13 +778,7 @@ let mixinPushStateTree = {
       }
     }
   }
-};
-
-for (let property in mixinPushStateTree) {
-  if (mixinPushStateTree.hasOwnProperty(property)) {
-    PushStateTree[property] = mixinPushStateTree[property];
-  }
-}
+});
 
 function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
 
