@@ -504,6 +504,12 @@ objectMixinProperties(PushStateTree, {
         }
       });
 
+      // Setup options, must be executed after define all properties in rules
+      if (typeof options == 'object') {
+        objectMixinProperties(rule, options);
+      }
+
+
       // Match is always a array, so you can test for match[n] anytime
       let match = [];
       Object.defineProperty(rule, MATCH, {
@@ -524,8 +530,6 @@ objectMixinProperties(PushStateTree, {
           oldMatch = val instanceof Array ? val : [];
         }
       });
-
-      objectMixinProperties(this, options);
 
       rule[MATCH] = [];
       rule[OLD_MATCH] = [];
