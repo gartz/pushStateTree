@@ -43,38 +43,4 @@ describe('PushStateTree createRule', function() {
     });
 
   });
-
-  describe('when parent-group is specified', function() {
-    var expectedParentGroup = 2;
-    var pst;
-    var rule;
-    beforeEach(function() {
-      pst = new PushStateTree();
-      rule = pst.createRule({
-        id: 'parent',
-        parentGroup: expectedParentGroup,
-        rule: /[^/]+/
-      });
-    });
-
-    it('should bind "get" with parentGroup property', function() {
-      expect(rule.parentGroup).to.equal(expectedParentGroup);
-    });
-
-    it('should bind "set" with parentGroup property', function() {
-      rule.parentGroup = 3;
-      expect(rule.parentGroup).to.equal(3);
-    });
-
-    it('should remove the "parent-group" if an int is not set', function() {
-      chai.spy.on(rule, 'removeAttribute');
-      rule.parentGroup = '';
-      expect(rule.removeAttribute).to.have.been.called.with('parent-group');
-    });
-
-    it('should return null if theres no parent-group', function() {
-      rule.parentGroup = null;
-      expect(rule.parentGroup).to.be.null;
-    });
-  });
 });
