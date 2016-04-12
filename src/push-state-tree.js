@@ -269,16 +269,28 @@ function PushStateTree(options) {
     },
     set(value) {
       if (holdDispatch || value == path || typeof path != 'string') return;
+      let wasBasePathValid = this.isPathValid;
 
-      path = value;
-      length++;
+      if (this.dispatchEvent(new root.CustomEvent('path'))) {
+        path = value;
+        length++;
 
-      // Expose path DOM Attribute
-      if (this.getAttribute('path') != path) {
-        this.setAttribute('path', path);
+        // Expose path DOM Attribute
+        if (this.getAttribute('path') != path) {
+          this.setAttribute('path', path);
+        }
+
+        if (this.isPathValid) {
+          this.dispatchEvent(new root.CustomEvent('match'));
+          if (!wasBasePathValid) {
+            this.dispatchEvent(new root.CustomEvent('enter'));
+          } else {
+            this.dispatchEvent(new root.CustomEvent('change'));
+          }
+        } else if (wasBasePathValid) {
+          this.dispatchEvent(new root.CustomEvent('leave'));
+        }
       }
-
-      //TODO: Dispatch update event
     }
   });
   this.disabled = options.disabled === true;
