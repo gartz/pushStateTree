@@ -370,7 +370,7 @@ objectMixinProperties(PushStateTree, {
       let loadListener = () => {
         browserListener();
 
-        if (!isIE()) return;
+        if (!isIE() || isIE() > 8) return;
 
         // Watch for URL changes in the IE
         ieWatch = setInterval(browserListener, 50);
