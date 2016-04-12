@@ -281,14 +281,14 @@ function PushStateTree(options) {
         }
 
         if (this.isPathValid) {
-          this.dispatchEvent(new root.CustomEvent('match'));
+          this.dispatchEvent(new root.CustomEvent(MATCH));
           if (!wasBasePathValid) {
-            this.dispatchEvent(new root.CustomEvent('enter'));
+            this.dispatchEvent(new root.CustomEvent(ENTER));
           } else {
-            this.dispatchEvent(new root.CustomEvent('change'));
+            this.dispatchEvent(new root.CustomEvent(CHANGE));
           }
         } else if (wasBasePathValid) {
-          this.dispatchEvent(new root.CustomEvent('leave'));
+          this.dispatchEvent(new root.CustomEvent(LEAVE));
         }
       }
     }
@@ -350,11 +350,12 @@ objectMixinProperties(PushStateTree, {
         // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
         if (this.beautifyLocation
           && this.usePushState
-          && this.path.indexOf('#') !== -1
+          && this.isPathValid
+          && this.path.indexOf('#') != -1
         ) {
 
           // Execute after to pop_state again
-          this.replaceState(this.uri);
+          this.replace(this.uri);
           return true;
         }
       };

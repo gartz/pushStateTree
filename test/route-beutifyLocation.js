@@ -55,7 +55,6 @@ describe('PushStateTree beutifyLocation', function() {
       let path = pst.basePath + 'test';
 
       history.pushState(null, null, path);
-      //TODO: history pushState is not dispatching popstate
       pst.dispatch();
 
       expect(location.pathname).to.equal(path);
@@ -63,7 +62,8 @@ describe('PushStateTree beutifyLocation', function() {
     });
 
     it('should remove the first slash from the URI in the location.hash', () => {
-      location.hash = '/test';
+      history.pushState(null, null, location.href + '#/test');
+      pst.dispatch();
 
       expect(location.hash).to.equal('#/test');
       expect(pst.uri).to.equal('test');
@@ -89,12 +89,15 @@ describe('PushStateTree beutifyLocation', function() {
     it('should redirect from the location.hash', () => {
       // Reset URL
       history.pushState(null, null, pstBeautify.basePath);
+      pstBeautify.dispatch();
 
       let url = _.uniqueId('unique_url_');
 
       location.hash = '/' + url;
+      pstBeautify.dispatch();
 
       expect(pstBeautify.uri).to.equal(url);
+
       expect(location.hash).to.equal('');
 
       expect(location.pathname).to.equal(pstBeautify.basePath + url);
@@ -105,19 +108,17 @@ describe('PushStateTree beutifyLocation', function() {
 
       let url = _.uniqueId('/unique_url_');
       location.hash = url;
+
       expect(pst.uri).to.equal('');
       expect(location.hash).to.equal('#' + url);
     });
 
     it('should redirect from hash to url when basePath is fulfilled', () => {
-      history.pushState(null, null, pstBeautify.basePath);
-
       let url = _.uniqueId('/unique_url_');
-
       location.hash = url;
+
       // Test without the initial slash
       expect(pstBeautify.uri).to.equal(url.substr(1));
-
       expect(location.hash).to.equal('');
     });
 
