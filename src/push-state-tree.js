@@ -260,7 +260,10 @@ function PushStateTree(options) {
       return path;
     },
     set(value) {
-      if (holdDispatch || value == path || typeof path != 'string') return;
+      if (typeof path != 'string') {
+        throw new Error('path musb be a string.');
+      }
+      if (holdDispatch || value == path) return;
       let wasBasePathValid = this.isPathValid;
 
       if (this.dispatchEvent(new root.CustomEvent('path'))) {
