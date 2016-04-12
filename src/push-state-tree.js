@@ -47,55 +47,17 @@ const CHANGE = 'change';
 const MATCH = 'match';
 const OLD_MATCH = 'oldMatch';
 
-// Internal history keep tracking of all changes in the location history
-//TODO: implement proposal #47 and remove this
-let internalHistory;
-function InternalLocation(id, url) {
-  this.id = id;
-  this.url = url;
-}
-function InternalHistory() {
-  if (!(this instanceof InternalHistory)) {
-    return internalHistory = new InternalHistory();
-  }
-
-  // It's a object like an array, but it can start from a certain point to allow memory cleanup
-  if (internalHistory && internalHistory.length) {
-    this.startFrom = internalHistory.length - 1;
-    let savedLocation = internalHistory[this.startFrom];
-
-    this[this.startFrom] = savedLocation;
-    this.length = internalHistory.length;
-  } else {
-    this.startFrom = 0;
-    this.length = 0;
-  }
-}
-InternalHistory.prototype.push = function (url) {
-  // Add a new url and return the InternalLocation id
-  // The url must not contain the origin, it's not useful since it can't change.
-
-  let previous = this[this.length - 1];
-
-  // Ignore if is the same URL
-  if (previous && url == previous.url) return previous.id;
-
-  let id = this.length;
-  this[id] = new InternalLocation(id, url);
-  this.length += 1;
-
-  // Reset every 100 iterations in the history
-  if (this.length % 100 == 0) InternalHistory();
-
-  return id;
-};
-InternalHistory.prototype.last = function () {
-  return this[this.length - 1];
-};
 function convertToURI(url) {
-  // Remove unwanted data from url, but allow it run in internal browser url
-  let host = location.host && `//${location.host}`;
-  return url.substr(`${location.protocol}${host}`.length);
+  // Remove unwanted data from url
+  // if it's a browser it will remove the location.origin
+  // else it will ignore first occurrence of / and return the rest
+  if (root.location && url == root.location.href) {
+    let host = root.location.host && `//${root.location.host}`;
+    return url.substr(`${location.protocol}${host}`.length);
+  } else {
+    let match = url[MATCH](/([^\/]*)(\/+)?(.*)/);
+    return match[2] ? match[3] : match[1];
+  }
 }
 
 // Helpers
@@ -123,7 +85,7 @@ function proxyLikePrototype(context, prototypeContext) {
     if (typeof prototypeContext[property] === 'function') {
       // function wrapper, it doesn't use binding because it needs to execute the current version of the property in the
       // prototype to conserve the prototype chain resource
-      context[property] = function () {
+      context[property] = function proxyMethodToPrototype() {
         return prototypeContext[property].apply(this, arguments);
       };
       continue;
@@ -205,9 +167,6 @@ function PushStateTree(options) {
 
   proxyLikePrototype(this, PushStateTree.prototype);
 
-  // Initialize internal history when creating a router instance
-  PushStateTree.initInternalHistory();
-
   // Allow switch between pushState or hash navigation modes, in browser that doesn't support
   // pushState it will always be false. and use hash navigation enforced.
   // use backend non permanent redirect when old browsers are detected in the request.
@@ -252,14 +211,20 @@ function PushStateTree(options) {
   });
   this.basePath = options.basePath;
 
-  var cachedUri = {
+  let cachedUri = {
     url: '',
     uri: '',
     basePath: ''
   };
+  let oldURI = '';
+  Object.defineProperty(this, 'oldURI', {
+    get() {
+      return oldURI;
+    }
+  });
   Object.defineProperty(this, 'uri', {
     get() {
-      let url = internalHistory.last().url;
+      let url = this.path;
       let basePath = this.basePath;
       let uri = cachedUri.uri;
 
@@ -268,31 +233,57 @@ function PushStateTree(options) {
 
       uri = this.getUri(url);
 
+      // Update oldURI
+      oldURI = cachedUri.uri;
       // Update cache
       cachedUri.url = url;
       cachedUri.basePath = basePath;
       cachedUri.uri = uri;
 
       // Expose DOM Attribute
-      if (this.getAttribute('uri') !== uri) {
+      if (this.getAttribute('uri') != uri) {
         this.setAttribute('uri', uri);
       }
 
       return uri;
-    },
-    configurable: true
-  });
-
-  //TODO: Make it represent internal baseURI changes from proposal #47
-  proxyReadOnlyProperty(this, 'length', internalHistory);
-
-  Object.defineProperty(this, 'isPathValid', {
-    get() {
-      var uri = internalHistory.last().url;
-      return !this.basePath || uri.indexOf(this.basePath) === 0;
     }
   });
 
+  let length = 0;
+  Object.defineProperty(this, 'length', {
+    get() {
+      return length;
+    }
+  });
+
+  let path = '';
+  Object.defineProperty(this, 'isPathValid', {
+    get() {
+      return !basePath || path.indexOf(basePath) === 0;
+    }
+  });
+
+  Object.defineProperty(this, 'path', {
+    get() {
+      return path;
+    },
+    set(value) {
+      if (holdDispatch || value == path || typeof path != 'string') return;
+
+      path = value;
+      length++;
+
+      // Expose path DOM Attribute
+      if (this.getAttribute('path') != path) {
+        this.setAttribute('path', path);
+      }
+
+      //TODO: Dispatch update event
+    }
+  });
+  this.disabled = options.disabled === true;
+
+  // Disabled must be the last thing before options, because it will start the listeners
   let disabled = true;
   let disableMethod;
   Object.defineProperty(this, 'disabled', {
@@ -320,30 +311,19 @@ var eventsQueue = [];
 var holdingDispatch = false;
 var holdDispatch = false;
 
-let hasPushState = !!(history && history.pushState);
+let hasPushState = !!(root.history && root.history.pushState);
 
 objectMixinProperties(PushStateTree, {
   // VERSION is defined in the webpack build, it is replaced by package.version
   VERSION,
   isInt,
   hasPushState,
-  getInternalHistory() {
-    return internalHistory;
-  },
   createElement(name) {
     // When document is available, use it to create and return a HTMLElement
     if (typeof document !== 'undefined') {
       return document.createElement(name);
     }
     throw new Error('PushStateTree requires HTMLElement support from window to work.')
-  },
-  initInternalHistory() {
-    if (!internalHistory) {
-      // Init internal history
-      InternalHistory();
-    }
-
-    internalHistory.push(convertToURI(location.href));
   },
 
   prototype: {
@@ -354,104 +334,68 @@ objectMixinProperties(PushStateTree, {
     startGlobalListeners() {
       // Start the browser global listeners and return a method to stop listening to them
 
-      let internalHistory = PushStateTree.getInternalHistory();
-      internalHistory.push(convertToURI(location.href));
-
       let builtfyLocation = () => {
         // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
         if (this.beautifyLocation
           && this.usePushState
-          && internalHistory.last().url.indexOf('#') !== -1
+          && this.path.indexOf('#') !== -1
         ) {
 
           // Execute after to pop_state again
           this.replaceState(this.uri);
-          this.dispatch();
           return true;
         }
       };
 
+      let dispatchListener = event => {
+        this.path = convertToURI(location.href);
 
-      let modernBrowserListener = () => {
-        internalHistory.push(convertToURI(location.href));
-        if (!this.isPathValid) return;
+        if (builtfyLocation()) {
+          event.preventDefault();
+        }
+      };
+      this.addEventListener('dispatch', dispatchListener);
 
-        if (builtfyLocation()) return;
-
-        this.rulesDispatcher();
-
-        // If there is holding dispatch in the event, do it now
-        if (holdingDispatch) {
+      let browserListener = () => {
+        if (this.path != convertToURI(location.href)) {
           this.dispatch();
         }
       };
+
+
+      root.addEventListener(POP_STATE, browserListener);
+      root.addEventListener(HASH_CHANGE, browserListener);
+
       let ieWatch;
-
-      let readOnhashchange = false;
-      let onhashchange = () => {
-        // Workaround IE8
-        if (readOnhashchange) return;
-
-        this.rulesDispatcher();
-
-        // If there is holding dispatch in the event, do it now
-        if (holdingDispatch) {
-          this.dispatch();
-        }
-      };
-
-      root.addEventListener(POP_STATE, modernBrowserListener);
-
-      this.avoidHashchangeHandler = () => {
-        // Avoid triggering hashchange event
-        root.removeEventListener(HASH_CHANGE, onhashchange);
-        readOnhashchange = true;
-      };
-
-      root.addEventListener(HASH_CHANGE, onhashchange);
-
-      let dispatchHashChange = () => {
-        root.dispatchEvent(new root.HashChangeEvent(HASH_CHANGE));
-      };
-
       let loadListener = () => {
-        dispatchHashChange();
+        browserListener();
 
         if (!isIE()) return;
 
         // Watch for URL changes in the IE
-        ieWatch = setInterval(() => {
-          let id = internalHistory.push(convertToURI(location.href));
-          if (this.internalHistoryId != id) {
-            dispatchHashChange();
-            return;
-          }
-          if (readOnhashchange) {
-            readOnhashchange = false;
-            root.addEventListener(HASH_CHANGE, onhashchange);
-          }
-        }, 50);
+        ieWatch = setInterval(browserListener, 50);
       };
 
+      // If the DOM is ready when running the PST, execute loadListeners and ignore others
       if (document.readyState == 'complete') {
         loadListener();
       } else {
         // Modern browsers
-        document.addEventListener('DOMContentLoaded', dispatchHashChange);
+        document.addEventListener('DOMContentLoaded', browserListener);
         // Some IE browsers
-        root.addEventListener('readystatechange', dispatchHashChange);
+        root.addEventListener('readystatechange', browserListener);
         // Almost all browsers
         root.addEventListener('load', loadListener);
       }
 
       return () => {
         // Method to stop watching
-        root.removeEventListener(POP_STATE, modernBrowserListener);
-        this.avoidHashchangeHandler = Function();
-        document.removeEventListener('DOMContentLoaded', dispatchHashChange);
-        root.removeEventListener('readystatechange', dispatchHashChange);
+        this.removeEventListener('dispatch', dispatchListener);
+        root.removeEventListener(POP_STATE, browserListener);
+        document.removeEventListener('DOMContentLoaded', browserListener);
+        root.removeEventListener('readystatechange', browserListener);
+        root.removeEventListener(HASH_CHANGE, browserListener);
         root.removeEventListener('load', loadListener);
-        root.removeEventListener(HASH_CHANGE, onhashchange);
         if (ieWatch) clearInterval(ieWatch);
       };
     },
@@ -477,7 +421,7 @@ objectMixinProperties(PushStateTree, {
             if (val === ruleRegex.toString()) return;
 
             // Slice the pattern from the attribute
-            var slicedPattern = (val + '').match(/^\/(.+)\/([gmi]*)|(.*)/);
+            var slicedPattern = (val + '')[MATCH](/^\/(.+)\/([gmi]*)|(.*)/);
 
             ruleRegex = new RegExp(slicedPattern[1] || slicedPattern[3], slicedPattern[2]);
           }
@@ -544,7 +488,7 @@ objectMixinProperties(PushStateTree, {
         'pushState',
         'replaceState'
       ].forEach(function (methodName) {
-        rule[methodName] = function () {
+        rule[methodName] = function proxyRuleMethodToRouter() {
           this.parentElement[methodName].apply(this.parentElement, arguments);
         };
       });
@@ -583,7 +527,7 @@ objectMixinProperties(PushStateTree, {
       let hashPosition = url.indexOf('#');
       if (hashPosition != -1) {
         // Remove all begin # ch ars from the location when using hash
-        uri = url.substr(hashPosition).match(/.*#(.*)/)[1];
+        uri = url.substr(hashPosition)[MATCH](/.*#(.*)/)[1];
       } else {
         // Remove basePath
         uri = url.slice(this.basePath.length);
@@ -603,7 +547,17 @@ objectMixinProperties(PushStateTree, {
         return this;
       }
       holdingDispatch = false;
-      root.dispatchEvent(new root.Event(POP_STATE));
+
+      // If preventDefault in the dispatch event, it will not run rulesDispatcher()
+      if (this.dispatchEvent(new root.CustomEvent('dispatch'))) {
+        this.rulesDispatcher();
+      }
+
+      // If there is holding dispatch in the event, do it now
+      if (holdingDispatch) {
+        this.dispatch();
+      }
+
       return this;
     },
 
@@ -623,8 +577,6 @@ objectMixinProperties(PushStateTree, {
 
     rulesDispatcher() {
       // Will dispatch the right events in each rule
-      // Abort if the basePath isn't valid for this router
-      if (!this.isPathValid) return;
 
       function runner(uri, oldURI) {
         Array.prototype.slice.call(this.children || this.childNodes)
@@ -632,18 +584,15 @@ objectMixinProperties(PushStateTree, {
         return uri;
       }
 
-      eventsQueue.push(runner.bind(this, this.uri));
+      // if the basePath is not available in the path, make all rules leave
+      eventsQueue.push(runner.bind(this, this.isPathValid ? this.uri : ''));
 
       // Is there already a queue been executed, so just add the runner
       // and let the main queue resolve it
       if (eventsQueue.length > 1) { return; }
 
-      let internalHistory = PushStateTree.getInternalHistory();
-      let internalLocation = internalHistory[this.internalHistoryId];
-      this.internalHistoryId = internalHistory.last().id;
-
-      // Chain execute the evetsQueue
-      var last = internalLocation ? this.getUri(internalLocation.url) : null;
+      // Chain execute the eventsQueue
+      let last = this.oldURI;
       while (eventsQueue.length) {
         last = eventsQueue[0].call(null, last);
         eventsQueue.shift();
@@ -676,48 +625,37 @@ objectMixinProperties(PushStateTree, {
 
       function recursiveDispatcher(uri, oldURI, ruleElement) {
         if (!ruleElement.rule) return;
+        const parentElement = ruleElement.parentElement;
 
-        var useURI = uri;
-        var useOldURI = oldURI;
-        var parentElement;
+        let useURI = uri || '';
 
-        if (typeof ruleElement.parentGroup === 'number') {
-          useURI = '';
-          parentElement = ruleElement.parentElement;
-
-          if (parentElement[MATCH].length > ruleElement.parentGroup)
-            useURI = parentElement[MATCH][ruleElement.parentGroup] || '';
-
-          useOldURI = '';
-          if (parentElement[OLD_MATCH].length > ruleElement.parentGroup)
-            useOldURI = parentElement[OLD_MATCH][ruleElement.parentGroup] || '';
+        // Check if have a parent rule
+        if (parentElement[MATCH]) {
+          // New rule for 0.15.0 the default parentGroup is 0 from parent rule
+          let parentGroup = isInt(ruleElement.parentGroup) ? +ruleElement.parentGroup : 0;
+          useURI = parentElement[MATCH][parentGroup] || '';
         }
 
-        ruleElement[MATCH] = useURI[MATCH](ruleElement.rule);
-        if (typeof useOldURI === 'string') {
-          ruleElement[OLD_MATCH] = useOldURI[MATCH](ruleElement.rule);
-        } else {
-          ruleElement[OLD_MATCH] = [];
-        }
-        var match = ruleElement[MATCH];
-        var oldMatch = ruleElement[OLD_MATCH];
-        var children = Array.prototype.slice.call(ruleElement.children);
+        const match = useURI[MATCH](ruleElement.rule) || [];
+        const oldMatch = ruleElement[MATCH] || [];
+        ruleElement[MATCH] = match;
+        ruleElement[OLD_MATCH] = oldMatch;
+
+        const children = Array.prototype.slice.call(ruleElement.children);
 
         function PushStateTreeEvent(name, params) {
-
           params = params || {};
           params.detail = params.detail || {};
           params.detail[MATCH] = match || [];
           params.detail[OLD_MATCH] = oldMatch || [];
           params.cancelable = true;
-
-          var event = new root.CustomEvent(name, params);
-          return event;
+          return new root.CustomEvent(name, params);
         }
 
+        const isNewURI = match.length && !oldMatch.length || match[0] != oldMatch[0];
         // Not match or leave?
         if (match.length === 0) {
-          if (oldMatch.length === 0 || ruleElement.routerURI !== oldURI) {
+          if (oldMatch.length === 0 || !isNewURI) {
             // just not match...
             return;
           }
@@ -735,47 +673,42 @@ objectMixinProperties(PushStateTree, {
           return;
         }
 
-        // dispatch the match event
-        this.eventStack[MATCH].push({
-          element: ruleElement,
-          events: [
-            new PushStateTreeEvent(MATCH)
-          ]
-        });
-
-        var isNewURI = ruleElement.routerURI !== oldURI;
-        ruleElement.routerURI = this.uri;
-        ruleElement.uri = match[0];
-        ruleElement.setAttribute('uri', match[0]);
-
-        if (oldMatch.length === 0 || isNewURI) {
-          // stack dispatch enter event
-          this.eventStack[ENTER].push({
+        // From version 0.15.0 match only dispatch if URL has changed
+        if (isNewURI) {
+          // dispatch the match event
+          this.eventStack[MATCH].push({
             element: ruleElement,
             events: [
-              new PushStateTreeEvent(UPDATE, {
-                detail: {type: ENTER}
-              }),
-              new PushStateTreeEvent(ENTER)
+              new PushStateTreeEvent(MATCH)
             ]
           });
 
-          children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
-          return;
-        }
+          ruleElement.uri = match[0];
+          ruleElement.setAttribute('uri', match[0]);
 
-        // if has something changed, dispatch the change event
-        if (match[0] !== oldMatch[0]) {
-          // stack dispatch enter event
-          this.eventStack[CHANGE].push({
-            element: ruleElement,
-            events: [
-              new PushStateTreeEvent(UPDATE, {
-                detail: {type: CHANGE}
-              }),
-              new PushStateTreeEvent(CHANGE)
-            ]
-          });
+          if (oldMatch.length === 0) {
+            // stack dispatch enter event
+            this.eventStack[ENTER].push({
+              element: ruleElement,
+              events: [
+                new PushStateTreeEvent(UPDATE, {
+                  detail: {type: ENTER}
+                }),
+                new PushStateTreeEvent(ENTER)
+              ]
+            });
+          } else {
+            // stack dispatch enter event
+            this.eventStack[CHANGE].push({
+              element: ruleElement,
+              events: [
+                new PushStateTreeEvent(UPDATE, {
+                  detail: {type: CHANGE}
+                }),
+                new PushStateTreeEvent(CHANGE)
+              ]
+            });
+          }
         }
 
         children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
@@ -811,12 +744,12 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
 
       if (isRelative(uri)) {
         // Relative to the uri
-        var basePath = this.uri.match(/^([^?#]*)\//);
+        var basePath = this.uri[MATCH](/^([^?#]*)\//);
         basePath = basePath ? basePath[1] + '/' : '';
         uri = basePath + uri;
       } else {
         // This isn't relative, will cleanup / and # from the begin and use the remain path
-        uri = uri.match(/^([#/]*)?(.*)/)[2];
+        uri = uri[MATCH](/^([#/]*)?(.*)/)[2];
       }
 
       if (!this.usePushState) {
@@ -835,6 +768,8 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
     // Ignore state and make the url be the current uri
     args[0] = null;
     args[2] = uri;
+
+    this.path = this.basePath + uri;
     history[method].apply(history, args);
     return this;
   };
@@ -851,6 +786,7 @@ for (var method in history) {
 if (typeof PST_NO_OLD_IE == 'undefined'
   && typeof PST_NO_SHIM == 'undefined'
   && !PushStateTree.hasPushState
+  && root.location
 ) {
   PushStateTree.prototype.pushState = function (uri, ignored, deprecatedUri) {
     // Does a shim for pushState when history API doesn't support pushState,
@@ -866,8 +802,6 @@ if (typeof PST_NO_OLD_IE == 'undefined'
     if (typeof uri != 'string') {
       uri = '';
     }
-
-    this.avoidHashchangeHandler();
 
     // Replace hash url
     if (isExternal(uri)) {
@@ -885,7 +819,18 @@ if (typeof PST_NO_OLD_IE == 'undefined'
       uri = resolveRelativePath(uri);
     }
 
-    location.hash = uri;
+    // Include the basePath in the uri, if is already in the current router
+    // basePath, it will apply the assign without refresh, but if the basePath
+    // is different, it will refresh the browser to work in the current router
+    // basePath.
+    // The behavior is the same in browsers that support pushState, however they
+    // don't refresh when switching between basePath of different routers
+    this.path = this.basePath + uri;
+    if (location.pathname == this.basePath) {
+      location.hash = uri;
+    } else {
+      root.location.assign(uri);
+    }
 
     return this;
   };
@@ -906,8 +851,6 @@ if (typeof PST_NO_OLD_IE == 'undefined'
       uri = '';
     }
 
-    this.avoidHashchangeHandler();
-
     // Replace the url
     if (isExternal(uri)) {
       throw new Error('Invalid url replace.');
@@ -926,7 +869,14 @@ if (typeof PST_NO_OLD_IE == 'undefined'
     // Always use hash navigation
     uri = '#' + uri;
 
-    location.replace(uri);
+    // Include the basePath in the uri, if is already in the current router
+    // basePath, it will apply the replace without refresh, but if the basePath
+    // is different, it will refresh the browser to work in the current router
+    // basePath.
+    // The behavior is the same in browsers that support pushState, however they
+    // don't refresh when switching between basePath of different routers
+    this.path = this.basePath + uri;
+    root.location.replace(uri);
 
     return this;
   };
