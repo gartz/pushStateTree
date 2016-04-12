@@ -311,9 +311,9 @@ function PushStateTree(options) {
   return this;
 }
 
-var eventsQueue = [];
-var holdingDispatch = false;
-var holdDispatch = false;
+const eventsQueue = [];
+let holdingDispatch = false;
+let holdDispatch = false;
 
 let hasPushState = !!(history && history.pushState);
 
@@ -366,7 +366,6 @@ objectMixinProperties(PushStateTree, {
           this.dispatch();
         }
       };
-
 
       root.addEventListener(POP_STATE, browserListener);
       root.addEventListener(HASH_CHANGE, browserListener);
