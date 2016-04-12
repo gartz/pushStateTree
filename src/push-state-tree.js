@@ -6,15 +6,7 @@ if (!root.document) {
   throw errorApiMessage('document');
 }
 const document = root.document;
-
-if (!root.location) {
-  throw errorApiMessage('location');
-}
 const location = root.location;
-
-if (!root.history) {
-  throw errorApiMessage('history');
-}
 const history = root.history;
 
 // If you have your own shim for ES3 and old IE browsers, you can remove all shim files from your package by adding a
@@ -51,8 +43,8 @@ function convertToURI(url) {
   // Remove unwanted data from url
   // if it's a browser it will remove the location.origin
   // else it will ignore first occurrence of / and return the rest
-  if (root.location && url == root.location.href) {
-    let host = root.location.host && `//${root.location.host}`;
+  if (location && url == location.href) {
+    let host = location.host && `//${location.host}`;
     return url.substr(`${location.protocol}${host}`.length);
   } else {
     let match = url[MATCH](/([^\/]*)(\/+)?(.*)/);
@@ -323,7 +315,7 @@ var eventsQueue = [];
 var holdingDispatch = false;
 var holdDispatch = false;
 
-let hasPushState = !!(root.history && root.history.pushState);
+let hasPushState = !!(history && history.pushState);
 
 objectMixinProperties(PushStateTree, {
   // VERSION is defined in the webpack build, it is replaced by package.version
@@ -799,7 +791,7 @@ for (var method in history) {
 if (typeof PST_NO_OLD_IE == 'undefined'
   && typeof PST_NO_SHIM == 'undefined'
   && !PushStateTree.hasPushState
-  && root.location
+  && location
 ) {
   PushStateTree.prototype.pushState = function (uri, ignored, deprecatedUri) {
     // Does a shim for pushState when history API doesn't support pushState,
@@ -842,7 +834,7 @@ if (typeof PST_NO_OLD_IE == 'undefined'
     if (location.pathname == this.basePath) {
       location.hash = uri;
     } else {
-      root.location.assign(uri);
+      location.assign(uri);
     }
 
     return this;
@@ -889,7 +881,7 @@ if (typeof PST_NO_OLD_IE == 'undefined'
     // The behavior is the same in browsers that support pushState, however they
     // don't refresh when switching between basePath of different routers
     this.path = this.basePath + uri;
-    root.location.replace(uri);
+    location.replace(uri);
 
     return this;
   };
