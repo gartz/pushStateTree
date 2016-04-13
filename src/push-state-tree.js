@@ -261,7 +261,7 @@ function PushStateTree(options) {
     },
     set(value) {
       if (typeof path != 'string') {
-        throw new Error('path musb be a string.');
+        throw new TypeError('path must be a string.');
       }
       if (holdDispatch || value == path) return;
       let wasBasePathValid = this.isPathValid;
