@@ -341,7 +341,7 @@ objectMixinProperties(PushStateTree, {
     startGlobalListeners() {
       // Start the browser global listeners and return a method to stop listening to them
 
-      let builtfyLocation = () => {
+      let beautifyLocation = () => {
         // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
         if (this.beautifyLocation
           && this.usePushState
@@ -358,7 +358,7 @@ objectMixinProperties(PushStateTree, {
       let dispatchListener = event => {
         this.path = convertToURI(location.href);
 
-        if (builtfyLocation()) {
+        if (beautifyLocation()) {
           event.preventDefault();
         }
       };
