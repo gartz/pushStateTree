@@ -1,6 +1,9 @@
 const PushStateTree = require('../src/push-state-tree');
+import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
 describe('PushStateTree properties', () => {
+
+  cleanHistoryAPI();
 
   describe('when parent-group is specified', () => {
     var expectedParentGroup = 2;

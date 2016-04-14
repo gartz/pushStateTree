@@ -1,157 +1,120 @@
 const PushStateTree = require('../src/push-state-tree');
 import cleanHistoryAPI from './helper/cleanHistoryAPI';
+const _ = require('underscore');
 
-describe('PushStateTree hash-navigation should', function() {
+describe('PushStateTree hash-navigation', () => {
+  let pst;
+  let urlTriggerMethods = [
+    'navigate',
+    'replace',
+    'assign'
+  ];
 
   cleanHistoryAPI();
 
-  it('allow hash navigation when push-state is disabled', function(){
-    var pst = new PushStateTree({
+  beforeEach(() => {
+    pst = new PushStateTree({
+      beautifyLocation: false,
       usePushState: false
     });
+  });
+
+  it('should allow hash navigation when push-state is disabled', () => {
     expect(pst.usePushState).to.be.false;
   });
 
-  it('detect the hash address', function(){
-    var pst = new PushStateTree({
-      usePushState: false
+  urlTriggerMethods.forEach(triggerMethod => {
+    describe(`using ${triggerMethod}`, () => {
+
+      it('should detect the hash address', () => {
+        location.hash = '#test';
+        expect(pst.uri).to.equal('test');
+      });
+
+      it('should increment the instance length when using navigate method', () => {
+        var currentLength = pst.length;
+        pst[triggerMethod](_.uniqueId('url'));
+        expect(pst.length).to.be.above(currentLength);
+      });
+
+      it('should change the hash address when pushstate is disabled', () => {
+        pst[triggerMethod]('test2');
+        expect(pst.uri).to.equal('test2');
+        expect(location.hash).to.equal('#test2');
+      });
+
+      it('should go to the current folder when use ./ in the command', () => {
+        location.hash = '#folder/file';
+        expect(pst.uri).to.equal('folder/file');
+        pst[triggerMethod]('./');
+        expect(pst.uri).to.equal('folder/');
+        expect(location.hash).to.equal('#folder/');
+      });
+
+      it('should go to the parent folder when use ../ in the command from a file', () => {
+        location.hash = '#folder/file';
+        expect(pst.uri).to.equal('folder/file');
+        pst[triggerMethod]('../');
+        expect(pst.uri).to.equal('');
+        expect(location.hash).to.equal('');
+      });
+
+      it('should go to the parent folder when use ../ in the command from sub-folder', () => {
+        location.hash = '#folder/sub-folder/';
+        expect(pst.uri).to.equal('folder/sub-folder/');
+        pst[triggerMethod]('../');
+        expect(pst.uri).to.equal('folder/');
+        expect(location.hash).to.equal('#folder/');
+      });
+
+      it('should ignore ./ if is already in the root folder', () => {
+        location.hash = '#/';
+        expect(pst.uri).to.equal('');
+        pst[triggerMethod]('./');
+        expect(pst.uri).to.equal('');
+        expect(location.hash).to.equal('');
+      });
+
+      it('should ignore ../ if is already in the root folder', () => {
+        location.hash = '#/';
+        expect(pst.uri).to.equal('');
+        pst[triggerMethod]('../');
+        expect(pst.uri).to.equal('');
+        expect(location.hash).to.equal('');
+      });
+
+      it('should stop in the root folder when there is more parent folder commands them possible', () => {
+        location.hash = '#folder/';
+        expect(pst.uri).to.equal('folder/');
+        pst[triggerMethod]('../../');
+        expect(pst.uri).to.equal('');
+        expect(location.hash).to.equal('');
+      });
+
+      it('should go to the root folder when use / in the command from file', () => {
+        location.hash = '#folder/file';
+        expect(pst.uri).to.equal('folder/file');
+        pst[triggerMethod]('/');
+        expect(pst.uri).to.equal('');
+        expect(location.hash).to.equal('');
+      });
+
+      it('should go to the root folder when use / in the command from a folder', () => {
+        location.hash = '#folder/';
+        expect(pst.uri).to.equal('folder/');
+        pst[triggerMethod]('/');
+        expect(pst.uri).to.equal('');
+        expect(location.hash).to.equal('');
+      });
+
+      it('should go to the root folder when use / in the command from a sub-folder', () => {
+        location.hash = '#folder/sub-folder/';
+        expect(pst.uri).to.equal('folder/sub-folder/');
+        pst[triggerMethod]('/');
+        expect(pst.uri).to.equal('');
+        expect(location.hash).to.equal('');
+      }); 
+      
     });
-    location.hash = '#test';
-    expect(pst.uri).to.equal('test');
-  });
-
-  it('increment the history length when using navigate method', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-    var currentLength = history.length;
-    pst.navigate('test');
-    expect(history.length).to.equal(currentLength + 1);
-  });
-
-  it('not increment the history length when using replace method', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-    var currentLength = history.length;
-    pst.replace('test');
-    expect(history.length).to.equal(currentLength);
-  });
-
-  it('change the hash address when pushstate is disabled', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-    pst.navigate('test2');
-    expect(pst.uri).to.equal('test2');
-    expect(location.hash).to.equal('#test2');
-  });
-
-  it('go to the current folder when use ./ in the command', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#folder/file';
-    expect(pst.uri).to.equal('folder/file');
-    pst.navigate('./');
-    expect(pst.uri).to.equal('folder/');
-    expect(location.hash).to.equal('#folder/');
-  });
-
-  it('go to the parent folder when use ../ in the command from a file', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#folder/file';
-    expect(pst.uri).to.equal('folder/file');
-    pst.navigate('../');
-    expect(pst.uri).to.equal('');
-    expect(location.hash).to.equal('');
-  });
-
-  it('go to the parent folder when use ../ in the command from sub-folder', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#folder/sub-folder/';
-    expect(pst.uri).to.equal('folder/sub-folder/');
-    pst.navigate('../');
-    expect(pst.uri).to.equal('folder/');
-    expect(location.hash).to.equal('#folder/');
-  });
-
-  it('ignore ./ if is already in the root folder', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#/';
-    expect(pst.uri).to.equal('');
-    pst.navigate('./');
-    expect(pst.uri).to.equal('');
-    expect(location.hash).to.equal('');
-  });
-
-  it('ignore ../ if is already in the root folder', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#/';
-    expect(pst.uri).to.equal('');
-    pst.navigate('../');
-    expect(pst.uri).to.equal('');
-    expect(location.hash).to.equal('');
-  });
-
-  it('stop in the root folder when there is more parent folder commands them possible', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#folder/';
-    expect(pst.uri).to.equal('folder/');
-    pst.navigate('../../');
-    expect(pst.uri).to.equal('');
-    expect(location.hash).to.equal('');
-  });
-
-  it('go to the root folder when use / in the command from file', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#folder/file';
-    expect(pst.uri).to.equal('folder/file');
-    pst.navigate('/');
-    expect(pst.uri).to.equal('');
-    expect(location.hash).to.equal('');
-  });
-
-  it('go to the root folder when use / in the command from a folder', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#folder/';
-    expect(pst.uri).to.equal('folder/');
-    pst.navigate('/');
-    expect(pst.uri).to.equal('');
-    expect(location.hash).to.equal('');
-  });
-
-  it('go to the root folder when use / in the command from a sub-folder', function(){
-    var pst = new PushStateTree({
-      usePushState: false
-    });
-
-    location.hash = '#folder/sub-folder/';
-    expect(pst.uri).to.equal('folder/sub-folder/');
-    pst.navigate('/');
-    expect(pst.uri).to.equal('');
-    expect(location.hash).to.equal('');
   });
 });

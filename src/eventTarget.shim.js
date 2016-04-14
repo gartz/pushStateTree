@@ -107,7 +107,7 @@ if (typeof PST_NO_SHIM === 'undefined') {
     Element.prototype.removeEventListener = removeEventListenerFunc;
     window.removeEventListener = removeEventListenerFunc;
 
-    Event = function (type, obj) {
+    window.Event = function (type, obj) {
 
       var evt = document.createEventObject();
 
@@ -123,8 +123,8 @@ if (typeof PST_NO_SHIM === 'undefined') {
       return evt;
     };
 
-    CustomEvent = Event;
-    HashChangeEvent = CustomEvent;
+    window.CustomEvent = Event;
+    window.HashChangeEvent = CustomEvent;
 
     var dispatchEventFunc = function (e) {
       if (!e.customEvent) {

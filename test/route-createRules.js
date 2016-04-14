@@ -1,6 +1,8 @@
 const PushStateTree = require('../src/push-state-tree');
+import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
 describe('PushStateTree createRule', function() {
+  cleanHistoryAPI();
 
   describe('when rule /^servers(\/)?(.*)/', function() {
     var pst;

@@ -44,7 +44,7 @@ function navbarAdd(text, link, order, rule){
   $navbarAnchor
     .data('order', order)
     .find('a')
-    .attr('href', location.origin + basePath + link)
+    .attr('href', basePath + link)
     .text(text);
   var $navbarMain = $('#navbarMain');
   var $anchors = $navbarMain.children();
@@ -114,7 +114,7 @@ var pushStateTree = new PushStateTree({
   // server don't support it, but enable in localhost or
   // other root server for this demo
   usePushState: !basePath,
-  debug: true
+  beautifyLocation: true
 });
 
 // Delegate anchor clicks to use pushStateTree

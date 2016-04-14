@@ -117,16 +117,60 @@ module.exports = function (config) {
 
     webpack: {
       // Create a literal object for the module to not change how webpack-dev-server load the modules
-      module: Object.assign({}, webpackConfig.module, {
-        preLoaders: [
-          {
-            test: /\.js/,
+      module: Object.assign({}, webpackConfig.module, (function(){
+        let module = {
+          preLoaders: [
+            {
+              test: /\.js$/,
+              exclude: /(node_modules)/,
+              loader: 'eslint'
+            }
+          ],
+          loaders: [
+            {
+              test: /\.js$/,
+              exclude: /(node_modules)/,
+              loader: 'babel',
+              cacheDirectory: true,
+              query: {
+                presets: ['es2015'],
+                plugins: [
+                  'transform-runtime',
+                  [
+                    'transform-strict-mode',
+                    {
+                      strict: true
+                    }
+                  ]
+                ]
+              }
+            },
+            {
+              test: /\.json$/,
+              exclude: /(node_modules)/,
+              loader: 'json'
+            }
+          ]
+        };
+
+        if (WATCH) {
+          module.postLoaders = [
+            {
+              test: /\.js$/,
+              exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
+              loader: 'istanbul-instrumenter'
+            }
+          ]
+        } else {
+          module.preLoaders.unshift({
+            test: /\.js$/,
             exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
             loader: 'istanbul-instrumenter'
-          },
-          ...webpackConfig.module.preLoaders
-        ]
-      }),
+          });
+        }
+
+        return module;
+      }())),
       plugins: webpackConfig.plugins,
       bail: !WATCH,
       devtool

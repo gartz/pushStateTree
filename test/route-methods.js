@@ -1,7 +1,10 @@
 const PushStateTree = require('../src/push-state-tree');
+import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
 describe('PushStateTree methods', function() {
   let pst;
+
+  cleanHistoryAPI();
 
   beforeEach(() => {
     pst = new PushStateTree();
@@ -17,6 +20,9 @@ describe('PushStateTree methods', function() {
 
     // Methods that should exist:
     [
+      'forward',
+      'back',
+      'go',
       'pushState',
       'replaceState',
       'dispatch',
