@@ -44,7 +44,7 @@ function navbarAdd(text, link, order, rule){
   $navbarAnchor
     .data('order', order)
     .find('a')
-    .attr('href', location.origin + basePath + link)
+    .attr('href', basePath + link)
     .text(text);
   var $navbarMain = $('#navbarMain');
   var $anchors = $navbarMain.children();

@@ -34,7 +34,7 @@ describe('PushStateTree hash-navigation', () => {
       it('should increment the instance length when using navigate method', () => {
         var currentLength = pst.length;
         pst[triggerMethod](_.uniqueId('url'));
-        expect(pst.length).to.equal(currentLength + 1);
+        expect(pst.length).to.be.above(currentLength);
       });
 
       it('should change the hash address when pushstate is disabled', () => {
