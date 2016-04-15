@@ -51,6 +51,7 @@
   },
   "globals": {
     "VERSION": true,
-    "PST_NO_OLD_IE": true
+    "PST_NO_OLD_IE": true,
+    "DEV_ENV": true
   }
 }
