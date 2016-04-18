@@ -227,6 +227,9 @@ module.exports = function (config) {
       chrome_travis_ci: {
         base: 'Chrome',
         flags:['--no-sandbox']
+      },
+      firefox_travis_ci: {
+        base: 'Firefox'
       }
     },
 
@@ -238,7 +241,7 @@ module.exports = function (config) {
     singleRun: !argv.watch
   };
   if (process.env.TRAVIS) {
-    configuration.browsers = ['chrome_travis_ci'];
+    configuration.browsers = ['chrome_travis_ci', 'firefox_travis_ci'];
   }
   config.set(configuration);
 };
