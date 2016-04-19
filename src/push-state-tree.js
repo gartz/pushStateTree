@@ -468,7 +468,10 @@ objectMixinProperties(PushStateTree, {
           return match;
         },
         set(val) {
-          match = val instanceof Array ? val : [];
+          if (!(val instanceof Array)) {
+            throw new TypeError(DEV_ENV && 'match must be an array');
+          }
+          match = val;
         }
       });
 
@@ -478,7 +481,10 @@ objectMixinProperties(PushStateTree, {
           return oldMatch;
         },
         set(val) {
-          oldMatch = val instanceof Array ? val : [];
+          if (!(val instanceof Array)) {
+            throw new TypeError(DEV_ENV && 'oldMatch must be an array');
+          }
+          oldMatch = val;
         }
       });
 
