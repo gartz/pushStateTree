@@ -53,6 +53,7 @@ function convertToURI(url) {
 }
 
 // Helpers
+/** @memberof PushStateTree */
 function isInt(n) {
   return typeof n != 'undefined' && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
 }
@@ -142,6 +143,9 @@ function resolveRelativePath(path) {
 // Add compatibility with old IE browsers
 var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
 
+/**
+ * Create a PushStateTree instance, can be used with or without `new` operator.
+ * @class PushStateTree */
 function PushStateTree(options) {
   options = options || {};
 
@@ -318,6 +322,7 @@ const eventsQueue = [];
 let holdingDispatch = false;
 let holdDispatch = false;
 
+/** @memberof PushStateTree */
 let hasPushState = !!(history && history.pushState);
 
 objectMixinProperties(PushStateTree, {
@@ -325,6 +330,8 @@ objectMixinProperties(PushStateTree, {
   VERSION,
   isInt,
   hasPushState,
+
+  /** @memberof PushStateTree */
   createElement(name) {
     // When document is available, use it to create and return a HTMLElement
     if (typeof document !== 'undefined') {
@@ -335,9 +342,13 @@ objectMixinProperties(PushStateTree, {
 
   prototype: {
     // VERSION is defined in the webpack build, it is replaced by package.version
+    /** @memberof! PushStateTree# */
     VERSION,
+
+    /** @memberof! PushStateTree# */
     hasPushState,
 
+    /** @memberof! PushStateTree# */
     startGlobalListeners() {
       // Start the browser global listeners and return a method to stop listening to them
 
@@ -407,6 +418,7 @@ objectMixinProperties(PushStateTree, {
       };
     },
 
+    /** @memberof! PushStateTree# */
     createRule(options) {
       // Create a pushstreamtree-rule element from a literal object
 
@@ -503,6 +515,7 @@ objectMixinProperties(PushStateTree, {
       return rule;
     },
 
+    /** @memberof! PushStateTree# */
     add(options) {
       // Transform any literal object in a pushstatetree-rule and append it
 
@@ -510,6 +523,7 @@ objectMixinProperties(PushStateTree, {
       return this;
     },
 
+    /** @memberof! PushStateTree# */
     remove(queryOrElement) {
       // Remove a pushstateree-rule, pass a element or it query
 
@@ -524,6 +538,7 @@ objectMixinProperties(PushStateTree, {
       }
     },
 
+    /** @memberof! PushStateTree# */
     getUri(url) {
       let uri = '';
       if (!this.isPathValid) {
@@ -547,6 +562,7 @@ objectMixinProperties(PushStateTree, {
       return uri;
     },
 
+    /** @memberof! PushStateTree# */
     dispatch() {
       // Deferred trigger the actual browser location
       if (holdDispatch) {
@@ -568,20 +584,24 @@ objectMixinProperties(PushStateTree, {
       return this;
     },
 
+    /** @memberof! PushStateTree# */
     assign(url) {
       // Shortcut for pushState and dispatch methods
       return this.pushState(url).dispatch();
     },
 
+    /** @memberof! PushStateTree# */
     replace(url) {
       // Shortcut for pushState and dispatch methods
       return this.replaceState(null, null, url).dispatch();
     },
 
+    /** @memberof! PushStateTree# */
     navigate() {
       this.assign.apply(this, arguments);
     },
 
+    /** @memberof! PushStateTree# */
     rulesDispatcher() {
       // Will dispatch the right events in each rule
 
