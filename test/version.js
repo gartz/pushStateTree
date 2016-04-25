@@ -1,6 +1,6 @@
-const PushStateTree = require('../src/push-state-tree');
-const pkg = require('../package.json');
+import PushStateTree from '../src/push-state-tree';
 import cleanHistoryAPI from './helper/cleanHistoryAPI';
+const pkg = require('../package.json');
 
 describe('PushStateTree', function () {
 

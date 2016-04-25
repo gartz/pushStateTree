@@ -16,7 +16,10 @@
     "strict": "off",
     "quotes": [
       "error",
-      "single"
+      "single",
+      {
+        "allowTemplateLiterals": true
+      }
     ],
     "no-unused-vars": [
       "error",

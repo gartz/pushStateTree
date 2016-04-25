@@ -1,143 +1,8 @@
 const root = typeof window !== 'undefined' && window || global;
 
-let errorApiMessage = api => new Error(`PushStateTree ${VERSION} requires ${api} API to run.`);
+import { objectMixinProperties, proxyLikePrototype, isInt } from './helpers';
 
-if (!root.document) {
-  throw errorApiMessage('document');
-}
-const document = root.document;
-const location = root.location;
-const history = root.history;
-
-// If you have your own shim for ES3 and old IE browsers, you can remove all shim files from your package by adding a
-// webpack.DefinePlugin that translates `typeof PST_NO_SHIM === 'undefined'` to false, this will remove the section
-// in the minified version:
-//     new webpack.DefinePlugin({
-//       PST_NO_SHIM: false
-//     })
-// https://webpack.github.io/docs/list-of-plugins.html#defineplugin
-
-let isIE = require('./ieOld.shim').isIE;
-
-// If you don't want support IE 7 and IE 8 you can remove the compatibility shim with `PST_NO_OLD_ID: false`
-//     new webpack.DefinePlugin({
-//       PST_NO_OLD_IE: false
-//     })
-// https://webpack.github.io/docs/list-of-plugins.html#defineplugin
-require('./es3.shim.js');
-
-// TODO: Use a PushStateTree.prototype.createEvent instead of shim native CustomEvents
-require('./customEvent.shim');
-
-// Constants for uglifiers
-const HASH_CHANGE = 'hashchange';
-const POP_STATE = 'popstate';
-const LEAVE = 'leave';
-const UPDATE = 'update';
-const ENTER = 'enter';
-const CHANGE = 'change';
-const MATCH = 'match';
-const OLD_MATCH = 'oldMatch';
-
-function convertToURI(url) {
-  // Remove unwanted data from url
-  // if it's a browser it will remove the location.origin
-  // else it will ignore first occurrence of / and return the rest
-  if (location && url == location.href) {
-    let host = location.host && `//${location.host}`;
-    return url.substr(`${location.protocol}${host}`.length);
-  } else {
-    let match = url[MATCH](/([^\/]*)(\/+)?(.*)/);
-    return match[2] ? match[3] : match[1];
-  }
-}
-
-// Helpers
-function isInt(n) {
-  return typeof n != 'undefined' && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
-}
-
-function proxyReadOnlyProperty(context, property, targetObject) {
-  // Proxy the property with same name from the targetObject into the defined context
-  // if `targetObject` is `false` it will always return `false`.
-
-  Object.defineProperty(context, property, {
-    get() {
-      return targetObject && targetObject[property];
-    },
-    // Must have set to ignore when try to set a new value and not throw error.
-    set() {}
-  });
-}
-
-function proxyLikePrototype(context, prototypeContext) {
-  // It proxy the method, or property to the prototype
-
-  for (let property in prototypeContext) {
-    if (typeof prototypeContext[property] === 'function') {
-      // function wrapper, it doesn't use binding because it needs to execute the current version of the property in the
-      // prototype to conserve the prototype chain resource
-      context[property] = function proxyMethodToPrototype() {
-        return prototypeContext[property].apply(this, arguments);
-      };
-      continue;
-    }
-    // Proxy prototype properties to the instance, but if they're redefined in the instance, use the instance definition
-    // without change the prototype property value
-    if (typeof context[property] == 'undefined') {
-      let propertyValue;
-      Object.defineProperty(context, property, {
-        get() {
-          if (typeof propertyValue == 'undefined') {
-            return prototypeContext[property];
-          }
-          return propertyValue;
-        },
-        set(value) {
-          propertyValue = value;
-        }
-      });
-    }
-  }
-}
-
-function objectMixinProperties(destineObject, sourceObject) {
-  // Simple version of Object.assign
-  for (let property in sourceObject) {
-    if (sourceObject.hasOwnProperty(property)) {
-      destineObject[property] = sourceObject[property];
-    }
-  }
-}
-
-function isExternal(url) {
-  // Check if a URL is external
-  return (/^[a-z0-9]+:\/\//i).test(url);
-}
-
-function isRelative(uri) {
-  // Check if a URI is relative path, when begin with # or / isn't relative uri
-  return (/^[^#/]/).test(uri);
-}
-
-function resolveRelativePath(path) {
-  // Resolve relative paths manually for browsers using hash navigation
-
-  var parts = path.split('/');
-  var i = 1;
-  while (i < parts.length) {
-    // if current part is `..` and previous part is different, remove both of them
-    if (parts[i] === '..' && i > 0 && parts[i-1] !== '..') {
-      parts.splice(i - 1, 2);
-      i -= 2;
-    }
-    i++;
-  }
-  return parts
-    .join('/')
-    .replace(/\/\.\/|\.\/|\.\.\//g, '/')
-    .replace(/^\/$/, '');
-}
+import { LEAVE, UPDATE, ENTER, CHANGE, MATCH, OLD_MATCH } from './constants';
 
 // Add compatibility with old IE browsers
 var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
@@ -150,6 +15,9 @@ function PushStateTree(options) {
     return PushStateTree.apply(PushStateTree.createElement('pushstatetree-route'), arguments);
   }
 
+  // Allow plugins override the instance create
+  PushStateTree.create.apply(this, arguments);
+
   this.eventStack = {
     leave: [],
     change: [],
@@ -157,29 +25,23 @@ function PushStateTree(options) {
     match: []
   };
 
-  proxyLikePrototype(this, PushStateTree.prototype);
-
   // Allow switch between pushState or hash navigation modes, in browser that doesn't support
   // pushState it will always be false. and use hash navigation enforced.
   // use backend non permanent redirect when old browsers are detected in the request.
-  if (!PushStateTree.hasPushState) {
-    proxyReadOnlyProperty(this, 'usePushState', false);
-  } else {
-    let usePushState = true;
-    Object.defineProperty(this, 'usePushState', {
-      get() {
-        return usePushState;
-      },
-      set(val) {
-        usePushState = PushStateTree.hasPushState ? val !== false : false;
-      }
-    });
-    this.usePushState = options.usePushState;
-  }
+  let usePushState = false;
+  Object.defineProperty(this, 'usePushState', {
+    get() {
+      return usePushState;
+    },
+    set(val) {
+      usePushState = this.hasPushState ? val !== false : false;
+    }
+  });
+  this.usePushState = options.usePushState;
 
   // When enabled beautifyLocation will replace the location using history.replaceState
   // to remove the hash from the URL
-  let beautifyLocation = true && this.usePushState;
+  let beautifyLocation = this.usePushState;
   Object.defineProperty(this, 'beautifyLocation', {
     get() {
       return beautifyLocation;
@@ -292,7 +154,6 @@ function PushStateTree(options) {
 
   // Disabled must be the last thing before options, because it will start the listeners
   let disabled = true;
-  let disableMethod;
   Object.defineProperty(this, 'disabled', {
     get() {
       return disabled;
@@ -301,8 +162,7 @@ function PushStateTree(options) {
       value = value === true;
       if (value != disabled) {
         disabled = value;
-        if (disabled) disableMethod();
-        else disableMethod = this.startGlobalListeners();
+        this.dispatchEvent(new root.CustomEvent(disabled ? 'disabled' : 'enabled'));
       }
     }
   });
@@ -318,13 +178,37 @@ const eventsQueue = [];
 let holdingDispatch = false;
 let holdDispatch = false;
 
-let hasPushState = !!(history && history.pushState);
-
 objectMixinProperties(PushStateTree, {
   // VERSION is defined in the webpack build, it is replaced by package.version
   VERSION,
-  isInt,
-  hasPushState,
+  plugins: [],
+  create(options) {
+    if (!this) {
+      throw new Error(DEV_ENV && 'Method create requires a context.');
+    }
+    options = options || {};
+    options.plugins = Array.isArray(options.plugins) ? options.plugins : [];
+
+    // Proxy all plugins instance properties and methods
+    proxyLikePrototype(this, PushStateTree.prototype);
+
+    this.plugins = [];
+
+    let plugins = [...options.plugins, ...PushStateTree.plugins];
+
+    plugins.forEach(plugin => {
+
+      // Expose loaded plugins
+      this.plugins.push(plugin);
+
+      // Proxy all plugins instance properties and methods
+      proxyLikePrototype(this, plugin);
+
+      if (plugin.create) {
+        plugin.create.apply(this, arguments);
+      }
+    });
+  },
   createElement(name) {
     // When document is available, use it to create and return a HTMLElement
     if (typeof document !== 'undefined') {
@@ -336,76 +220,6 @@ objectMixinProperties(PushStateTree, {
   prototype: {
     // VERSION is defined in the webpack build, it is replaced by package.version
     VERSION,
-    hasPushState,
-
-    startGlobalListeners() {
-      // Start the browser global listeners and return a method to stop listening to them
-
-      let beautifyLocation = () => {
-        // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
-        if (this.beautifyLocation
-          && this.usePushState
-          && this.isPathValid
-          && this.path.indexOf('#') != -1
-        ) {
-
-          // Execute after to pop_state again
-          this.replace(this.uri);
-          return true;
-        }
-      };
-
-      let dispatchListener = event => {
-        this.path = convertToURI(location.href);
-
-        if (beautifyLocation()) {
-          event.preventDefault();
-        }
-      };
-      this.addEventListener('dispatch', dispatchListener);
-
-      let browserListener = () => {
-        if (this.path != convertToURI(location.href)) {
-          this.dispatch();
-        }
-      };
-
-      root.addEventListener(POP_STATE, browserListener);
-      root.addEventListener(HASH_CHANGE, browserListener);
-
-      let ieWatch;
-      let loadListener = () => {
-        browserListener();
-
-        if (!isIE() || isIE() > 8) return;
-
-        // Watch for URL changes in the IE
-        ieWatch = setInterval(browserListener, 50);
-      };
-
-      // If the DOM is ready when running the PST, execute loadListeners and ignore others
-      if (document.readyState == 'complete') {
-        loadListener();
-      } else {
-        // Modern browsers
-        document.addEventListener('DOMContentLoaded', browserListener);
-        // Some IE browsers
-        root.addEventListener('readystatechange', browserListener);
-        // Almost all browsers
-        root.addEventListener('load', loadListener);
-      }
-
-      return () => {
-        // Method to stop watching
-        this.removeEventListener('dispatch', dispatchListener);
-        root.removeEventListener(POP_STATE, browserListener);
-        document.removeEventListener('DOMContentLoaded', browserListener);
-        root.removeEventListener('readystatechange', browserListener);
-        root.removeEventListener(HASH_CHANGE, browserListener);
-        root.removeEventListener('load', loadListener);
-        if (ieWatch) clearInterval(ieWatch);
-      };
-    },
 
     createRule(options) {
       // Create a pushstreamtree-rule element from a literal object
@@ -730,170 +544,5 @@ objectMixinProperties(PushStateTree, {
   }
 });
 
-function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
-
-  // If not pushState or replaceState methods, execute it from history API
-  if (method !== 'pushState' && method !== 'replaceState') {
-    this[method] = function () {
-      history[method].apply(history, arguments);
-      return this;
-    };
-    return;
-  }
-
-  this[method] = function () {
-    // Wrap method
-
-    // remove the method from arguments
-    let args = Array.prototype.slice.call(arguments);
-    let uri = args[0] || '';
-    if (typeof args[2] === 'string') {
-      uri = args[2];
-    }
-
-    // if has a basePath translate the not relative paths to use the basePath
-    if (!isExternal(uri)) {
-      // When not external link, need to normalize the URI
-
-      if (isRelative(uri)) {
-        // Relative to the uri
-        var basePath = this.uri[MATCH](/^([^?#]*)\//);
-        basePath = basePath ? basePath[1] + '/' : '';
-        uri = basePath + uri;
-      } else {
-        // This isn't relative, will cleanup / and # from the begin and use the remain path
-        uri = uri[MATCH](/^([#/]*)?(.*)/)[2];
-      }
-
-      if (!this.usePushState) {
-
-        // Ignore basePath when using location.hash and resolve relative path and keep
-        // the current location.pathname, some browsers history API might apply the new pathname
-        // with the hash content if not explicit
-        uri = location.pathname + '#' + resolveRelativePath(uri);
-      } else {
-
-        // Add the basePath to your uri, not allowing to go by pushState outside the basePath
-        uri = this.basePath + uri;
-      }
-    }
-
-    // Ignore state and make the url be the current uri
-    args[0] = null;
-    args[2] = uri;
-
-    this.path = this.basePath + uri;
-    history[method].apply(history, args);
-    return this;
-  };
-}
-
-// Wrap history methods
-for (var method in history) {
-  if (typeof history[method] === 'function') {
-    preProcessUriBeforeExecuteNativeHistoryMethods.call(PushStateTree.prototype, method);
-  }
-}
-
-// Add support to pushState on old browsers that doesn't native support it
-if (typeof PST_NO_OLD_IE == 'undefined'
-  && typeof PST_NO_SHIM == 'undefined'
-  && !PushStateTree.hasPushState
-  && location
-) {
-  PushStateTree.prototype.pushState = function (uri, ignored, deprecatedUri) {
-    // Does a shim for pushState when history API doesn't support pushState,
-    // from version 0.15.x it ignores state and title definition since they are
-    // never used in any production project so far and seems to make harder to
-    // developers to use the method since they need to add 2 useless arguments
-    // before the really necessary one.
-    // However it keeps compatible with any implementation that already add the
-    // url as third argument.
-    if (typeof deprecatedUri == 'string') {
-      uri = deprecatedUri;
-    }
-    if (typeof uri != 'string') {
-      uri = '';
-    }
-
-    // Replace hash url
-    if (isExternal(uri)) {
-      // this will redirect the browser, so doesn't matters the rest...
-      location.href = uri;
-    }
-
-    // Remove the has if is it present
-    if (uri[0] === '#') {
-      uri = uri.slice(1);
-    }
-
-    if (isRelative(uri)) {
-      uri = location.hash.slice(1, location.hash.lastIndexOf('/') + 1) + uri;
-      uri = resolveRelativePath(uri);
-    }
-
-    // Include the basePath in the uri, if is already in the current router
-    // basePath, it will apply the assign without refresh, but if the basePath
-    // is different, it will refresh the browser to work in the current router
-    // basePath.
-    // The behavior is the same in browsers that support pushState, however they
-    // don't refresh when switching between basePath of different routers
-    this.path = this.basePath + uri;
-    if (location.pathname == this.basePath) {
-      location.hash = uri;
-    } else {
-      location.assign(uri);
-    }
-
-    return this;
-  };
-
-  PushStateTree.prototype.replaceState = function (uri, ignored, deprecatedUri) {
-    // Does a shim for replaceState when history API doesn't support pushState,
-    // from version 0.15.x it ignores state and title definition since they are
-    // never used in any production project so far and seems to make harder to
-    // developers to use the method since they need to add 2 useless arguments
-    // before the really necessary one.
-    // However it keeps compatible with any implementation that already add the
-    // url as third argument.
-
-    if (typeof deprecatedUri == 'string') {
-      uri = deprecatedUri;
-    }
-    if (typeof uri != 'string') {
-      uri = '';
-    }
-
-    // Replace the url
-    if (isExternal(uri)) {
-      throw new Error('Invalid url replace.');
-    }
-
-    if (uri[0] === '#') {
-      uri = uri.slice(1);
-    }
-
-    if (isRelative(uri)) {
-      var relativePos = location.hash.lastIndexOf('/') + 1;
-      uri = location.hash.slice(1, relativePos) + uri;
-      uri = resolveRelativePath(uri);
-    }
-
-    // Always use hash navigation
-    uri = '#' + uri;
-
-    // Include the basePath in the uri, if is already in the current router
-    // basePath, it will apply the replace without refresh, but if the basePath
-    // is different, it will refresh the browser to work in the current router
-    // basePath.
-    // The behavior is the same in browsers that support pushState, however they
-    // don't refresh when switching between basePath of different routers
-    this.path = this.basePath + uri;
-    location.replace(uri);
-
-    return this;
-  };
-}
-
 // Node import support
-module.exports = PushStateTree;
+export default PushStateTree;
