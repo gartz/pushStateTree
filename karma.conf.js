@@ -90,7 +90,7 @@ if (WATCH) {
 }
 
 module.exports = function (config) {
-  config.set({
+  var configuration = {
 
     // base path, that will be used to resolve files and exclude
     basePath: '.',
@@ -218,6 +218,15 @@ module.exports = function (config) {
       ? ['PhantomJS', 'Chrome', 'Firefox']
       : ['PhantomJS']
     ),
+    customLaunchers: {
+      chrome_travis_ci: {
+        base: 'Chrome',
+        flags:['--no-sandbox']
+      },
+      firefox_travis_ci: {
+        base: 'Firefox'
+      }
+    },
 
     // If browser does not capture in given timeout [ms], kill it
     captureTimeout: 60000,
@@ -225,5 +234,9 @@ module.exports = function (config) {
     // Continuous Integration mode
     // if true, it capture browsers, run tests and exit
     singleRun: !argv.watch
-  });
+  };
+  if (process.env.TRAVIS) {
+    configuration.browsers = ['chrome_travis_ci', 'firefox_travis_ci'];
+  }
+  config.set(configuration);
 };
