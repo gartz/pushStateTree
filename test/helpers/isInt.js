@@ -1,4 +1,4 @@
-import { isInt } from '../src/helpers';
+import { isInt } from '../../src/helpers';
 
 describe('PushStateTree isInt', function() {
 

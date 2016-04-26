@@ -12,6 +12,6 @@ import PushStateTree from './push-state-tree';
 
 import BrowserHistory from './plugin/history';
 
-PushStateTree.plugins.push(new BrowserHistory())
+PushStateTree.plugins.push(new BrowserHistory());
 
 module.exports = PushStateTree;
