@@ -1,115 +1,8 @@
+import PushStateTree from '../push-state-tree';
 import { MATCH } from '../constants';
-import { isExternal, isRelative, convertToURI, resolveRelativePath } from './../helpers';
-import { isIE } from '../ieOld.shim';
-
-const HASH_CHANGE = 'hashchange';
-const POP_STATE = 'popstate';
+import { isExternal, isRelative, resolveRelativePath } from './../helpers';
 
 const root = typeof window == 'object' ? window : global;
-
-function BrowserHistory(options) {
-  if (!(this instanceof BrowserHistory)) {
-    return new BrowserHistory(options);
-  }
-  options = options || {};
-
-  let location = this.location = options.location || root.location;
-  let history = this.history = options.history || root.history;
-  
-  if (!location) {
-    throw new Error(DEV_ENV && 'BrowserHistory require Location API');
-  }
-
-  /*eslint guard-for-in: "off"*/
-  for (var method in history) {
-    if (typeof history[method] === 'function') {
-      preProcessUriBeforeExecuteNativeHistoryMethods.call(this, history, location, method);
-    }
-  }
-
-  this.hasPushState = !!(history && history.pushState);
-}
-
-BrowserHistory.prototype.create = function () {
-  let globalListeners = () => {};
-  let enableListeners = () => {
-    globalListeners = this.globalListeners();
-  };
-  this.addEventListener('disabled', globalListeners);
-  this.addEventListener('enabled', enableListeners);
-};
-
-
-BrowserHistory.prototype.globalListeners = function() {
-  // Called when creating a new instance of the parent of the current prototype
-
-  // Start the browser global listeners and return a method to stop listening to them
-
-  let beautifyLocation = () => {
-    // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
-    if (this.beautifyLocation
-      && this.usePushState
-      && this.isPathValid
-      && this.path.indexOf('#') != -1
-    ) {
-
-      // Execute after to pop_state again
-      this.replace(this.uri);
-      return true;
-    }
-  };
-
-  let dispatchListener = event => {
-    this.path = convertToURI(location.href);
-
-    if (beautifyLocation()) {
-      event.preventDefault();
-    }
-  };
-  this.addEventListener('dispatch', dispatchListener);
-
-  let browserListener = () => {
-    if (this.path != convertToURI(location.href)) {
-      this.dispatch();
-    }
-  };
-
-  root.addEventListener(POP_STATE, browserListener);
-  root.addEventListener(HASH_CHANGE, browserListener);
-
-  let ieWatch;
-  let loadListener = () => {
-    browserListener();
-
-    if (!isIE() || isIE() > 8) return;
-
-    // Watch for URL changes in the IE
-    ieWatch = setInterval(browserListener, 50);
-  };
-
-  // If the DOM is ready when running the PST, execute loadListeners and ignore others
-  if (document.readyState == 'complete') {
-    loadListener();
-  } else {
-    // Modern browsers
-    document.addEventListener('DOMContentLoaded', browserListener);
-    // Some IE browsers
-    root.addEventListener('readystatechange', browserListener);
-    // Almost all browsers
-    root.addEventListener('load', loadListener);
-  }
-
-  return () => {
-    // Method to stop watching
-    this.removeEventListener('dispatch', dispatchListener);
-    root.removeEventListener(POP_STATE, browserListener);
-    document.removeEventListener('DOMContentLoaded', browserListener);
-    root.removeEventListener('readystatechange', browserListener);
-    root.removeEventListener(HASH_CHANGE, browserListener);
-    root.removeEventListener('load', loadListener);
-    if (ieWatch) clearInterval(ieWatch);
-  };
-};
 
 function preProcessUriBeforeExecuteNativeHistoryMethods(history, location, method) {
 
@@ -169,97 +62,126 @@ function preProcessUriBeforeExecuteNativeHistoryMethods(history, location, metho
   };
 }
 
-BrowserHistory.prototype.pushState = function (uri, ignored, deprecatedUri) {
-  // Does a shim for pushState when history API doesn't support pushState,
-  // from version 0.15.x it ignores state and title definition since they are
-  // never used in any production project so far and seems to make harder to
-  // developers to use the method since they need to add 2 useless arguments
-  // before the really necessary one.
-  // However it keeps compatible with any implementation that already add the
-  // url as third argument.
-  if (typeof deprecatedUri == 'string') {
-    uri = deprecatedUri;
+function BrowserHistory(options) {
+  const enumerable = true;
+
+  if (!(this instanceof BrowserHistory)) {
+    return new BrowserHistory(options);
   }
-  if (typeof uri != 'string') {
-    uri = '';
+  options = options || {};
+
+  let location = this.location = options.location || root.location;
+  let history = this.history = options.history || root.history;
+
+  if (!location) {
+    throw new Error(DEV_ENV && 'BrowserHistory require Location API');
   }
 
-  // Replace hash url
-  if (isExternal(uri)) {
-    // this will redirect the browser, so doesn't matters the rest...
-    this.location.href = uri;
+  /*eslint guard-for-in: "off"*/
+  for (var method in history) {
+    if (typeof history[method] === 'function') {
+      preProcessUriBeforeExecuteNativeHistoryMethods.call(this, history, location, method);
+    }
   }
 
-  // Remove the has if is it present
-  if (uri[0] === '#') {
-    uri = uri.slice(1);
-  }
+  let hasPushState;
 
-  if (isRelative(uri)) {
-    uri = this.location.hash.slice(1, this.location.hash.lastIndexOf('/') + 1) + uri;
-    uri = resolveRelativePath(uri);
-  }
+  // Keep compatibility with version 0.14.x over global hasPushState property, version 0.16.x won't support global
+  // hasPushState, it will be part of the BrowserHistory plugin and if in use accessible in the PushStateTree context
+  if (!PushStateTree.hasOwnProperty('hasPushState')) {
+    hasPushState = !!(history && history.pushState);
+    Object.defineProperty(this, 'hasPushState', {
+      get() {
+        return PushStateTree.hasPushState;
+      },
+      set(value) {
+        PushStateTree.hasPushState = value;
+      },
+      enumerable
+    });
 
-  // Include the basePath in the uri, if is already in the current router
-  // basePath, it will apply the assign without refresh, but if the basePath
-  // is different, it will refresh the browser to work in the current router
-  // basePath.
-  // The behavior is the same in browsers that support pushState, however they
-  // don't refresh when switching between basePath of different routers
-  this.path = this.basePath + uri;
-  if (this.location.pathname == this.basePath) {
-    this.location.hash = uri;
+    Object.defineProperty(PushStateTree, 'hasPushState', {
+      get() {
+        if (DEV_ENV) console.info('The static property hasPushState is deprecated. Use BrowserHistory plugin.');
+        return hasPushState;
+      },
+      set(value) {
+        hasPushState = !!value;
+      },
+      enumerable
+    });
   } else {
-    this.location.assign(uri);
+    hasPushState = PushStateTree.hasPushState;
   }
 
-  return this;
+  // Allow switch between pushState or hash navigation modes, in browser that doesn't support
+  // pushState it will always be false. and use hash navigation enforced.
+  // use backend non permanent redirect when old browsers are detected in the request.
+  let usePushState = false;
+  Object.defineProperty(this, 'usePushState', {
+    get() {
+      return usePushState;
+    },
+    set(val) {
+      usePushState = this.hasPushState ? val !== false : false;
+    },
+    enumerable
+  });
+  this.usePushState = options.usePushState;
+
+  // When enabled beautifyLocation will replace the location using history.replaceState
+  // to remove the hash from the URL
+  let beautifyLocation = false;
+  Object.defineProperty(this, 'beautifyLocation', {
+    get() {
+      return beautifyLocation && this.usePushState;
+    },
+    set(value) {
+      beautifyLocation = value === true;
+    },
+    enumerable
+  });
+
+  this.beautifyLocation = this.usePushState && options.beautifyLocation !== false;
+}
+
+BrowserHistory.create = function (router) {
+  let stopListeners = () => {};
+  let enableListeners = () => {
+
+    // Listen for path changes, and applyBeautifyLocation
+    let listener = (event) => {
+      if (router.applyBeautifyLocation()) {
+        event.preventDefault();
+      }
+    };
+    router.addEventListener('dispatch', listener);
+
+    stopListeners = () => {
+      router.removeEventListener(listener);
+    };
+  };
+  router.addEventListener('disabled', stopListeners);
+  router.addEventListener('enabled', enableListeners);
+
+  if (!router.disabled) {
+    router.applyBeautifyLocation();
+  }
 };
 
-BrowserHistory.prototype.replaceState = function (uri, ignored, deprecatedUri) {
-  // Does a shim for replaceState when history API doesn't support pushState,
-  // from version 0.15.x it ignores state and title definition since they are
-  // never used in any production project so far and seems to make harder to
-  // developers to use the method since they need to add 2 useless arguments
-  // before the really necessary one.
-  // However it keeps compatible with any implementation that already add the
-  // url as third argument.
+BrowserHistory.prototype.applyBeautifyLocation = function () {
+  // apply pushState for a beautiful URL when beautifyLocation is enable and it's possible to do it
+  if (this.beautifyLocation
+    && this.usePushState
+    && this.isPathValid
+    && this.path.indexOf('#') != -1
+  ) {
 
-  if (typeof deprecatedUri == 'string') {
-    uri = deprecatedUri;
+    // Execute after to pop_state again
+    this.replace(this.uri);
+    return true;
   }
-  if (typeof uri != 'string') {
-    uri = '';
-  }
-
-  // Replace the url
-  if (isExternal(uri)) {
-    throw new Error('Invalid url replace.');
-  }
-
-  if (uri[0] === '#') {
-    uri = uri.slice(1);
-  }
-
-  if (isRelative(uri)) {
-    var relativePos = this.location.hash.lastIndexOf('/') + 1;
-    uri = this.location.hash.slice(1, relativePos) + uri;
-    uri = resolveRelativePath(uri);
-  }
-
-  // Always use hash navigation
-  uri = '#' + uri;
-
-  // Include the basePath in the uri, if is already in the current router
-  // basePath, it will apply the replace without refresh, but if the basePath
-  // is different, it will refresh the browser to work in the current router
-  // basePath.
-  // The behavior is the same in browsers that support pushState, however they
-  // don't refresh when switching between basePath of different routers
-  this.path = this.basePath + uri;
-  this.location.replace(uri);
-
-  return this;
+  return false;
 };
 
 export default BrowserHistory;

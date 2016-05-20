@@ -155,13 +155,13 @@ module.exports = function (config) {
               loader: 'json'
             }
           ],
-          postLoaders: [
-            {
-              test: /\.js$/,
-              exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
-              loader: 'istanbul-instrumenter'
-            }
-          ]
+          // postLoaders: [
+          //   {
+          //     test: /\.js$/,
+          //     exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
+          //     loader: 'istanbul-instrumenter'
+          //   }
+          // ]
         };
 
         return module;

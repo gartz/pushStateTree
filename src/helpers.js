@@ -53,7 +53,7 @@ export function isInt(n) {
   return typeof n != 'undefined' && !isNaN(parseFloat(n)) && n % 1 === 0 && isFinite(n);
 }
 
-export function proxyLikePrototype(context, prototypeContext) {
+export function proxyTo(context, prototypeContext) {
   // It proxy the method, or property to the prototype
 
   for (let property in prototypeContext) {
@@ -69,17 +69,14 @@ export function proxyLikePrototype(context, prototypeContext) {
     // Proxy prototype properties to the instance, but if they're redefined in the instance, use the instance definition
     // without change the prototype property value
     if (typeof context[property] == 'undefined') {
-      let propertyValue;
       Object.defineProperty(context, property, {
         get() {
-          if (typeof propertyValue == 'undefined') {
-            return prototypeContext[property];
-          }
-          return propertyValue;
+          return prototypeContext[property];
         },
         set(value) {
-          propertyValue = value;
-        }
+          prototypeContext[property] = value;
+        },
+        enumerable: true
       });
     }
   }

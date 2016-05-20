@@ -1,5 +1,6 @@
-const PushStateTree = require('../src/main');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
+import PushStateTree from '../../src/push-state-tree';
+import BrowserHistory from '../../src/plugin/history';
+import cleanHistoryAPI from './../helper/cleanHistoryAPI';
 const _ = require('underscore');
 
 describe('PushStateTree beutifyLocation', function() {
@@ -8,8 +9,18 @@ describe('PushStateTree beutifyLocation', function() {
 
   let pstBeautify;
   let pst;
+  let browserHistory = new BrowserHistory();
+
+  before(() => {
+    PushStateTree.plugins.push(browserHistory);
+  });
+
+  after(() => {
+    PushStateTree.plugins = _.without(PushStateTree.plugins, browserHistory);
+  });
 
   beforeEach(() => {
+    PushStateTree.hasPushState = true;
     pst = new PushStateTree({
       basePath: _.uniqueId('/regular+path') + '/',
       beautifyLocation: false

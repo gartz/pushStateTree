@@ -8,10 +8,13 @@ require('./es3.shim.js');
 // TODO: Use a PushStateTree.prototype.createEvent instead of shim native CustomEvents
 require('./customEvent.shim');
 
+import BrowserAdapter from './adapter/browser';
+
 import PushStateTree from './push-state-tree';
+PushStateTree.addAdapter(BrowserAdapter);
 
 import BrowserHistory from './plugin/history';
-
-PushStateTree.plugins.push(new BrowserHistory());
+import PluginInjector from './adapter/pluginInjector';
+PushStateTree.addAdapter(PluginInjector, BrowserHistory);
 
 module.exports = PushStateTree;

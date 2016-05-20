@@ -1,22 +1,19 @@
 const root = typeof window !== 'undefined' && window || global;
 
-import { objectMixinProperties, proxyLikePrototype, isInt } from './helpers';
+import { objectMixinProperties, proxyTo, isInt } from './helpers';
 
 import { LEAVE, UPDATE, ENTER, CHANGE, MATCH, OLD_MATCH } from './constants';
-
-// Add compatibility with old IE browsers
-var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
 
 function PushStateTree(options) {
   options = options || {};
 
   // Force the instance to always return a HTMLElement
-  if (!(this instanceof elementPrototype)) {
-    return PushStateTree.apply(PushStateTree.createElement('pushstatetree-route'), arguments);
-  }
+  if (!(this instanceof PushStateTree.adapter.instanceof)) {
 
-  // Allow plugins override the instance create
-  PushStateTree.create.apply(this, arguments);
+    // Allow plugins override the instance create
+    let instance = PushStateTree.create.apply(this, arguments);
+    return PushStateTree.apply(instance, arguments);
+  }
 
   this.eventStack = {
     leave: [],
@@ -24,32 +21,6 @@ function PushStateTree(options) {
     enter: [],
     match: []
   };
-
-  // Allow switch between pushState or hash navigation modes, in browser that doesn't support
-  // pushState it will always be false. and use hash navigation enforced.
-  // use backend non permanent redirect when old browsers are detected in the request.
-  let usePushState = false;
-  Object.defineProperty(this, 'usePushState', {
-    get() {
-      return usePushState;
-    },
-    set(val) {
-      usePushState = this.hasPushState ? val !== false : false;
-    }
-  });
-  this.usePushState = options.usePushState;
-
-  // When enabled beautifyLocation will replace the location using history.replaceState
-  // to remove the hash from the URL
-  let beautifyLocation = this.usePushState;
-  Object.defineProperty(this, 'beautifyLocation', {
-    get() {
-      return beautifyLocation;
-    },
-    set(value) {
-      beautifyLocation = this.usePushState && value === true;
-    }
-  });
 
   let basePath;
   Object.defineProperty(this, 'basePath', {
@@ -128,7 +99,14 @@ function PushStateTree(options) {
       if (holdDispatch || value == path) return;
       let wasBasePathValid = this.isPathValid;
 
-      if (this.dispatchEvent(new root.CustomEvent('path'))) {
+      let event = new root.CustomEvent('path', {
+        detail: {
+          value: value,
+          oldValue: path
+        }
+      });
+
+      if (this.dispatchEvent(event)) {
         path = value;
         length++;
 
@@ -182,6 +160,24 @@ objectMixinProperties(PushStateTree, {
   // VERSION is defined in the webpack build, it is replaced by package.version
   VERSION,
   plugins: [],
+  adapter: {
+    // Add compatibility with old IE browsers
+    instanceof: typeof HTMLElement !== 'undefined' ? HTMLElement : Element
+  },
+  addAdapter(Constructor, ...args) {
+
+    // Define the prototype from the constructor to be the PushStateTree.prototype
+    Constructor.prototype = PushStateTree.prototype;
+
+    // Create a instance of the constructor with the arguments
+    let instance = new Constructor(...args);
+
+    // Extend the prototype chain from PushStateTree with such instance
+    PushStateTree.prototype = instance;
+
+    return instance;
+  },
+
   create(options) {
     if (!this) {
       throw new Error(DEV_ENV && 'Method create requires a context.');
@@ -189,26 +185,37 @@ objectMixinProperties(PushStateTree, {
     options = options || {};
     options.plugins = Array.isArray(options.plugins) ? options.plugins : [];
 
-    // Proxy all plugins instance properties and methods
-    proxyLikePrototype(this, PushStateTree.prototype);
+    let router = PushStateTree.createElement('pushstatetree-route');
+
+    // Execute prototype create
+    if (typeof this.create == 'function') {
+      this.create(router, ...arguments);
+    }
+
+    // Proxy all PushStateTree prototype properties and methods to the current PST instance
+    proxyTo(router, PushStateTree.prototype);
 
     this.plugins = [];
-
-    let plugins = [...options.plugins, ...PushStateTree.plugins];
+    let plugins = options.plugins;
+    let createArguments = arguments;
 
     plugins.forEach(plugin => {
 
+      // Proxy all plugins instance properties and methods
+      proxyTo(router, plugin);
+
+      // Execute the static create method
+      if (plugin.constructor && typeof plugin.constructor.create == 'function') {
+        plugin.constructor.create.call(plugin, router, ...createArguments);
+      }
+
       // Expose loaded plugins
       this.plugins.push(plugin);
-
-      // Proxy all plugins instance properties and methods
-      proxyLikePrototype(this, plugin);
-
-      if (plugin.create) {
-        plugin.create.apply(this, arguments);
-      }
     });
+
+    return router;
   },
+
   createElement(name) {
     // When document is available, use it to create and return a HTMLElement
     if (typeof document !== 'undefined') {
