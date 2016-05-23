@@ -201,12 +201,14 @@ objectMixinProperties(PushStateTree, {
 
     plugins.forEach(plugin => {
 
-      // Proxy all plugins instance properties and methods
-      proxyTo(router, plugin);
-
       // Execute the static create method
       if (plugin.constructor && typeof plugin.constructor.create == 'function') {
         plugin.constructor.create.call(plugin, router, ...createArguments);
+      }
+
+      // Execute the create method
+      if (typeof plugin.create == 'function') {
+        plugin.create(router, ...createArguments);
       }
 
       // Expose loaded plugins

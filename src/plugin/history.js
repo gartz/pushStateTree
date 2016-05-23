@@ -1,6 +1,6 @@
 import PushStateTree from '../push-state-tree';
 import { MATCH } from '../constants';
-import { isExternal, isRelative, resolveRelativePath } from './../helpers';
+import { isExternal, isRelative, resolveRelativePath, proxyTo } from './../helpers';
 
 const root = typeof window == 'object' ? window : global;
 
@@ -146,6 +146,10 @@ function BrowserHistory(options) {
 }
 
 BrowserHistory.create = function (router) {
+  
+  // Proxy all plugins instance properties and methods
+  proxyTo(router, this);
+
   let stopListeners = () => {};
   let enableListeners = () => {
 

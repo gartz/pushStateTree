@@ -19,7 +19,9 @@ export function BrowserAdapter() {
     // Start the browser global listeners and return a method to stop listening to them
 
     let browserListener = () => {
-      if (this.path != convertToURI(location().href)) {
+      let pathURI = convertToURI(location().href);
+      if (this.path != pathURI) {
+        this.path = pathURI;
         this.dispatch();
       }
     };
@@ -164,6 +166,10 @@ export function BrowserAdapter() {
     };
     router.addEventListener('disabled', globalListeners);
     router.addEventListener('enabled', enableListeners);
+
+    if (!router.disabled) {
+      enableListeners();
+    }
   };
 }
 

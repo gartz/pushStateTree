@@ -3,8 +3,8 @@ export function AutoInjectHistory(Constructor, ...args) {
     options.plugins = options.plugins || [];
     options.plugins.push(new Constructor(...args));
 
-    if (typeof Constructor.prototype.create == 'function') {
-      Constructor.prototype.create.apply(this, arguments);
+    if (typeof AutoInjectHistory.prototype.create == 'function') {
+      AutoInjectHistory.prototype.create.apply(this, arguments);
     }
   }
 }
