@@ -1,18 +1,15 @@
-const PushStateTree = require('../src/main');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
+import PushStateTree from '../src/push-state-tree';
 
-describe('PushStateTree Router basePath', function () {
+describe('PushStateTree Router basePath', () => {
 
-  cleanHistoryAPI();
-
-  it('should allow to set the base path', function () {
+  it('should allow to set the base path', () => {
     var pst = new PushStateTree({
       basePath: '/test/'
     });
     expect(pst.basePath).to.equal('/test/');
   });
 
-  it('should normalize basePath folder', function () {
+  it('should normalize basePath folder', () => {
     expect((new PushStateTree({
       basePath: 'folder/'
     })).basePath).to.equal('/folder/');
@@ -21,7 +18,7 @@ describe('PushStateTree Router basePath', function () {
     })).basePath).to.equal('/folder/sub-folder/');
   });
 
-  it('should normalize basePath file', function () {
+  it('should normalize basePath file', () => {
     expect((new PushStateTree({
       basePath: 'file'
     })).basePath).to.equal('/file');
@@ -57,9 +54,10 @@ describe('PushStateTree Router basePath', function () {
     var pst = new PushStateTree({
       basePath: 'file.html'
     });
-    history.pushState(null, null, '/file.html/test');
-    //TODO: history.pushState is not dispatching popstate event
+
+    pst.path = '/file.html/test';
     pst.dispatch();
+
     expect(pst.uri).to.equal('test');
   });
 
@@ -73,5 +71,4 @@ describe('PushStateTree Router basePath', function () {
     expect(pst1.basePath).to.equal('/1/');
     expect(pst2.basePath).to.equal('/2/');
   });
-
 });
