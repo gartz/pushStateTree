@@ -10,6 +10,8 @@ function PushStateTree(options) {
   // Force the instance to always return a HTMLElement
   if (!(this instanceof PushStateTree.adapter.instanceof)) {
 
+    if (!this) return new PushStateTree(options);
+
     // Allow plugins override the instance create
     let instance = PushStateTree.create.apply(this, arguments);
     return PushStateTree.apply(instance, arguments);
