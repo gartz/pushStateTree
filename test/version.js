@@ -1,11 +1,7 @@
 import PushStateTree from '../src/push-state-tree';
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
 const pkg = require('../package.json');
 
 describe('PushStateTree', function () {
-
-  cleanHistoryAPI();
-
   it('should provide the version as static property in the function', () => {
     expect(PushStateTree.VERSION).to.be.a('string');
   });
