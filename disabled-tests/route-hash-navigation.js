@@ -1,6 +1,6 @@
-const PushStateTree = require('../src/main');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
-const _ = require('underscore');
+import PushStateTree from '../src/push-state-tree';
+// import cleanHistoryAPI from './helper/cleanHistoryAPI';
+import _ from 'underscore';
 
 describe('PushStateTree hash-navigation', () => {
   let pst;
@@ -10,7 +10,7 @@ describe('PushStateTree hash-navigation', () => {
     'assign'
   ];
 
-  cleanHistoryAPI();
+  // cleanHistoryAPI();
 
   beforeEach(() => {
     pst = new PushStateTree({
@@ -113,8 +113,8 @@ describe('PushStateTree hash-navigation', () => {
         pst[triggerMethod]('/');
         expect(pst.uri).to.equal('');
         expect(location.hash).to.equal('');
-      }); 
-      
+      });
+
     });
   });
 });

@@ -1,14 +1,28 @@
-import BrowserHistory from '../../src/plugin/history';
-let globalListeners = [];
-
-let cache = BrowserHistory.prototype.globalListeners;
-BrowserHistory.prototype.globalListeners = function () {
-  let listeners = cache.apply(this, arguments);
-  globalListeners.push(listeners);
-  return listeners;
-};
+import useBrowser from './useBrowser';
 
 export default function cleanHistoryAPI() {
+
+  useBrowser();
+
+  let originalWindowAddEventListener = window.addEventListener;
+  let windowEvents = [];
+  let originalDocumentAddEventListener = document.addEventListener;
+  let documentEvents = [];
+
+  before(() => {
+    window.addEventListener = function () {
+      windowEvents.push(arguments);
+      originalWindowAddEventListener.apply(this, arguments);
+    };
+    document.addEventListener = function () {
+      documentEvents.push(arguments);
+      originalDocumentAddEventListener.apply(this, arguments);
+    };
+  });
+
+  after(() => {
+    window.addEventListener = originalWindowAddEventListener;
+  });
 
   beforeEach(() => {
     history.pushState(null, null, '/');
@@ -17,9 +31,15 @@ export default function cleanHistoryAPI() {
   afterEach(() => {
     // Reset the URI before begin the tests
     history.pushState(null, null, '/');
-    while (globalListeners.length) {
-      let disableGlobalListener = globalListeners.shift();
-      disableGlobalListener();
-    }
+
+    // Reset window events
+    windowEvents.forEach(args => {
+      window.removeEventListener(...args);
+    });
+
+    // Reset document events
+    documentEvents.forEach(args => {
+      document.removeEventListener(...args);
+    });
   });
 }

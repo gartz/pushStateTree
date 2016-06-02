@@ -84,34 +84,20 @@ function BrowserHistory(options) {
     }
   }
 
-  let hasPushState;
+  this.hasPushState = !!(history && history.pushState);
 
-  // Keep compatibility with version 0.14.x over global hasPushState property, version 0.16.x won't support global
-  // hasPushState, it will be part of the BrowserHistory plugin and if in use accessible in the PushStateTree context
   if (!PushStateTree.hasOwnProperty('hasPushState')) {
-    hasPushState = !!(history && history.pushState);
-    Object.defineProperty(this, 'hasPushState', {
-      get() {
-        return PushStateTree.hasPushState;
-      },
-      set(value) {
-        PushStateTree.hasPushState = value;
-      },
-      enumerable
-    });
-
+    let globalHasPushState = this.hasPushState;
     Object.defineProperty(PushStateTree, 'hasPushState', {
       get() {
         if (DEV_ENV) console.info('The static property hasPushState is deprecated. Use BrowserHistory plugin.');
-        return hasPushState;
+        return globalHasPushState;
       },
       set(value) {
-        hasPushState = !!value;
+        globalHasPushState = !!value;
       },
       enumerable
     });
-  } else {
-    hasPushState = PushStateTree.hasPushState;
   }
 
   // Allow switch between pushState or hash navigation modes, in browser that doesn't support
@@ -146,7 +132,7 @@ function BrowserHistory(options) {
 }
 
 BrowserHistory.create = function (router) {
-  
+
   // Proxy all plugins instance properties and methods
   proxyTo(router, this);
 

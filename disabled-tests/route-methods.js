@@ -1,10 +1,10 @@
-const PushStateTree = require('../src/main');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
+import PushStateTree from '../src/push-state-tree';
+// import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
 describe('PushStateTree methods', function() {
   let pst;
 
-  cleanHistoryAPI();
+  // cleanHistoryAPI();
 
   beforeEach(() => {
     pst = new PushStateTree();

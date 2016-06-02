@@ -1,9 +1,9 @@
-const PushStateTree = require('../src/main');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
+import PushStateTree from '../src/push-state-tree';
+// import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
 describe('PushStateTree hash-navigation', function() {
 
-  cleanHistoryAPI();
+  // cleanHistoryAPI();
 
   let cacheVal;
 

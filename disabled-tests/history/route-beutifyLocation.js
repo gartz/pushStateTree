@@ -1,26 +1,11 @@
 import PushStateTree from '../../src/push-state-tree';
-import BrowserHistory from '../../src/plugin/history';
-import cleanHistoryAPI from './../helper/cleanHistoryAPI';
-const _ = require('underscore');
+import _ from 'underscore';
 
 describe('PushStateTree beutifyLocation', function() {
-
-  cleanHistoryAPI();
-
   let pstBeautify;
   let pst;
-  let browserHistory = new BrowserHistory();
-
-  before(() => {
-    PushStateTree.plugins.push(browserHistory);
-  });
-
-  after(() => {
-    PushStateTree.plugins = _.without(PushStateTree.plugins, browserHistory);
-  });
 
   beforeEach(() => {
-    PushStateTree.hasPushState = true;
     pst = new PushStateTree({
       basePath: _.uniqueId('/regular+path') + '/',
       beautifyLocation: false
@@ -29,6 +14,8 @@ describe('PushStateTree beutifyLocation', function() {
       basePath: _.uniqueId('/beautify+path') + '/',
       beautifyLocation: true
     });
+    pst.hasPushState = true;
+    pstBeautify.hasPushState = true;
   });
 
   it('should be enabled by default', () => {
