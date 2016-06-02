@@ -1,6 +1,6 @@
-const PushStateTree = require('../src/push-state-tree');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
-const _ = require('underscore');
+import PushStateTree from '../src/push-state-tree';
+// import cleanHistoryAPI from './helper/cleanHistoryAPI';
+import _ from 'underscore';
 
 describe('PushStateTree-rule', function () {
   let pst;
@@ -11,7 +11,7 @@ describe('PushStateTree-rule', function () {
     'assign'
   ];
 
-  cleanHistoryAPI();
+  // cleanHistoryAPI();
 
   beforeEach(function () {
     pst = new PushStateTree();

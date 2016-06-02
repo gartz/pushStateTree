@@ -1,23 +1,8 @@
-const PushStateTree = require('../src/push-state-tree');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
+import PushStateTree from '../../../src/push-state-tree';
+
+//TODO: Add the browser adapter and history plugin
 
 describe('PushStateTree should', function() {
-  cleanHistoryAPI();
-
-  it('be available as UMD library', function() {
-    expect(PushStateTree).to.be.defined;
-  });
-
-  it('instances without "new" operator', function() {
-    /* jshint newcap: false*/
-    expect(PushStateTree()).to.be.instanceof(HTMLElement);
-  });
-
-  it('construct and became a HTMLElement instance', function(){
-    expect(new PushStateTree()).to.be.instanceof(HTMLElement);
-    expect(new PushStateTree({})).to.be.instanceof(HTMLElement);
-  });
-
   it('auto enable push state if browser support it', function(){
     var pst = new PushStateTree();
     expect(pst.usePushState).to.be.true;
@@ -63,5 +48,4 @@ describe('PushStateTree should', function() {
     var pst = new PushStateTree();
     expect(pst.uri).to.equal(location.pathname.slice(1));
   });
-
 });

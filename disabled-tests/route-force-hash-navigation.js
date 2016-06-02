@@ -1,9 +1,9 @@
-const PushStateTree = require('../src/push-state-tree');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
+import PushStateTree from '../src/push-state-tree';
+// import cleanHistoryAPI from './helper/cleanHistoryAPI';
 
-describe('PushStateTree hash-navigation should', function() {
+describe('PushStateTree hash-navigation', function() {
 
-  cleanHistoryAPI();
+  // cleanHistoryAPI();
 
   let cacheVal;
 
@@ -17,7 +17,7 @@ describe('PushStateTree hash-navigation should', function() {
     PushStateTree.hasPushState = cacheVal;
   });
 
-  it('force hash navigation if browser doesn\'t support pushState', () => {
+  it(`should force hash navigation if browser doesn't support pushState`, () => {
     var pst = new PushStateTree({
       usePushState: true
     });

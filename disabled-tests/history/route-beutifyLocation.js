@@ -1,11 +1,7 @@
-const PushStateTree = require('../src/push-state-tree');
-import cleanHistoryAPI from './helper/cleanHistoryAPI';
-const _ = require('underscore');
+import PushStateTree from '../../src/push-state-tree';
+import _ from 'underscore';
 
 describe('PushStateTree beutifyLocation', function() {
-
-  cleanHistoryAPI();
-
   let pstBeautify;
   let pst;
 
@@ -18,6 +14,8 @@ describe('PushStateTree beutifyLocation', function() {
       basePath: _.uniqueId('/beautify+path') + '/',
       beautifyLocation: true
     });
+    pst.hasPushState = true;
+    pstBeautify.hasPushState = true;
   });
 
   it('should be enabled by default', () => {

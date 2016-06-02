@@ -35,6 +35,13 @@ const WATCH = argv.watch;
 // so it's disabled by default, more info at https://webpack.github.io/docs/configuration.html#devtool
 const devtool = argv['fast-build'] ? 'cheap-module-eval-source-map' : 'inline-source-map';
 
+
+// For development server testing, it should not be a library, a devserver.js is including and assign the global
+// PushStateTree for the logic in the Demo work
+delete webpackConfig.output.library;
+delete webpackConfig.output.libraryTarget;
+delete webpackConfig.output.umdNamedDefine;
+
 if (WATCH) {
   let port = argv['dev-port'] || 8080;
 
@@ -47,21 +54,16 @@ if (WATCH) {
 
   webpackDevConfig.output.pathinfo = true;
   webpackDevConfig.resolve.alias = {
-    'push-state-tree': path.resolve(__dirname, webpackDevConfig.entry['push-state-tree'])
+    'push-state-tree': path.resolve(__dirname, webpackDevConfig.entry['push-state-tree'][0])
   };
 
   webpackDevConfig.entry['push-state-tree'] = [
     // Add inline webpack-dev-server client
     `webpack-dev-server/client?http://localhost:${port}/`,
     // Keep default lib
-    'expose?PushStateTree!' + webpackDevConfig.entry['push-state-tree']
+    'expose?PushStateTree!' + webpackDevConfig.entry['push-state-tree'][0]
   ];
 
-  // For development server testing, it should not be a library, a devserver.js is including and assign the global
-  // PushStateTree for the logic in the Demo work
-  delete webpackDevConfig.output.library;
-  delete webpackDevConfig.output.libraryTarget;
-  delete webpackDevConfig.output.umdNamedDefine;
   webpackDevConfig.module.preLoaders = [];
 
   var compiler = webpack(webpackDevConfig);
@@ -98,11 +100,13 @@ module.exports = function (config) {
 
     // list of files / patterns to load in the browser
     files: [
-      'test/*.js'
+      'test/**/*.js'
     ],
 
     // list of files to exclude
-    exclude: [],
+    exclude: [
+      'test/helper/**/*.js'
+    ],
 
     // test results reporter to use
     reporters: ['progress', 'coverage'],
@@ -150,24 +154,15 @@ module.exports = function (config) {
               exclude: /(node_modules)/,
               loader: 'json'
             }
-          ]
+          ],
+          // postLoaders: [
+          //   {
+          //     test: /\.js$/,
+          //     exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
+          //     loader: 'istanbul-instrumenter'
+          //   }
+          // ]
         };
-
-        if (WATCH) {
-          module.postLoaders = [
-            {
-              test: /\.js$/,
-              exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
-              loader: 'istanbul-instrumenter'
-            }
-          ]
-        } else {
-          module.preLoaders.unshift({
-            test: /\.js$/,
-            exclude: /(test|node_modules|bower_components|\.shim\.js$|\.json$)/,
-            loader: 'istanbul-instrumenter'
-          });
-        }
 
         return module;
       }())),

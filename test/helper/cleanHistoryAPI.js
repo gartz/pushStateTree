@@ -1,15 +1,27 @@
-const PushStateTree = require('../../src/push-state-tree');
+import useBrowser from './useBrowser';
 
 export default function cleanHistoryAPI() {
 
-  let enabledInstances = [];
-  
+  useBrowser();
+
+  let originalWindowAddEventListener = window.addEventListener;
+  let windowEvents = [];
+  let originalDocumentAddEventListener = document.addEventListener;
+  let documentEvents = [];
+
   before(() => {
-    let cache = PushStateTree.prototype.startGlobalListeners;
-    PushStateTree.prototype.startGlobalListeners = function () {
-      enabledInstances.push(this);
-      return cache.apply(this, arguments);
-    }
+    window.addEventListener = function () {
+      windowEvents.push(arguments);
+      originalWindowAddEventListener.apply(this, arguments);
+    };
+    document.addEventListener = function () {
+      documentEvents.push(arguments);
+      originalDocumentAddEventListener.apply(this, arguments);
+    };
+  });
+
+  after(() => {
+    window.addEventListener = originalWindowAddEventListener;
   });
 
   beforeEach(() => {
@@ -19,8 +31,15 @@ export default function cleanHistoryAPI() {
   afterEach(() => {
     // Reset the URI before begin the tests
     history.pushState(null, null, '/');
-    while (enabledInstances.length) {
-      enabledInstances.shift().disabled = true;
-    }
+
+    // Reset window events
+    windowEvents.forEach(args => {
+      window.removeEventListener(...args);
+    });
+
+    // Reset document events
+    documentEvents.forEach(args => {
+      document.removeEventListener(...args);
+    });
   });
 }
