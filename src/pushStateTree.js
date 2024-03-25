@@ -1045,5 +1045,5 @@
   if(typeof module !== 'undefined') module.exports = PushStateTree;
 })((function(){
   /*jshint strict: false */
-  return this;
+  return this || globalThis;
 }()));
