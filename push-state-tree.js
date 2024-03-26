@@ -1,8 +1,8 @@
-//! push-state-tree - v0.14.0 - 2016-02-26
+//! push-state-tree - v0.15.0 - 2024-03-26
 //* https://github.com/gartz/pushStateTree/
-//* Copyright (c) 2016 Gabriel Reitz Giannattasio <gabriel@gartz.com.br>; Licensed 
+//* Copyright (c) 2024 Gabriel Reitz Giannattasio <g@rtz.sh>; Licensed 
 
-var PushStateTree = {options: {VERSION: '0.14.0'}};
+var PushStateTree = {options: {VERSION: '0.15.0'}};
 (function (root) {
   'use strict';
 
@@ -1049,6 +1049,15 @@ var PushStateTree = {options: {VERSION: '0.14.0'}};
   // Node import support
   if(typeof module !== 'undefined') module.exports = PushStateTree;
 })((function(){
-  /*jshint strict: false */
-  return this;
+  'use strict';
+  if (typeof globalThis !== 'undefined') {
+    return globalThis;
+  }
+  else if (typeof window !== 'undefined') {
+    return window;
+  } else if (typeof global !== 'undefined') {
+    return global;
+  } else if (typeof self !== 'undefined') {
+    return self;
+  }
 }()));

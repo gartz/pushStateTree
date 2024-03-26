@@ -4,7 +4,12 @@
 
 var static = require('node-static');
 
-var fileServer = new static.Server('./');
+var fileServer = new static.Server('./', {
+    mime: {
+        'text/html': ['html'],
+        'text/javascript': ['js'],
+      }
+});
 
 require('http').createServer(function (request, response) {
     request.addListener('end', function () {

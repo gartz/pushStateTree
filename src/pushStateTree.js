@@ -1044,6 +1044,15 @@
   // Node import support
   if(typeof module !== 'undefined') module.exports = PushStateTree;
 })((function(){
-  /*jshint strict: false */
-  return this;
+  'use strict';
+  if (typeof globalThis !== 'undefined') {
+    return globalThis;
+  }
+  else if (typeof window !== 'undefined') {
+    return window;
+  } else if (typeof global !== 'undefined') {
+    return global;
+  } else if (typeof self !== 'undefined') {
+    return self;
+  }
 }()));

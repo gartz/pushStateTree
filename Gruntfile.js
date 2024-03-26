@@ -99,39 +99,6 @@ module.exports = function(grunt) {
           path: '<%= meta.report.junit %>'
         }
       },
-      coverage: {
-        src: '<%= jasmine.src %>',
-        options: {
-          host: 'http://127.0.0.1:<%= connect.test.options.port %>/',
-          template: require('grunt-template-jasmine-istanbul'),
-          templateOptions: {
-            coverage: '<%= meta.report.coverage %>/coverage.json',
-            report: [
-              {
-                type: 'html',
-                options: {
-                  dir: '<%= meta.report.coverage %>/html'
-                }
-              },
-              {
-                type: 'cobertura',
-                options: {
-                  dir: '<%= meta.report.coverage %>/cobertura'
-                }
-              },
-              {
-                type: 'lcov',
-                options: {
-                  dir: '<%= meta.report.coverage %>/lcov'
-                }
-              },
-              {
-                type: 'text-summary'
-              }
-            ]
-          }
-        }
-      },
       reportUnit: {
         src: '<%= jasmine.src %>',
         options: {
@@ -176,6 +143,7 @@ module.exports = function(grunt) {
         // if you are using CI, this options would be good to be enabled
         //reporter: require('jshint-junit-reporter'),
         //reporterOutput: '<%= meta.report.base %>/jshint.junit.xml',
+        esversion: 5,
         camelcase: true,
         curly: false,
         eqeqeq: true,
@@ -184,7 +152,7 @@ module.exports = function(grunt) {
         freeze: false,
         immed: false,
         indent: 2,
-        latedef: true,
+        latedef: false,
         newcap: true,
         noarg: true,
         noempty: true,
@@ -205,7 +173,10 @@ module.exports = function(grunt) {
         globals: {
           jQuery: false,
           console: false,
-          module: false
+          module: false,
+          globalThis: true,
+          global: true,
+          self: true
         }
       },
       test: {
@@ -294,7 +265,6 @@ module.exports = function(grunt) {
         'merge-json',
         'jshint',
         'connect:test',
-        'jasmine:coverage'
       ]
     }
   });
@@ -309,7 +279,6 @@ module.exports = function(grunt) {
     'jshint',
     'clean:test',
     'connect:test',
-    'jasmine:coverage'
   ]);
 
   grunt.registerTask('report', [
@@ -318,8 +287,6 @@ module.exports = function(grunt) {
   ].join(), [
     'clean:test',
     'connect:test',
-    'jasmine:reportUnit',
-    'jasmine:coverage',
     'connect:report'
   ]);
 
