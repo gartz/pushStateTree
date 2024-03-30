@@ -1,31 +1,38 @@
+//! push-state-tree - v0.15.0 - 2024-03-26
+//* https://github.com/gartz/pushStateTree/
+//* Copyright (c) 2024 Gabriel Reitz Giannattasio <g@rtz.sh>; Licensed
+
+var PushStateTree = { options: { VERSION: "0.15.0" } };
 (function (root) {
-  'use strict';
+  "use strict";
 
   var document = root.document;
   var window = root.window;
   var location = root.location;
 
-  var isIE = (function(){
-    var trident = window.navigator.userAgent.indexOf('Trident');
+  var isIE = (function () {
+    var trident = window.navigator.userAgent.indexOf("Trident");
     return trident >= 0;
-  }());
+  })();
 
   // Shim, to work with older browsers
   (function () {
     // Opera and IE doesn't implement location.origin
     if (!root.location.origin) {
-      root.location.origin = root.location.protocol + '//' + root.location.host;
+      root.location.origin = root.location.protocol + "//" + root.location.host;
     }
   })();
 
   (function () {
     /* global HTMLDocument */
-    if (Function.prototype.bind) { return; }
+    if (Function.prototype.bind) {
+      return;
+    }
 
     Function.prototype.bind = function (oThis) {
-      if (typeof this !== 'function') {
+      if (typeof this !== "function") {
         // closest thing possible to the ECMAScript 5 internal IsCallable function
-        throw new TypeError('Function.prototype.bind - what is trying to be bound is not callable');
+        throw new TypeError("Function.prototype.bind - what is trying to be bound is not callable");
       }
 
       var aArgs = Array.prototype.slice.call(arguments, 1),
@@ -33,7 +40,7 @@
         FNOP = function () {},
         fBound = function () {
           var context = oThis;
-          if (this instanceof FNOP && oThis){
+          if (this instanceof FNOP && oThis) {
             context = this;
           }
           return fToBind.apply(context, aArgs.concat(Array.prototype.slice.call(arguments)));
@@ -46,20 +53,22 @@
     };
   })();
 
-// IE9 shims
+  // IE9 shims
   var HashChangeEvent = root.HashChangeEvent;
   var Event = root.Event;
 
   (function () {
-    if (!Element.prototype.addEventListener) { return; }
+    if (!Element.prototype.addEventListener) {
+      return;
+    }
 
     function CustomEvent(event, params) {
       params = params || {
         bubbles: false,
         cancelable: false,
-        detail: undefined
+        detail: undefined,
       };
-      var evt = document.createEvent('CustomEvent');
+      var evt = document.createEvent("CustomEvent");
       evt.initCustomEvent(event, params.bubbles, params.cancelable, params.detail);
       return evt;
     }
@@ -81,39 +90,43 @@
 
     // fix for Safari
     try {
-      new HashChangeEvent('hashchange');
-    } catch(e) {
+      new HashChangeEvent("hashchange");
+    } catch (e) {
       HashChangeEvent = CustomEvent;
     }
 
     try {
-      new Event('popstate');
+      new Event("popstate");
     } catch (e) {
       Event = CustomEvent;
     }
   })();
 
-// IE 8 shims
+  // IE 8 shims
   (function () {
-    if (Element.prototype.addEventListener || !Object.defineProperty) { return; }
+    if (Element.prototype.addEventListener || !Object.defineProperty) {
+      return;
+    }
 
     // create an MS event object and get prototype
     var proto = document.createEventObject().constructor.prototype;
 
-    Object.defineProperty(proto, 'target', {
-      get: function() { return this.srcElement; }
+    Object.defineProperty(proto, "target", {
+      get: function () {
+        return this.srcElement;
+      },
     });
 
     // IE8 addEventLister shim
-    var addEventListenerFunc = function(type, handler) {
+    var addEventListenerFunc = function (type, handler) {
       if (!this.__bindedFunctions) {
         this.__bindedFunctions = [];
       }
 
       var fn = handler;
 
-      if (!('on' + type in this) || type === 'hashchange') {
-        this.__elemetIEid = this.__elemetIEid || '__ie__' + Math.random();
+      if (!("on" + type in this) || type === "hashchange") {
+        this.__elemetIEid = this.__elemetIEid || "__ie__" + Math.random();
         var customEventId = type + this.__elemetIEid;
         //TODO: Bug???
         //document.documentElement[customEventId];
@@ -128,22 +141,24 @@
 
         this.__bindedFunctions.push({
           original: fn,
-          binded: propHandler
+          binded: propHandler,
         });
 
-        document.documentElement.attachEvent('onpropertychange', propHandler);
+        document.documentElement.attachEvent("onpropertychange", propHandler);
 
-        if (type !== 'hashchange') { return; }
+        if (type !== "hashchange") {
+          return;
+        }
       }
 
       var bindedFn = fn.bind(this);
 
       this.__bindedFunctions.push({
         original: fn,
-        binded: bindedFn
+        binded: bindedFn,
       });
 
-      this.attachEvent('on' + type, bindedFn);
+      this.attachEvent("on" + type, bindedFn);
     };
 
     // setup the DOM and window objects
@@ -152,7 +167,7 @@
     window.addEventListener = addEventListenerFunc;
 
     // IE8 removeEventLister shim
-    var removeEventListenerFunc = function(type, handler) {
+    var removeEventListenerFunc = function (type, handler) {
       if (!this.__bindedFunctions) {
         this.__bindedFunctions = [];
       }
@@ -161,7 +176,7 @@
 
       var bindedFn;
 
-      if (!('on' + type in this) || type === 'hashchange') {
+      if (!("on" + type in this) || type === "hashchange") {
         for (var i = 0; i < this.__bindedFunctions.length; i++) {
           if (this.__bindedFunctions[i].original === fn) {
             bindedFn = this.__bindedFunctions[i].binded;
@@ -171,10 +186,12 @@
         }
 
         if (bindedFn) {
-          document.documentElement.detachEvent('onpropertychange', bindedFn);
+          document.documentElement.detachEvent("onpropertychange", bindedFn);
         }
 
-        if (type !== 'hashchange') { return; }
+        if (type !== "hashchange") {
+          return;
+        }
       }
 
       for (var j = 0; j < this.__bindedFunctions.length; j++) {
@@ -184,9 +201,11 @@
           j = this.__bindedFunctions.length;
         }
       }
-      if (!bindedFn) { return; }
+      if (!bindedFn) {
+        return;
+      }
 
-      this.detachEvent('on' + type, bindedFn);
+      this.detachEvent("on" + type, bindedFn);
     };
 
     // setup the DOM and window objects
@@ -195,14 +214,13 @@
     window.removeEventListener = removeEventListenerFunc;
 
     Event = function (type, obj) {
-
       var evt = document.createEventObject();
 
       obj = obj || {};
       evt.type = type;
       evt.detail = obj.detail;
 
-      if (!('on' + type in root) || type === 'hashchange') {
+      if (!("on" + type in root) || type === "hashchange") {
         evt.name = type;
         evt.customEvent = true;
       }
@@ -236,13 +254,13 @@
 
   (function () {
     // modern browser support forEach, probably will be IE8
-    var modernBrowser = 'forEach' in Array.prototype;
+    var modernBrowser = "forEach" in Array.prototype;
 
     // IE8 pollyfills:
     // IE8 slice doesn't work with NodeList
     if (!modernBrowser) {
       var builtinSlice = Array.prototype.slice;
-      Array.prototype.slice = function() {
+      Array.prototype.slice = function () {
         var arr = [];
         for (var i = 0, n = this.length; i < n; i++) {
           if (i in this) {
@@ -253,8 +271,8 @@
         return builtinSlice.apply(arr, arguments);
       };
     }
-    if (!('forEach' in Array.prototype)) {
-      Array.prototype.forEach = function(action, that) {
+    if (!("forEach" in Array.prototype)) {
+      Array.prototype.forEach = function (action, that) {
         for (var i = 0; i < this.length; i++) {
           if (i in this) {
             action.call(that, this[i], i);
@@ -262,20 +280,20 @@
         }
       };
     }
-    if (typeof String.prototype.trim !== 'function') {
-      String.prototype.trim = function() {
-        return this.replace(/^\s+|\s+$/g, '');
+    if (typeof String.prototype.trim !== "function") {
+      String.prototype.trim = function () {
+        return this.replace(/^\s+|\s+$/g, "");
       };
     }
     if (!Array.prototype.filter) {
-      Array.prototype.filter = function(fun /*, thisArg */) {
+      Array.prototype.filter = function (fun /*, thisArg */) {
         if (this === void 0 || this === null) {
           throw new TypeError();
         }
 
         var t = Object(this);
         var len = t.length >>> 0;
-        if (typeof fun !== 'function') {
+        if (typeof fun !== "function") {
           throw new TypeError();
         }
 
@@ -290,7 +308,9 @@
             //       properties on Object.prototype and Array.prototype.
             //       But that method's new, and collisions should be
             //       rare, so use the more-compatible alternative.
-            if (fun.call(thisArg, val, i, t)) { res.push(val); }
+            if (fun.call(thisArg, val, i, t)) {
+              res.push(val);
+            }
           }
         }
 
@@ -299,22 +319,25 @@
     }
   })();
 
+  var options = (root.PushStateTree && root.PushStateTree.options) || {};
   // Constants for uglifiers
 
-  var USE_PUSH_STATE = 'usePushState';
-  var HAS_PUSH_STATE = 'hasPushState';
-  var HASHCHANGE = 'hashchange';
-  var POPSTATE = 'popstate';
-  var LEAVE = 'leave';
-  var UPDATE = 'update';
-  var ENTER = 'enter';
-  var CHANGE = 'change';
-  var MATCH = 'match';
-  var OLD_MATCH = 'oldMatch';
-
-  var options = root.PushStateTree && root.PushStateTree.options || {};
+  // PushStateTree options
+  var USE_PUSH_STATE = "usePushState";
+  var HAS_PUSH_STATE = "hasPushState";
+  var IGNORE_HASH = "ignoreHash";
   var DEBUG = root.DEBUG || options.DEBUG;
-  var VERSION = options.VERSION || 'development';
+  var VERSION = options.VERSION || "development";
+  
+  // PushStateTree events
+  var HASHCHANGE = "hashchange";
+  var POPSTATE = "popstate";
+  var LEAVE = "leave";
+  var UPDATE = "update";
+  var ENTER = "enter";
+  var CHANGE = "change";
+  var MATCH = "match";
+  var OLD_MATCH = "oldMatch";
 
   // Helpers
   function isInt(n) {
@@ -326,49 +349,66 @@
       get: function () {
         return target;
       },
-      set: function () {}
+      set: function () {},
     });
   }
 
   function isExternal(url) {
     // Check if a URL is external
-    return (/^[a-z0-9]+:\/\//i).test(url);
+    return /^[a-z0-9]+:\/\//i.test(url);
   }
 
   function isRelative(uri) {
     // Check if a URI is relative path, when begin with # or / isn't relative uri
-    return (/^[^#/]/).test(uri);
+    return /^[^#/]/.test(uri);
   }
 
   function resolveRelativePath(path) {
     // Resolve relative paths manually for browsers using hash navigation
 
-    var parts = path.split('/');
+    var parts = path.split("/");
     var i = 1;
     while (i < parts.length) {
       // if current part is `..` and previous part is different, remove both of them
-      if (parts[i] === '..' && i > 0 && parts[i-1] !== '..') {
+      if (parts[i] === ".." && i > 0 && parts[i - 1] !== "..") {
         parts.splice(i - 1, 2);
         i -= 2;
       }
       i++;
     }
     return parts
-      .join('/')
-      .replace(/\/\.\/|\.\/|\.\.\//g, '/')
-      .replace(/^\/$/, '');
+      .join("/")
+      .replace(/\/\.\/|\.\/|\.\.\//g, "/")
+      .replace(/^\/$/, "");
   }
 
   // Add compatibility with old IE browsers
-  var elementPrototype = typeof HTMLElement !== 'undefined' ? HTMLElement : Element;
+  var elementPrototype = typeof HTMLElement !== "undefined" ? HTMLElement : Element;
 
   function PushStateTree(options) {
     options = options || {};
+    // Enforce the usage of PushState API, available on all modern browsers.
+    // True by default
     options[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
+    
+    // Ignore the hash symbol to enforce PWA navigation, those websites can still use
+    // hash as anchor kind of browser native navigation inside the rendered page, but
+    // the data of the hash ain't used as URI on the PushStateTree when this option is
+    // enabled (true).
+    //
+    // Example:
+    // 'foo/bar#zaz'
+    // URI when enabled: "foo/bar"
+    // URI when disabled: "zaz"
+    //
+    // Keep it disabled for servers that doesn't support PWA, and require hash navigation.
+    //
+    // False by default due to legacy compatibility.
+    options[IGNORE_HASH] = options[IGNORE_HASH] === true;
 
     // Force the instance to always return a HTMLElement
     if (!(this instanceof elementPrototype)) {
-      return PushStateTree.apply(document.createElement('pushstatetree-route'), arguments);
+      return PushStateTree.apply(document.createElement("pushstatetree-route"), arguments);
     }
 
     var rootElement = this;
@@ -394,43 +434,43 @@
         },
         set: function (val) {
           usePushState = val !== false;
-        }
+        },
       });
     }
 
     // When enabled beautifyLocation will auto switch between hash to pushState when enabled
-    Object.defineProperty(rootElement, 'beautifyLocation', {
+    Object.defineProperty(rootElement, "beautifyLocation", {
       get: function () {
         return PushStateTree.prototype.beautifyLocation && usePushState;
       },
       set: function (value) {
         PushStateTree.prototype.beautifyLocation = value === true;
-      }
+      },
     });
     rootElement.beautifyLocation = options.beautifyLocation && rootElement.usePushState;
 
     var basePath;
-    Object.defineProperty(rootElement, 'basePath', {
+    Object.defineProperty(rootElement, "basePath", {
       get: function () {
         return basePath;
       },
       set: function (value) {
-        basePath = value || '';
-        if (basePath[0] !== '/') {
-          basePath = '/' + basePath;
+        basePath = value || "";
+        if (basePath[0] !== "/") {
+          basePath = "/" + basePath;
         }
-      }
+      },
     });
     rootElement.basePath = options.basePath;
 
     function wrappMethodsAndPropertiesToPrototype(prop) {
-      if (typeof PushStateTree.prototype[prop] === 'function') {
+      if (typeof PushStateTree.prototype[prop] === "function") {
         // function wrapper
         rootElement[prop] = function () {
           return PushStateTree.prototype[prop].apply(this, arguments);
         };
       } else {
-        if (typeof rootElement[prop] !== 'undefined') return;
+        if (typeof rootElement[prop] !== "undefined") return;
         // property wrapper
         Object.defineProperty(rootElement, prop, {
           get: function () {
@@ -438,7 +478,7 @@
           },
           set: function (val) {
             PushStateTree.prototype[prop] = val;
-          }
+          },
         });
       }
     }
@@ -450,19 +490,24 @@
       }
     }
 
-    wrapProperty(rootElement, 'length', root.history.length);
-    wrapProperty(rootElement, 'state', root.history.state);
+    wrapProperty(rootElement, "length", root.history.length);
+    wrapProperty(rootElement, "state", root.history.state);
 
     var cachedUri = {
-      url: '',
-      uri: ''
+      url: "",
+      uri: "",
     };
-    Object.defineProperty(rootElement, 'uri', {
+    Object.defineProperty(rootElement, "uri", {
       get: function () {
         if (cachedUri.url === root.location.href) return cachedUri.uri;
 
+        var ignoreHash = options[IGNORE_HASH];
+
         var uri;
-        if (root.location.hash.length || root.location.href[location.href.length - 1] === '#') {
+        if (
+          !ignoreHash &&
+          (root.location.hash.length || root.location.href[location.href.length - 1] === "#")
+        ) {
           // Remove all begin # chars from the location when using hash
           uri = root.location.hash.match(/^(#*)?(.*\/?)/)[2];
 
@@ -473,7 +518,7 @@
             rootElement.replaceState(
               rootElement.state,
               rootElement.title,
-              uri[0] === '/' ? uri : '/' + uri
+              uri[0] === "/" ? uri : "/" + uri,
             );
           }
         } else {
@@ -484,46 +529,49 @@
         }
 
         // Remove the very first slash, do don't match it as URI
-        uri = uri.replace(/^[\/]+/, '');
+        uri = uri.replace(/^[\/]+/, "");
 
-        if (rootElement.getAttribute('uri') !== uri) {
-          rootElement.setAttribute('uri', uri);
+        if (rootElement.getAttribute("uri") !== uri) {
+          rootElement.setAttribute("uri", uri);
         }
 
         cachedUri.url = root.location.href;
         cachedUri.uri = uri;
         return uri;
       },
-      configurable: true
+      configurable: true,
     });
 
-    Object.defineProperty(rootElement, 'isPathValid', {
+    Object.defineProperty(rootElement, "isPathValid", {
       get: function () {
         var uri = root.location.pathname + root.location.search;
-        return !this.basePath || (uri).indexOf(this.basePath) === 0;
-      }
+        return !this.basePath || uri.indexOf(this.basePath) === 0;
+      },
     });
 
     rootElement.eventStack = {
       leave: [],
       change: [],
       enter: [],
-      match: []
+      match: [],
     };
 
-    root.addEventListener(POPSTATE, function () {
-      var eventURI = rootElement.uri;
-      var eventState = rootElement.state;
-      rootElement.rulesDispatcher();
+    root.addEventListener(
+      POPSTATE,
+      function () {
+        var eventURI = rootElement.uri;
+        var eventState = rootElement.state;
+        rootElement.rulesDispatcher();
 
-      oldURI = eventURI;
-      oldState = eventState;
+        oldURI = eventURI;
+        oldState = eventState;
 
-      // If there is holding dispatch in the event, do it now
-      if (holdingDispatch) {
-        this.dispatch();
-      }
-    }.bind(rootElement));
+        // If there is holding dispatch in the event, do it now
+        if (holdingDispatch) {
+          this.dispatch();
+        }
+      }.bind(rootElement),
+    );
 
     var readOnhashchange = false;
     var onhashchange = function () {
@@ -560,27 +608,33 @@
     };
 
     // Modern browsers
-    document.addEventListener('DOMContentLoaded', dispatchHashChange);
+    document.addEventListener("DOMContentLoaded", dispatchHashChange);
     // Some IE browsers
-    root.addEventListener('readystatechange', dispatchHashChange);
+    root.addEventListener("readystatechange", dispatchHashChange);
     // Almost all browsers
-    root.addEventListener('load', function () {
-      dispatchHashChange();
+    root.addEventListener(
+      "load",
+      function () {
+        dispatchHashChange();
 
-      if (isIE) {
-        root.setInterval(function () {
-          if (rootElement.uri !== oldURI) {
-            dispatchHashChange();
-            return;
-          }
-          if (readOnhashchange) {
-            readOnhashchange = false;
-            oldURI = rootElement.uri;
-            root.addEventListener(HASHCHANGE, onhashchange);
-          }
-        }.bind(rootElement), 50);
-      }
-    }.bind(rootElement));
+        if (isIE) {
+          root.setInterval(
+            function () {
+              if (rootElement.uri !== oldURI) {
+                dispatchHashChange();
+                return;
+              }
+              if (readOnhashchange) {
+                readOnhashchange = false;
+                oldURI = rootElement.uri;
+                root.addEventListener(HASHCHANGE, onhashchange);
+              }
+            }.bind(rootElement),
+            50,
+          );
+        }
+      }.bind(rootElement),
+    );
 
     return this;
   }
@@ -598,49 +652,48 @@
     createRule: function (options) {
       // Create a pushstreamtree-rule element from a literal object
 
-      var rule = document.createElement('pushstatetree-rule');
+      var rule = document.createElement("pushstatetree-rule");
 
-      var ruleRegex = new RegExp('');
+      var ruleRegex = new RegExp("");
 
       // Bind rule property with element attribute
-      Object.defineProperty(rule, 'rule', {
+      Object.defineProperty(rule, "rule", {
         get: function () {
           return ruleRegex;
         },
         set: function (val) {
-          if (val instanceof RegExp){
+          if (val instanceof RegExp) {
             ruleRegex = val;
           } else {
-
             // IE8 trigger set from the property when update the attribute, avoid recursive loop
             if (val === ruleRegex.toString()) return;
 
             // Slice the pattern from the attribute
-            var slicedPattern = (val + '').match(/^\/(.+)\/([gmi]*)|(.*)/);
+            var slicedPattern = (val + "").match(/^\/(.+)\/([gmi]*)|(.*)/);
 
             ruleRegex = new RegExp(slicedPattern[1] || slicedPattern[3], slicedPattern[2]);
           }
 
-          rule.setAttribute('rule', ruleRegex.toString());
-        }
+          rule.setAttribute("rule", ruleRegex.toString());
+        },
       });
 
       // Bind rule property with element attribute
-      Object.defineProperty(rule, 'parentGroup', {
+      Object.defineProperty(rule, "parentGroup", {
         get: function () {
-          var attr = rule.getAttribute('parent-group');
+          var attr = rule.getAttribute("parent-group");
           if (attr && isInt(attr)) {
-            return + attr;
+            return +attr;
           }
           return null;
         },
         set: function (val) {
           if (isInt(val)) {
-            rule.setAttribute('parent-group', val);
+            rule.setAttribute("parent-group", val);
           } else {
-            rule.removeAttribute('parent-group');
+            rule.removeAttribute("parent-group");
           }
-        }
+        },
       });
 
       for (var prop in options)
@@ -674,18 +727,13 @@
 
       // Replicate the methods from `route` to the rule, by transversing until find and execute
       // the router method, not a fast operation, but ensure the right route to be triggered
-      [
-        'assign',
-        'navigate',
-        'replace',
-        'dispatch',
-        'pushState',
-        'replaceState'
-      ].forEach(function(methodName){
-        rule[methodName] = function(){
-          this.parentElement[methodName].apply(this.parentElement, arguments);
-        };
-      });
+      ["assign", "navigate", "replace", "dispatch", "pushState", "replaceState"].forEach(
+        function (methodName) {
+          rule[methodName] = function () {
+            this.parentElement[methodName].apply(this.parentElement, arguments);
+          };
+        },
+      );
 
       return rule;
     },
@@ -701,7 +749,7 @@
       // Remove a pushstateree-rule, pass a element or it query
 
       var element = queryOrElement;
-      if (typeof queryOrElement === 'string') {
+      if (typeof queryOrElement === "string") {
         element = this.querySelector(queryOrElement);
       }
 
@@ -732,7 +780,7 @@
       return this.replaceState(null, null, url).dispatch();
     },
 
-    navigate: function(){
+    navigate: function () {
       this.assign.apply(this, arguments);
     },
 
@@ -747,7 +795,8 @@
       if (!this.isPathValid) return;
 
       function runner(uri, oldURI) {
-        Array.prototype.slice.call(this.children || this.childNodes)
+        Array.prototype.slice
+          .call(this.children || this.childNodes)
           .forEach(recursiveDispatcher.bind(this, uri, oldURI));
         return uri;
       }
@@ -756,7 +805,9 @@
 
       // Is there already a queue been executed, so just add the runner
       // and let the main queue resolve it
-      if (eventsQueue.length > 1) { return; }
+      if (eventsQueue.length > 1) {
+        return;
+      }
 
       // Chain execute the evetsQueue
       var last = oldURI;
@@ -773,14 +824,14 @@
 
       // Order of events stack execution, leave event isn't here because it executes in the
       // recursiveDispatcher, for one loop less
-      [CHANGE, ENTER, MATCH].forEach(function(type){
+      [CHANGE, ENTER, MATCH].forEach(function (type) {
         // Execute the leave stack of events
         while (eventStack[type].length > 0) {
           var events = eventStack[type][0].events;
           var element = eventStack[type][0].element;
 
           //TODO: Ignore if there isn't same in the enter stack and remove it
-          while (events.length > 0){
+          while (events.length > 0) {
             element.dispatchEvent(events[0]);
             events.shift();
           }
@@ -798,20 +849,20 @@
         var useOldURI = oldURI;
         var parentElement;
 
-        if (typeof ruleElement.parentGroup === 'number') {
-          useURI = '';
+        if (typeof ruleElement.parentGroup === "number") {
+          useURI = "";
           parentElement = ruleElement.parentElement;
 
           if (parentElement[MATCH].length > ruleElement.parentGroup)
-            useURI = parentElement[MATCH][ruleElement.parentGroup] || '';
+            useURI = parentElement[MATCH][ruleElement.parentGroup] || "";
 
-          useOldURI = '';
+          useOldURI = "";
           if (parentElement[OLD_MATCH].length > ruleElement.parentGroup)
-            useOldURI = parentElement[OLD_MATCH][ruleElement.parentGroup] || '';
+            useOldURI = parentElement[OLD_MATCH][ruleElement.parentGroup] || "";
         }
 
         ruleElement[MATCH] = useURI[MATCH](ruleElement.rule);
-        if (typeof useOldURI === 'string') {
+        if (typeof useOldURI === "string") {
           ruleElement[OLD_MATCH] = useOldURI[MATCH](ruleElement.rule);
         } else {
           ruleElement[OLD_MATCH] = [];
@@ -821,20 +872,19 @@
         var children = Array.prototype.slice.call(ruleElement.children);
 
         function PushStateTreeEvent(name, params) {
-
           params = params || {};
           params.detail = params.detail || {};
           params.detail[MATCH] = match || [];
           params.detail[OLD_MATCH] = oldMatch || [];
           params.cancelable = true;
 
-          if (debug && typeof console === 'object'){
+          if (debug && typeof console === "object") {
             console.log({
               name: name,
               ruleElement: ruleElement,
               params: params,
               useURI: useURI,
-              useOldURI: useOldURI
+              useOldURI: useOldURI,
             });
             if (console.trace) console.trace();
           }
@@ -849,14 +899,16 @@
             return;
           }
           ruleElement.uri = null;
-          ruleElement.removeAttribute('uri');
+          ruleElement.removeAttribute("uri");
 
           children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
 
           // Don't use stack for LEAVE event, dispatch in this loop
-          ruleElement.dispatchEvent(new PushStateTreeEvent(UPDATE, {
-            detail: {type: LEAVE}
-          }));
+          ruleElement.dispatchEvent(
+            new PushStateTreeEvent(UPDATE, {
+              detail: { type: LEAVE },
+            }),
+          );
 
           ruleElement.dispatchEvent(new PushStateTreeEvent(LEAVE));
           return;
@@ -865,15 +917,13 @@
         // dispatch the match event
         this.eventStack[MATCH].push({
           element: ruleElement,
-          events: [
-            new PushStateTreeEvent(MATCH)
-          ]
+          events: [new PushStateTreeEvent(MATCH)],
         });
 
         var isNewURI = ruleElement.routerURI !== oldURI;
         ruleElement.routerURI = this.uri;
         ruleElement.uri = match[0];
-        ruleElement.setAttribute('uri', match[0]);
+        ruleElement.setAttribute("uri", match[0]);
 
         if (oldMatch.length === 0 || isNewURI) {
           // stack dispatch enter event
@@ -881,10 +931,10 @@
             element: ruleElement,
             events: [
               new PushStateTreeEvent(UPDATE, {
-                detail: {type: ENTER}
+                detail: { type: ENTER },
               }),
-              new PushStateTreeEvent(ENTER)
-            ]
+              new PushStateTreeEvent(ENTER),
+            ],
           });
 
           children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
@@ -898,16 +948,16 @@
             element: ruleElement,
             events: [
               new PushStateTreeEvent(UPDATE, {
-                detail: {type: CHANGE}
+                detail: { type: CHANGE },
               }),
-              new PushStateTreeEvent(CHANGE)
-            ]
+              new PushStateTreeEvent(CHANGE),
+            ],
           });
         }
 
         children.forEach(recursiveDispatcher.bind(this, uri, oldURI));
       }
-    }
+    },
   };
 
   function preProcessUriBeforeExecuteNativeHistoryMethods(method) {
@@ -920,15 +970,14 @@
       var args = Array.prototype.slice.call(arguments);
 
       // if has a basePath translate the not relative paths to use the basePath
-      if (scopeMethod === 'pushState' || scopeMethod === 'replaceState') {
-
+      if (scopeMethod === "pushState" || scopeMethod === "replaceState") {
         if (!isExternal(args[2])) {
           // When not external link, need to normalize the URI
 
           if (isRelative(args[2])) {
             // Relative to the uri
             var basePath = this.uri.match(/^([^?#]*)\//);
-            basePath = basePath ? basePath[1] + '/' : '';
+            basePath = basePath ? basePath[1] + "/" : "";
             args[2] = basePath + args[2];
           } else {
             // This isn't relative, will cleanup / and # from the begin and use the remain path
@@ -936,13 +985,11 @@
           }
 
           if (!this[USE_PUSH_STATE]) {
-
             // Ignore basePath when using location.hash and resolve relative path and keep
             // the current location.pathname, some browsers history API might apply the new pathname
             // with the hash content if not explicit
-            args[2] = location.pathname + '#' + resolveRelativePath(args[2]);
+            args[2] = location.pathname + "#" + resolveRelativePath(args[2]);
           } else {
-
             // Add the basePath to your uri, not allowing to go by pushState outside the basePath
             args[2] = this.basePath + args[2];
           }
@@ -958,7 +1005,7 @@
 
   // Wrap history methods
   for (var method in root.history) {
-    if (typeof root.history[method] === 'function') {
+    if (typeof root.history[method] === "function") {
       preProcessUriBeforeExecuteNativeHistoryMethods.call(PushStateTree.prototype, method);
     }
   }
@@ -971,9 +1018,9 @@
   var lastTitle = null;
 
   if (!PushStateTree.prototype.pushState) {
-    PushStateTree.prototype.pushState = function(state, title, uri) {
-      var t = document.title || '';
-      uri = uri || '';
+    PushStateTree.prototype.pushState = function (state, title, uri) {
+      var t = document.title || "";
+      uri = uri || "";
       if (lastTitle !== null) {
         document.title = lastTitle;
       }
@@ -986,12 +1033,12 @@
       }
 
       // Remove the has if is it present
-      if (uri[0] === '#') {
+      if (uri[0] === "#") {
         uri = uri.slice(1);
       }
 
       if (isRelative(uri)) {
-        uri = root.location.hash.slice(1, root.location.hash.lastIndexOf('/') + 1) + uri;
+        uri = root.location.hash.slice(1, root.location.hash.lastIndexOf("/") + 1) + uri;
         uri = resolveRelativePath(uri);
       }
 
@@ -1005,9 +1052,9 @@
   }
 
   if (!PushStateTree.prototype.replaceState) {
-    PushStateTree.prototype.replaceState = function(state, title, uri) {
-      var t = document.title || '';
-      uri = uri || '';
+    PushStateTree.prototype.replaceState = function (state, title, uri) {
+      var t = document.title || "";
+      uri = uri || "";
       if (lastTitle !== null) {
         document.title = lastTitle;
       }
@@ -1015,21 +1062,21 @@
 
       // Replace the url
       if (isExternal(uri)) {
-        throw new Error('Invalid url replace.');
+        throw new Error("Invalid url replace.");
       }
 
-      if (uri[0] === '#') {
+      if (uri[0] === "#") {
         uri = uri.slice(1);
       }
 
       if (isRelative(uri)) {
-        var relativePos = root.location.hash.lastIndexOf('/') + 1;
+        var relativePos = root.location.hash.lastIndexOf("/") + 1;
         uri = root.location.hash.slice(1, relativePos) + uri;
         uri = resolveRelativePath(uri);
       }
 
       // Always use hash navigation
-      uri = '#' + uri;
+      uri = "#" + uri;
 
       root.location.replace(uri);
       document.title = t;
@@ -1042,17 +1089,18 @@
   root.PushStateTree = PushStateTree;
 
   // Node import support
-  if(typeof module !== 'undefined') module.exports = PushStateTree;
-})((function(){
-  'use strict';
-  if (typeof globalThis !== 'undefined') {
-    return globalThis;
-  }
-  else if (typeof window !== 'undefined') {
-    return window;
-  } else if (typeof global !== 'undefined') {
-    return global;
-  } else if (typeof self !== 'undefined') {
-    return self;
-  }
-}()));
+  if (typeof module !== "undefined") module.exports = PushStateTree;
+})(
+  (function () {
+    "use strict";
+    if (typeof globalThis !== "undefined") {
+      return globalThis;
+    } else if (typeof window !== "undefined") {
+      return window;
+    } else if (typeof global !== "undefined") {
+      return global;
+    } else if (typeof self !== "undefined") {
+      return self;
+    }
+  })(),
+);
