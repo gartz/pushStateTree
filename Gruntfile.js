@@ -109,21 +109,6 @@ module.exports = function(grunt) {
             path: '<%= jasmine.options.junit.path %>'
           }
         }
-      },
-      summary: {
-        src: '<%= jasmine.src %>',
-        options: {
-          host: 'http://127.0.0.1:<%= connect.test.options.port %>/',
-          template: require('grunt-template-jasmine-istanbul'),
-          templateOptions: {
-            coverage: '<%= meta.report.coverage %>/coverage.json',
-            report: [
-              {
-                type: 'text-summary'
-              }
-            ]
-          }
-        }
       }
     },
     coveralls: {
@@ -143,7 +128,7 @@ module.exports = function(grunt) {
         // if you are using CI, this options would be good to be enabled
         //reporter: require('jshint-junit-reporter'),
         //reporterOutput: '<%= meta.report.base %>/jshint.junit.xml',
-        esversion: 5,
+        esversion: 8,
         camelcase: true,
         curly: false,
         eqeqeq: true,
@@ -159,7 +144,7 @@ module.exports = function(grunt) {
         nonbsp: true,
         nonew: false,
         plusplus: false,
-        quotmark: 'single',
+        quotmark: true,
         undef: true,
         unused: true,
         strict: true,
@@ -209,47 +194,10 @@ module.exports = function(grunt) {
         ]
       }
     },
-    'update_json': {
-      bower: {
-        src: 'package.json',
-        dest: 'bower.json',
-        fields: [
-          'name',
-          'version',
-          'description',
-          'repository'
-        ]
-      },
-      component: {
-        src: 'package.json',
-        dest: 'component.json',
-        fields: {
-          'name': null,
-          'repository': 'repo',
-          'description': null,
-          'version': null,
-          'keywords': null,
-          'main': null,
-          'dependencies': null,
-          'development': 'devDependencies',
-          'license': null
-        }
-      },
-    },
     'merge-json': {
       jshint: {
         src: ['src/.jshintrc', '.jshintrc'],
         dest: '.jshintrc'
-      }
-    },
-    'json_generator': {
-      jshintTest: {
-        dest: '.jshintrc', // Destination file
-        options: '<%= jshint.test.options %>'
-      },
-      jshintSrc: {
-        dest: 'src/.jshintrc', // Destination file
-        options: '<%= jshint.options %>'
       }
     },
     watch: {
@@ -260,8 +208,6 @@ module.exports = function(grunt) {
         'Gruntfile.js'
       ],
       tasks: [
-        'update_json',
-        'json_generator',
         'merge-json',
         'jshint',
         'connect:test',
@@ -291,8 +237,6 @@ module.exports = function(grunt) {
   ]);
 
   grunt.registerTask('default', [
-    'update_json',
-    'json_generator',
     'merge-json',
     'clean',
     'test',
