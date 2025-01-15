@@ -144,7 +144,7 @@ module.exports = function(grunt) {
         nonbsp: true,
         nonew: false,
         plusplus: false,
-        quotmark: true,
+        quotmark: false,
         undef: true,
         unused: true,
         strict: true,

@@ -1,8 +1,3 @@
-//! push-state-tree - v0.16.0 - 2024-03-30
-//* https://github.com/gartz/pushStateTree/
-//* Copyright (c) 2024 Gabriel Reitz Giannattasio <g@rtz.sh>; Licensed
-
-var PushStateTree = {options: {VERSION: '0.16.0'}};
 (function (root) {
   "use strict";
 
