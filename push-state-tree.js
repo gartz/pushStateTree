@@ -1,8 +1,8 @@
-//! push-state-tree - v0.16.0 - 2024-03-30
+//! push-state-tree - v0.17.0 - 2025-01-15
 //* https://github.com/gartz/pushStateTree/
-//* Copyright (c) 2024 Gabriel Reitz Giannattasio <g@rtz.sh>; Licensed 
+//* Copyright (c) 2025 Gabriel Reitz Giannattasio <g@rtz.sh>; Licensed 
 
-var PushStateTree = {options: {VERSION: '0.16.0'}};
+var PushStateTree = {options: {VERSION: '0.17.0'}};
 (function (root) {
   "use strict";
 
@@ -328,7 +328,7 @@ var PushStateTree = {options: {VERSION: '0.16.0'}};
   var IGNORE_HASH = "ignoreHash";
   var DEBUG = root.DEBUG || options.DEBUG;
   var VERSION = options.VERSION || "development";
-  
+
   // PushStateTree events
   var HASHCHANGE = "hashchange";
   var POPSTATE = "popstate";
@@ -390,7 +390,7 @@ var PushStateTree = {options: {VERSION: '0.16.0'}};
     // Enforce the usage of PushState API, available on all modern browsers.
     // True by default
     options[USE_PUSH_STATE] = options[USE_PUSH_STATE] !== false;
-    
+
     // Ignore the hash symbol to enforce PWA navigation, those websites can still use
     // hash as anchor kind of browser native navigation inside the rendered page, but
     // the data of the hash ain't used as URI on the PushStateTree when this option is
@@ -1032,8 +1032,10 @@ var PushStateTree = {options: {VERSION: '0.16.0'}};
         root.location.href = uri;
       }
 
+      var ignoreHash = options[IGNORE_HASH];
+
       // Remove the has if is it present
-      if (uri[0] === "#") {
+      if (!ignoreHash && uri[0] === "#") {
         uri = uri.slice(1);
       }
 
@@ -1065,7 +1067,10 @@ var PushStateTree = {options: {VERSION: '0.16.0'}};
         throw new Error("Invalid url replace.");
       }
 
-      if (uri[0] === "#") {
+      var ignoreHash = options[IGNORE_HASH];
+
+      // Remove the has if is it present
+      if (!ignoreHash && uri[0] === "#") {
         uri = uri.slice(1);
       }
 
