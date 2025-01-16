@@ -975,8 +975,13 @@
             basePath = basePath ? basePath[1] + "/" : "";
             args[2] = basePath + args[2];
           } else {
-            // This isn't relative, will cleanup / and # from the begin and use the remain path
-            args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
+            if (this[USE_PUSH_STATE] && this[IGNORE_HASH]) {
+              // Replace only the / when has is ignored.
+              args[2] = args[2].match(/^([/]*)?(.*)/)[2];
+            } else {
+              // This isn't relative, will cleanup / and # from the begin and use the remain path
+              args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
+            }
           }
 
           if (!this[USE_PUSH_STATE]) {
