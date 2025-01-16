@@ -1,8 +1,8 @@
-//! push-state-tree - v0.18.0 - 2025-01-16
+//! push-state-tree - v0.19.0 - 2025-01-16
 //* https://github.com/gartz/pushStateTree/
 //* Copyright (c) 2025 Gabriel Reitz Giannattasio <g@rtz.sh>; Licensed 
 
-var PushStateTree = {options: {VERSION: '0.18.0'}};
+var PushStateTree = {options: {VERSION: '0.19.0'}};
 (function (root) {
   "use strict";
 
@@ -969,6 +969,12 @@ var PushStateTree = {options: {VERSION: '0.18.0'}};
       // remove the method from arguments
       var args = Array.prototype.slice.call(arguments);
 
+      // Use the native behaviour without any overhide.
+      if (this[USE_PUSH_STATE] && this[IGNORE_HASH]) {
+        root.history[scopeMethod].apply(root.history, args);
+        return this;
+      }
+
       // if has a basePath translate the not relative paths to use the basePath
       if (scopeMethod === "pushState" || scopeMethod === "replaceState") {
         if (!isExternal(args[2])) {
@@ -980,13 +986,8 @@ var PushStateTree = {options: {VERSION: '0.18.0'}};
             basePath = basePath ? basePath[1] + "/" : "";
             args[2] = basePath + args[2];
           } else {
-            if (this[USE_PUSH_STATE] && this[IGNORE_HASH]) {
-              // Replace only the / when has is ignored.
-              args[2] = args[2].match(/^([/]*)?(.*)/)[2];
-            } else {
-              // This isn't relative, will cleanup / and # from the begin and use the remain path
-              args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
-            }
+            // This isn't relative, will cleanup / and # from the begin and use the remain path
+            args[2] = args[2].match(/^([#/]*)?(.*)/)[2];
           }
 
           if (!this[USE_PUSH_STATE]) {
